@@ -37,14 +37,6 @@ static const uint32_t AMDefaultMeasPeriod = 30;
 static const uint16_t AMCalibRegCount = 16;
 
 
-/** Número de registros de energía */
-static const uint16_t AMEnergyRegCount = 8;
-
-
-/** Número de registros de medida */
-static const uint16_t AMMeasureRegCount = 16;
-
-
 /** Tamaño máximo de los parámetros textuales */
 static const uint16_t AMTextParamLength = 32;
 
@@ -99,7 +91,9 @@ enum AMKeyNames{
  	AMKeyCfgMnxMpow		= (1 << 9),
  	AMKeyCfgMnxFreq		= (1 << 10),
  	AMKeyCfgCalMetr		= (1 << 11),
- 	AMKeyCfgCalMea		= (1 << 12)
+ 	AMKeyCfgCalMea		= (1 << 12),
+	//
+	AMKeyCfgAll			= 0x1FFF,
 };
 
 
@@ -155,7 +149,6 @@ struct __packed AMCfgData_t{
 	uint32_t measPeriod;
 	AMMinMaxData_t minmaxData;
   	AMCalibData_t calibData;
-  	uint32_t keys;
 };
 
 
