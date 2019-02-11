@@ -30,7 +30,7 @@ namespace Blob {
 
 /** Cadencia mínima y por defecto permitida de envío de medidas instantáneas en segundos (1min) */
 static const uint32_t AMMinMeasPeriod = 10;
-static const uint32_t AMDefaultMeasPeriod = 30;
+static const uint32_t AMDefaultMeasPeriod = 900;
 
 
 /** Número de registros de calibración para la medida y para el analizador */

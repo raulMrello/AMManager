@@ -124,6 +124,10 @@ class AMManager : public ActiveModule {
     /** Flag de control para el soporte de objetos json */
     bool _json_supported;
 
+    /** Parámetros de calibración */
+    static const uint16_t _meter_cal_values[];
+    static const uint16_t _meas_cal_values[];
+
 
     /** Interfaz para obtener un evento osEvent de la clase heredera
      *  @param msg Mensaje a postear

@@ -441,6 +441,7 @@ TEST_CASE("JSON support .........................", "[AMManager]"){
 		count += 0.1;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
+	energy->stopMeasureWork();
 }
 
 
@@ -467,10 +468,10 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 
 	// wait for response at least 10 seconds, yielding this thread
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
-	double count = 0;
+	int count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 
@@ -492,8 +493,8 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
 	count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 
@@ -514,8 +515,8 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
 	count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 
@@ -556,8 +557,8 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
 	count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 }
