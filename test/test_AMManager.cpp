@@ -274,7 +274,7 @@ private:
     bool _ready;
 };
 
-VirtualDriver* vd;
+static VirtualDriver* vd;
 
 
 //------------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ TEST_CASE("JSON support .........................", "[AMManager]"){
 	// solicita la configuración mediante un GetRequest
 	Blob::GetRequest_t* greq = new Blob::GetRequest_t(1);
 	TEST_ASSERT_NOT_NULL(greq);
-	cJSON* jreq = JSON::parseGetRequest(*greq);
+	cJSON* jreq = JsonParser::getJsonFromObj(*greq);
 	TEST_ASSERT_NOT_NULL(jreq);
 	msg = cJSON_Print(jreq);
 	TEST_ASSERT_NOT_NULL(msg);
@@ -376,7 +376,7 @@ TEST_CASE("JSON support .........................", "[AMManager]"){
 	// solicita la configuración mediante un GetRequest
 	greq = new Blob::GetRequest_t(2);
 	TEST_ASSERT_NOT_NULL(greq);
-	jreq = JSON::parseGetRequest(*greq);
+	jreq = JsonParser::getJsonFromObj(*greq);
 	TEST_ASSERT_NOT_NULL(jreq);
 	msg = cJSON_Print(jreq);
 	TEST_ASSERT_NOT_NULL(msg);
@@ -401,30 +401,29 @@ TEST_CASE("JSON support .........................", "[AMManager]"){
 	s_test_done = false;
 
 	// actualiza la configuración mediante un SetRequest
-	Blob::AMCfgData_t cfg;
-	cfg.updFlagMask = Blob::EnableAMCfgUpdNotif;
-	cfg.evtFlagMask = Blob::AMInstantMeasureEvt;
-	cfg.measPeriod = 30;
-	cfg.minmaxData.voltage = {210, 245, 5};
-	cfg.minmaxData.current = {0.015, 15, 0.005};
-	cfg.minmaxData.phase = {-185, 185, 5};
-	cfg.minmaxData.pfactor = {0.8, 1.2, 0.1};
-	cfg.minmaxData.aPow = {0, 15, 0.01};
-	cfg.minmaxData.rPow = {0, 15, 0.01};
-	cfg.minmaxData.msPow = {0, 15, 0.01};
-	cfg.minmaxData.freq = {49.7, 50.3, 0.1};
+	Blob::SetRequest_t<Blob::AMCfgData_t> req;
+	req.idTrans = 3;
+	req.data.updFlagMask = Blob::EnableAMCfgUpdNotif;
+	req.data.evtFlagMask = Blob::AMInstantMeasureEvt;
+	req.data.measPeriod = 30;
+	req.data.minmaxData.voltage = {210, 245, 5};
+	req.data.minmaxData.current = {0.015, 15, 0.005};
+	req.data.minmaxData.phase = {-185, 185, 5};
+	req.data.minmaxData.pfactor = {0.8, 1.2, 0.1};
+	req.data.minmaxData.aPow = {0, 15, 0.01};
+	req.data.minmaxData.rPow = {0, 15, 0.01};
+	req.data.minmaxData.msPow = {0, 15, 0.01};
+	req.data.minmaxData.freq = {49.7, 50.3, 0.1};
 	uint16_t default_meterRegs[] = {22136,22,51326,4488,41,0,0,3221,0,3221,0,27682,24302};
 	for(int i=0;i<sizeof(default_meterRegs)/sizeof(default_meterRegs[0]);i++){
-		cfg.calibData.meterRegs[i] = default_meterRegs[i];
+		req.data.calibData.meterRegs[i] = default_meterRegs[i];
 	}
 	uint16_t default_measRegs[] = {22136,28595,25151,30000,0,0,0,65437,0,65505,0,47332};
 	for(int i=0;i<sizeof(default_measRegs)/sizeof(default_measRegs[0]);i++){
-		cfg.calibData.measRegs[i] = default_measRegs[i];
+		req.data.calibData.measRegs[i] = default_measRegs[i];
 	}
 
-	cJSON* energy = AMManager::encodeCfg(cfg);
-	TEST_ASSERT_NOT_NULL(energy);
-	jreq = JSON::parseSetRequest(3, "energy", energy, Blob::AMKeyCfgAll);
+	jreq = JsonParser::getJsonFromSetRequest(req, JsonParser::p_data);
 	TEST_ASSERT_NOT_NULL(jreq);
 	msg = cJSON_Print(jreq);
 	TEST_ASSERT_NOT_NULL(msg);
@@ -442,6 +441,7 @@ TEST_CASE("JSON support .........................", "[AMManager]"){
 		count += 0.1;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
+	energy->stopMeasureWork();
 }
 
 
@@ -468,10 +468,10 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 
 	// wait for response at least 10 seconds, yielding this thread
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
-	double count = 0;
+	int count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 
@@ -493,8 +493,8 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
 	count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 
@@ -515,8 +515,8 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
 	count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 
@@ -557,8 +557,8 @@ TEST_CASE("Blob support .........................", "[AMManager]"){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Wait 10secs to get a response...");
 	count = 0;
 	do{
-		Thread::wait(100);
-		count += 0.1;
+		Thread::wait(1000);
+		count++;
 	}while(!s_test_done && count < 10);
 	TEST_ASSERT_TRUE(s_test_done);
 }
@@ -592,7 +592,7 @@ static void subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Formando objeto JSON a partir de objeto Blob...");
 		if(MQ::MQClient::isTokenRoot(topic, "stat/cfg")){
 			if(msg_len == sizeof(Blob::Response_t<Blob::AMCfgData_t>)){
-				cJSON* obj = AMManager::encodeCfgResponse(*((Blob::Response_t<Blob::AMCfgData_t>*)msg));
+				cJSON* obj = JsonParser::getJsonFromResponse(*((Blob::Response_t<Blob::AMCfgData_t>*)msg));
 				if(obj){
 					char* sobj = cJSON_Print(obj);
 					cJSON_Delete(obj);
@@ -601,7 +601,7 @@ static void subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 				}
 			}
 			else if(msg_len == sizeof(Blob::AMCfgData_t)){
-				cJSON* obj = AMManager::encodeCfg(*((Blob::AMCfgData_t*)msg));
+				cJSON* obj = JsonParser::getJsonFromObj(*((Blob::AMCfgData_t*)msg));
 				if(obj){
 					char* sobj = cJSON_Print(obj);
 					cJSON_Delete(obj);
@@ -613,7 +613,7 @@ static void subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		}
 		else if(MQ::MQClient::isTokenRoot(topic, "stat/value")){
 			if(msg_len == sizeof(Blob::Response_t<Blob::AMStatData_t>)){
-				cJSON* obj = AMManager::encodeStatResponse(*((Blob::Response_t<Blob::AMStatData_t>*)msg));
+				cJSON* obj = JsonParser::getJsonFromResponse(*((Blob::Response_t<Blob::AMStatData_t>*)msg));
 				if(obj){
 					char* sobj = cJSON_Print(obj);
 					cJSON_Delete(obj);
@@ -622,7 +622,7 @@ static void subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 				}
 			}
 			else if(msg_len == sizeof(Blob::AMStatData_t)){
-				cJSON* obj = AMManager::encodeStat(*((Blob::AMStatData_t*)msg));
+				cJSON* obj = JsonParser::getJsonFromObj(*((Blob::AMStatData_t*)msg));
 				if(obj){
 					char* sobj = cJSON_Print(obj);
 					cJSON_Delete(obj);
@@ -634,7 +634,7 @@ static void subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		else if(MQ::MQClient::isTokenRoot(topic, "stat/boot")){
 			if(msg_len == sizeof(Blob::AMBootData_t)){
 				Blob::AMBootData_t* boot = (Blob::AMBootData_t*)msg;
-				cJSON* obj = AMManager::encodeBoot(*((Blob::AMBootData_t*)msg));
+				cJSON* obj = JsonParser::getJsonFromObj(*((Blob::AMBootData_t*)msg));
 				if(obj){
 					char* sobj = cJSON_Print(obj);
 					cJSON_Delete(obj);
