@@ -30,7 +30,7 @@ namespace Blob {
 
 /** Cadencia mínima y por defecto permitida de envío de medidas instantáneas en segundos (1min) */
 static const uint32_t AMMinMeasPeriod = 10;
-static const uint32_t AMDefaultMeasPeriod = 30;
+static const uint32_t AMDefaultMeasPeriod = 900;
 
 
 /** Número de registros de calibración para la medida y para el analizador */
@@ -211,7 +211,74 @@ struct __packed AMLoadData_t{
 	uint8_t outValue;
 };
 
-}
+}	// end namespace Blob
+
+
+namespace JSON {
+
+/**
+ * Codifica la configuración actual en un objeto JSON
+ * @param cfg Configuración
+ * @return Objeto JSON o NULL en caso de error
+ */
+cJSON* getJsonFromAMCfg(const Blob::AMCfgData_t& cfg);
+
+/**
+ * Codifica el estado actual en un objeto JSON
+ * @param stat Estado
+ * @return Objeto JSON o NULL en caso de error
+ */
+cJSON* getJsonFromAMStat(const Blob::AMStatData_t& stat);
+
+/**
+ * Codifica el estado de arranque en un objeto JSON
+ * @param boot Estado de arranque
+ * @return Objeto JSON o NULL en caso de error
+ */
+cJSON* getJsonFromAMBoot(const Blob::AMBootData_t& boot);
+
+/**
+ * Codifica el % de activación en un objeto JSON
+ * @param stat Estado
+ * @return Objeto JSON o NULL en caso de error
+ */
+cJSON* getJsonFromAMLoad(const Blob::AMLoadData_t& data);
+
+/**
+ * Decodifica el mensaje JSON en un objeto de configuración
+ * @param obj Recibe el objeto decodificado
+ * @param json Objeto JSON a decodificar
+ * @return keys Parámetros decodificados o 0 en caso de error
+ */
+uint32_t getAMCfgFromJson(Blob::AMCfgData_t &obj, cJSON* json);
+
+/**
+ * Decodifica el mensaje JSON en un objeto de estado
+ * @param obj Recibe el objeto decodificado
+ * @param json Objeto JSON a decodificar
+ * @return keys Parámetros decodificados o 0 en caso de error
+ */
+uint32_t getAMStatFromJson(Blob::AMStatData_t &obj, cJSON* json);
+
+/**
+ * Decodifica el mensaje JSON en un objeto de arranque
+ * @param obj Recibe el objeto decodificado
+ * @param json Objeto JSON a decodificar
+ * @return keys Parámetros decodificados o 0 en caso de error
+ */
+uint32_t getAMBootFromJson(Blob::AMBootData_t &obj, cJSON* json);
+
+/**
+ * Decodifica el mensaje JSON en un objeto de % de activación
+ * @param obj Recibe el objeto decodificado
+ * @param json Objeto JSON a decodificar
+ * @return keys Parámetros decodificados o 0 en caso de error
+ */
+uint32_t getAMLoadFromJson(Blob::AMLoadData_t &obj, cJSON* json);
+
+}	// end namespace JSON
+
+
 
 
 
