@@ -78,6 +78,8 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				}
         	}
 
+        	// marca como componente iniciado
+        	_ready = true;
             return State::HANDLED;
         }
 
