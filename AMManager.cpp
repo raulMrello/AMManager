@@ -210,20 +210,23 @@ void AMManager::_measure(bool enable_notif) {
 		char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 		MBED_ASSERT(pub_topic);
 		sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
-
+		Blob::NotificationData_t<Blob::AMStatData_t> *notif = new Blob::NotificationData_t<Blob::AMStatData_t>(_amdata.stat);
+		MBED_ASSERT(notif);
 		if(_json_supported){
-			cJSON* jstat = JsonParser::getJsonFromObj(_amdata.stat);
+			cJSON* jstat = JsonParser::getJsonFromNotification(*notif);
 			if(jstat){
 				char* jmsg = cJSON_Print(jstat);
 				cJSON_Delete(jstat);
 				MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
 				Heap::memFree(jmsg);
+				delete(notif);
 				Heap::memFree(pub_topic);
 				return;
 			}
 		}
 
-		MQ::MQClient::publish(pub_topic, &_amdata.stat, sizeof(Blob::AMStatData_t), &_publicationCb);
+		MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<Blob::AMStatData_t>), &_publicationCb);
+		delete(notif);
 		Heap::memFree(pub_topic);
 	}
 }

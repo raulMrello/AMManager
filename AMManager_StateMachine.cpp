@@ -238,20 +238,23 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 			MBED_ASSERT(pub_topic);
 			sprintf(pub_topic, "stat/boot/%s", _pub_topic_base);
-
+			Blob::NotificationData_t<Blob::AMBootData_t> *notif = new Blob::NotificationData_t<Blob::AMBootData_t>(_amdata);
+			MBED_ASSERT(notif);
 			if(_json_supported){
-				cJSON* jboot = JsonParser::getJsonFromObj<Blob::AMBootData_t>(_amdata);
+				cJSON* jboot = JsonParser::getJsonFromNotification(*notif);
 				if(jboot){
 					char* jmsg = cJSON_Print(jboot);
 					cJSON_Delete(jboot);
 					MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
 					Heap::memFree(jmsg);
+					delete(notif);
 					Heap::memFree(pub_topic);
 					return State::HANDLED;
 				}
 			}
 
-			MQ::MQClient::publish(pub_topic, &_amdata, sizeof(Blob::AMBootData_t), &_publicationCb);
+			MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<Blob::AMBootData_t>), &_publicationCb);
+			delete(notif);
 			Heap::memFree(pub_topic);
 
 			// una vez notificado el boot inicia el proceso de medida
