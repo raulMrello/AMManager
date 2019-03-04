@@ -9,7 +9,7 @@
 
 
 static const char* _MODULE_ = "[AMM]...........";
-#define _EXPR_	(_defdbg && !IS_ISR())
+#define _EXPR_	(!IS_ISR())
 
 
 //------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// si no hay errores, actualiza la configuración
         	if(req->_error.code == Blob::ErrOK){
-        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Iniciando actualización");
+        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando actualización");
 				_updateConfig(req->data, req->keys, req->_error);
         	}
         	// si hay errores en el mensaje o en la actualización, devuelve resultado sin hacer nada
@@ -129,7 +129,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// si todo ha ido bien, almacena en el sistema de ficheros
         	saveConfig();
 
-        	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Config actualizada");
+        	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Config actualizada");
 
         	// al cambiar la configuración, cambia la cadencia de envío de medidas
         	stopMeasureWork();
@@ -137,7 +137,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// si está habilitada la notificación de actualización, lo notifica
         	if((_amdata.cfg.updFlagMask & Blob::EnableAMCfgUpdNotif) != 0){
-        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualización");
+        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Notificando actualización");
 				char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 				MBED_ASSERT(pub_topic);
 				sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
@@ -198,6 +198,8 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// libera la memoria asignada al topic de publicación
 			Heap::memFree(pub_topic);
+
+			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con configuracion solicitada");
             return State::HANDLED;
         }
 
@@ -230,6 +232,8 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// libera la memoria asignada al topic de publicación
 			Heap::memFree(pub_topic);
+
+			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
             return State::HANDLED;
         }
 
@@ -269,7 +273,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	Blob::AMLoadData_t ld = *(Blob::AMLoadData_t*)st_msg->msg;
         	if(ld.outValue != _load_data.outValue){
         		_load_data = ld;
-        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Carga actualizada al %d",_load_data.outValue);
+        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Carga actualizada al %d",_load_data.outValue);
         		// planifica una nueva notificación de medida en 3 segundos
         		_instant_meas_counter = SecondsToForcedNotifOnLoadChange;
         	}
