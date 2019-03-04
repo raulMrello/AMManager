@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------------
 
 static const char* _MODULE_ = "[AMM]...........";
-#define _EXPR_	(_defdbg && !IS_ISR())
+#define _EXPR_	(!IS_ISR())
 
 
 namespace JSON{
@@ -176,6 +176,10 @@ cJSON* getJsonFromAMCfg(const Blob::AMCfgData_t& cfg){
 	}
 	cJSON_AddItemToObject(calibData, JsonParser::p_measRegs, regs);
 	cJSON_AddItemToObject(energy, JsonParser::p_calibData, calibData);
+
+	// key: verbosity
+	cJSON_AddNumberToObject(energy, JsonParser::p_verbosity, cfg.verbosity);
+
 	return energy;
 }
 
@@ -283,6 +287,10 @@ uint32_t getAMCfgFromJson(Blob::AMCfgData_t &cfg, cJSON* json){
 	if((obj = cJSON_GetObjectItem(json, JsonParser::p_measPeriod)) != NULL){
 		cfg.measPeriod = (uint32_t)obj->valueint;
 		keys |= Blob::AMKeyCfgMeas;
+	}
+	if((obj = cJSON_GetObjectItem(json,JsonParser::p_verbosity)) != NULL){
+		cfg.verbosity = obj->valueint;
+		keys |= Blob::AMKeyCfgVerbosity;
 	}
 
 	//key: minmaxData

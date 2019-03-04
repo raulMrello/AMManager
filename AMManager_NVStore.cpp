@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------------
 
 static const char* _MODULE_ = "[AMM]...........";
-#define _EXPR_	(_defdbg && !IS_ISR())
+#define _EXPR_	(!IS_ISR())
 
 // Valores de referencia de Manuel Ariza
 //------------------------------------------------------------------------------------
@@ -70,6 +70,7 @@ void AMManager::setDefaultConfig(){
 	// por defecto sólo notifica las medidas instantáneas cada 15min
 	_amdata.cfg.evtFlagMask = Blob::AMInstantMeasureEvt;
 	_amdata.cfg.measPeriod = Blob::AMDefaultMeasPeriod;
+	_amdata.cfg.verbosity = ESP_LOG_DEBUG;
 
 	// precarga los valores de calibración por defecto
 	for(int i=0;i<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i++){
@@ -108,7 +109,7 @@ void AMManager::restoreConfig(){
 	_amdata.stat.flags = Blob::AMNoEvents;
 
 	// inicia la recuperación de datos
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recuperando datos de memoria NV...");
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Recuperando datos de memoria NV...");
 	bool success = true;
 	if(!restoreParameter("AMUpdFlags", &_amdata.cfg.updFlagMask, sizeof(uint32_t), NVSInterface::TypeUint32)){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo UpdFlags!");
@@ -134,10 +135,14 @@ void AMManager::restoreConfig(){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo Checksum!");
 		success = false;
 	}
+	if(!restoreParameter("AMVerbosity", &_amdata.cfg.verbosity, sizeof(esp_log_level_t), NVSInterface::TypeUint32)){
+		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo verbosity!");
+		success = false;
+	}
 
 	if(success){
 		// chequea el checksum crc32 y después la integridad de los datos
-		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Datos recuperados. Chequeando integridad...");
+		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Datos recuperados. Chequeando integridad...");
 		if(Blob::getCRC32(&_amdata.cfg, sizeof(Blob::AMCfgData_t)) != crc){
 			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_CFG. Ha fallado el checksum");
 		}
@@ -146,6 +151,7 @@ void AMManager::restoreConfig(){
     	}
     	else{
     		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Check de integridad OK!");
+    		esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
     		return;
     	}
 	}
@@ -156,7 +162,7 @@ void AMManager::restoreConfig(){
 
 //------------------------------------------------------------------------------------
 void AMManager::saveConfig(){
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Guardando datos en memoria NV...");
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Guardando datos en memoria NV...");
 	if(!saveParameter("AMUpdFlags", &_amdata.cfg.updFlagMask, sizeof(uint32_t), NVSInterface::TypeUint32)){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando UpdFlags!");
 	}
@@ -171,6 +177,12 @@ void AMManager::saveConfig(){
 	}
 	if(!saveParameter("AMCalibData", &_amdata.cfg.calibData, sizeof(Blob::AMCalibData_t), NVSInterface::TypeBlob)){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando AstData!");
+	}
+	if(!saveParameter("AMVerbosity", &_amdata.cfg.verbosity, sizeof(esp_log_level_t), NVSInterface::TypeUint32)){
+		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando verbosity!");
+	}
+	else{
+		esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
 	}
 	uint32_t crc = Blob::getCRC32(&_amdata.cfg, sizeof(Blob::AMCfgData_t));
 	if(!saveParameter("AMChecksum", &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
@@ -226,6 +238,9 @@ void AMManager::_updateConfig(const Blob::AMCfgData_t& cfg, uint32_t keys, Blob:
 	if(keys & Blob::AMKeyCfgCalMea){
 		for(int i=0;i<Blob::AMCalibRegCount;i++)
 			_amdata.cfg.calibData.measRegs[i] = cfg.calibData.measRegs[i];
+	}
+	if(keys & Blob::AMKeyCfgVerbosity){
+		_amdata.cfg.verbosity = cfg.verbosity;
 	}
 _updateConfigExit:
 	strcpy(err.descr, Blob::errList[err.code]);

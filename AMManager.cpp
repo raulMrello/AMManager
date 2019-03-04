@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------------
 
 static const char* _MODULE_ = "[AMM]...........";
-#define _EXPR_	(_defdbg && !IS_ISR())
+#define _EXPR_	(!IS_ISR())
 
 
  
@@ -28,6 +28,13 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg) : ActiveModul
 	#if AMMANAGER_ENABLE_JSON_SUPPORT == 1
 	_json_supported = true;
 	#endif
+
+    if(defdbg){
+    	esp_log_level_set(_MODULE_, ESP_LOG_DEBUG);
+    }
+    else{
+    	esp_log_level_set(_MODULE_, ESP_LOG_WARN);
+    }
 
 	// referencia el driver a través de la interfaz que expone
 	_driver = driver;
@@ -130,7 +137,7 @@ void AMManager::_measure(bool enable_notif) {
 		_amdata.stat.measureValues.msPow = value;
 	}
 
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Realizando medida... stat=%x", _amdata.stat.flags);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Realizando medida... stat=%x", _amdata.stat.flags);
 
 	// chequeo cada una de las alarmas:
 	bool alarm_notif = false;

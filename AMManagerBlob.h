@@ -92,8 +92,9 @@ enum AMKeyNames{
  	AMKeyCfgMnxFreq		= (1 << 10),
  	AMKeyCfgCalMetr		= (1 << 11),
  	AMKeyCfgCalMea		= (1 << 12),
+	AMKeyCfgVerbosity	= (1 << 13),
 	//
-	AMKeyCfgAll			= 0x1FFF,
+	AMKeyCfgAll			= 0x3FFF,
 };
 
 
@@ -142,6 +143,7 @@ struct __packed AMCalibData_t{
    * 	@var measPeriod Cadencia de envío de medidas instantáneas (en segundos)
    * 	@var minmaxData Datos de rangos mín-max.
    * 	@var calibData Datos de calibración
+   * 	@var verbosity Nivel de visualización de trazas de depuración
    */
 struct __packed AMCfgData_t{
 	AMUpdFlags updFlagMask;
@@ -149,6 +151,7 @@ struct __packed AMCfgData_t{
 	uint32_t measPeriod;
 	AMMinMaxData_t minmaxData;
   	AMCalibData_t calibData;
+	esp_log_level_t verbosity;
 };
 
 
