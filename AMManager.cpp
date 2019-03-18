@@ -103,38 +103,45 @@ void AMManager::_measure(bool enable_notif) {
 	double value;
 	uint32_t multiplier = 1000;
 
-	// obtiene las medidas de energía
-	if(_driver->getImportEnergy(&value) == AMDriver::Success){
-		_amdata.stat.energyValues.active = value;
-	}
-	if(_driver->getExportEnergy(&value) == AMDriver::Success){
-		_amdata.stat.energyValues.reactive = value;
-	}
+	AMDriver::ElectricParams eparam[1];
+	uint32_t keys[1];
 
-	// obtiene las medidas instantáneas
-	if(_driver->getLineCurrent(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.current = value;
-	}
-	if(_driver->getLineVoltage(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.voltage = value;
-	}
-	if(_driver->getActivePower(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.aPow = value;
-	}
-	if(_driver->getReactivePower(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.rPow = value;
-	}
-	if(_driver->getFrequency(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.freq = value;
-	}
-	if(_driver->getPowerFactor(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.pfactor = value;
-	}
-	if(_driver->getPhase(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.phase = value;
-	}
-	if(_driver->getMeanAparentPower(&value) == AMDriver::Success){
-		_amdata.stat.measureValues.msPow = value;
+	// lee todos los parámetros eléctricos monofásicos
+	if(_driver->getElectricParams(eparam, keys, AMDriver::LineL1) == AMDriver::Success){
+		// visualiza los parámetros leídos
+		if(keys[0] & AMDriver::ElecKey_Voltage){
+			_amdata.stat.measureValues.voltage = eparam[0].voltage;
+		}
+		if(keys[0] & AMDriver::ElecKey_Current){
+			_amdata.stat.measureValues.current = eparam[0].current;
+		}
+		if(keys[0] & AMDriver::ElecKey_ActivePow){
+			_amdata.stat.measureValues.aPow = eparam[0].aPow;
+		}
+		if(keys[0] & AMDriver::ElecKey_ReactivePow){
+			_amdata.stat.measureValues.rPow = eparam[0].rPow;
+		}
+		if(keys[0] & AMDriver::ElecKey_ApparentPow){
+			_amdata.stat.measureValues.msPow = eparam[0].mPow;
+		}
+		if(keys[0] & AMDriver::ElecKey_PowFactor){
+			_amdata.stat.measureValues.pfactor = eparam[0].pFactor;
+		}
+		if(keys[0] & AMDriver::ElecKey_THDAmpere){
+			DEBUG_TRACE_W(_EXPR_, _MODULE_, "THD-A NO IMPLEMENTADO");
+		}
+		if(keys[0] & AMDriver::ElecKey_THDVoltage){
+			DEBUG_TRACE_W(_EXPR_, _MODULE_, "THD-V NO IMPLEMENTADO");
+		}
+		if(keys[0] & AMDriver::ElecKey_Frequency){
+			_amdata.stat.measureValues.freq = eparam[0].freq;
+		}
+		if(keys[0] & AMDriver::ElecKey_ImportEnergy){
+			_amdata.stat.energyValues.active = eparam[0].impEnergy;
+		}
+		if(keys[0] & AMDriver::ElecKey_ExportEnergy){
+			_amdata.stat.energyValues.reactive = eparam[0].expEnergy;
+		}
 	}
 
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Realizando medida... stat=%x", _amdata.stat.flags);
