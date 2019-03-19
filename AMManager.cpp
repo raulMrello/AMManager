@@ -38,6 +38,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg) : ActiveModul
 
 	// referencia el driver a través de la interfaz que expone
 	_driver = driver;
+	_obj_version = _driver->getVersion();
 
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -128,19 +129,19 @@ void AMManager::_measure(bool enable_notif) {
 			_amdata.stat.measureValues.pfactor = eparam[0].pFactor;
 		}
 		if(keys[0] & AMDriver::ElecKey_THDAmpere){
-			DEBUG_TRACE_W(_EXPR_, _MODULE_, "THD-A NO IMPLEMENTADO");
+			_amdata.stat.measureValues.thdA = eparam[0].thdAmp;
 		}
 		if(keys[0] & AMDriver::ElecKey_THDVoltage){
-			DEBUG_TRACE_W(_EXPR_, _MODULE_, "THD-V NO IMPLEMENTADO");
+			_amdata.stat.measureValues.thdV = eparam[0].thdVolt;
 		}
 		if(keys[0] & AMDriver::ElecKey_Frequency){
 			_amdata.stat.measureValues.freq = eparam[0].freq;
 		}
-		if(keys[0] & AMDriver::ElecKey_ImportEnergy){
-			_amdata.stat.energyValues.active = eparam[0].impEnergy;
+		if(keys[0] & AMDriver::ElecKey_ActiveEnergy){
+			_amdata.stat.energyValues.active = eparam[0].aEnergy;
 		}
-		if(keys[0] & AMDriver::ElecKey_ExportEnergy){
-			_amdata.stat.energyValues.reactive = eparam[0].expEnergy;
+		if(keys[0] & AMDriver::ElecKey_ReactiveEnergy){
+			_amdata.stat.energyValues.reactive = eparam[0].rEnergy;
 		}
 	}
 
@@ -193,6 +194,18 @@ void AMManager::_measure(bool enable_notif) {
 						Blob::AMFrequencyOverLimitEvt,
 						Blob::AMFrequencyBelowLimitEvt,
 						Blob::AMFrequencyInRangeEvt);
+		// chequeo THD-A
+		alarmChecking(	alarm_notif,
+						_amdata.stat.measureValues.thdA, _amdata.cfg.minmaxData.thdA,
+						Blob::AMThdAOverLimitEvt,
+						Blob::AMThdABelowLimitEvt,
+						Blob::AMThdAInRangeEvt);
+		// chequeo THD-V
+		alarmChecking(	alarm_notif,
+						_amdata.stat.measureValues.thdV, _amdata.cfg.minmaxData.thdV,
+						Blob::AMThdVOverLimitEvt,
+						Blob::AMThdVBelowLimitEvt,
+						Blob::AMThdVInRangeEvt);
 	}
 	//o si no hay carga activa
 	else{

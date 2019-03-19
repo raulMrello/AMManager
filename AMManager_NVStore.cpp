@@ -14,7 +14,7 @@
 static const char* _MODULE_ = "[AMM]...........";
 #define _EXPR_	(!IS_ISR())
 
-// Valores de referencia de Manuel Ariza
+// Valores de referencia de Manuel Ariza M90E26
 //------------------------------------------------------------------------------------
 const uint16_t AMManager::_meter_cal_values[]  = {
 	0x5678, //CalStart, 0x5678
@@ -48,7 +48,6 @@ const uint16_t AMManager::_meas_cal_values[]  = {
 	0x0000, //QoffsetN,
 	47332, //CSTwo,0xD294
 };
- 
 
 
 //------------------------------------------------------------------------------------
@@ -71,7 +70,13 @@ void AMManager::setDefaultConfig(){
 	_amdata.cfg.evtFlagMask = Blob::AMInstantMeasureEvt;
 	_amdata.cfg.measPeriod = Blob::AMDefaultMeasPeriod;
 	_amdata.cfg.verbosity = ESP_LOG_DEBUG;
-
+	strcpy(_amdata.version, _obj_version);
+	strcpy(_amdata.cfg.version, _obj_version);
+	strcpy(_amdata.cfg.minmaxData.version, _obj_version);
+	strcpy(_amdata.cfg.calibData.version, _obj_version);
+	strcpy(_amdata.stat.version, _obj_version);
+	strcpy(_amdata.stat.energyValues.version, _obj_version);
+	strcpy(_amdata.stat.measureValues.version, _obj_version);
 	// precarga los valores de calibración por defecto
 	for(int i=0;i<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i++){
 		_amdata.cfg.calibData.meterRegs[i] = _meter_cal_values[i];
@@ -95,6 +100,8 @@ void AMManager::setDefaultConfig(){
 	_amdata.cfg.minmaxData.rPow = {0, 15, 0.01};
 	_amdata.cfg.minmaxData.msPow = {0, 15, 0.01};
 	_amdata.cfg.minmaxData.freq = {49.7, 50.3, 0.1};
+	_amdata.cfg.minmaxData.thdA = {0.0, 1.0, 0.001};
+	_amdata.cfg.minmaxData.thdV = {0.0, 1.0, 0.001};
 
 	// guarda la configuración
 	saveConfig();
@@ -230,6 +237,12 @@ void AMManager::_updateConfig(const Blob::AMCfgData_t& cfg, uint32_t keys, Blob:
 	}
 	if(keys & Blob::AMKeyCfgMnxFreq){
 		_amdata.cfg.minmaxData.freq = cfg.minmaxData.freq;
+	}
+	if(keys & Blob::AMKeyCfgMnxThdA){
+		_amdata.cfg.minmaxData.thdA = cfg.minmaxData.thdA;
+	}
+	if(keys & Blob::AMKeyCfgMnxThdV){
+		_amdata.cfg.minmaxData.thdV = cfg.minmaxData.thdV;
 	}
 	if(keys & Blob::AMKeyCfgCalMetr){
 		for(int i=0;i<Blob::AMCalibRegCount;i++)

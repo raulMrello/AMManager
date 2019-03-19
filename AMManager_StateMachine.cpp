@@ -45,8 +45,12 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando driver!");
         	while(!_driver->ready()){
         		// inicia con la calibración de medida por defecto
-        		//_driver->initEnergyIC(NULL, 0, NULL, 0);
-        		_driver->initEnergyIC((uint16_t*)_meter_cal_values, Blob::AMCalibRegCount, (uint16_t*)_meas_cal_values, Blob::AMCalibRegCount);
+        		if(strcmp(_obj_version, AM_OBJ_VERSION_DEFAULT)==0){
+        			_driver->initEnergyIC();
+        		}
+        		else if(strcmp(_obj_version, AM_OBJ_VERSION_M90E26)==0){
+        			_driver->initEnergyIC((uint16_t*)_meter_cal_values, Blob::AMCalibRegCount, (uint16_t*)_meas_cal_values, Blob::AMCalibRegCount);
+        		}
         		if(!_driver->ready()){
         			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_DRV. Reintentando en 1sec");
         		}
@@ -56,12 +60,14 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// inicializa el estado de las medidas realizando una medida inicial pero sin notificarla
         	_measure(false);
 
-        	// obtiene los parámetros de calibración
-        	if(_driver->getMeterCalib(_amdata.cfg.calibData.meterRegs, Blob::AMCalibRegCount) != 0){
-        		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeterCalib");
-        	}
-        	if(_driver->getMeasureCalib(_amdata.cfg.calibData.measRegs, Blob::AMCalibRegCount) != 0){
-        		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeasureCalib");
+			// obtiene los parámetros de calibración en caso del M90E26
+        	if(strcmp(_obj_version, AM_OBJ_VERSION_M90E26)==0){
+				if(_driver->getMeterCalib(_amdata.cfg.calibData.meterRegs, Blob::AMCalibRegCount) != 0){
+					DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeterCalib");
+				}
+				if(_driver->getMeasureCalib(_amdata.cfg.calibData.measRegs, Blob::AMCalibRegCount) != 0){
+					DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeasureCalib");
+				}
         	}
 
         	// chequea el estado del driver para ver si está en estado de error

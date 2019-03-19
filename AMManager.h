@@ -124,6 +124,9 @@ class AMManager : public ActiveModule {
     /** Flag de control para el soporte de objetos json */
     bool _json_supported;
 
+    /** Versión de los objetos */
+    const char* _obj_version;
+
     /** Parámetros de calibración */
     static const uint16_t _meter_cal_values[];
     static const uint16_t _meas_cal_values[];

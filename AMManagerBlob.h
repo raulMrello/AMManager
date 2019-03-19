@@ -15,7 +15,10 @@
 
 #include "Blob.h"
 #include "mbed.h"
-  
+
+
+#define AM_OBJ_VERSION_DEFAULT	""
+#define AM_OBJ_VERSION_M90E26	"m90e26"
 
 namespace Blob {
 
@@ -39,6 +42,10 @@ static const uint16_t AMCalibRegCount = 16;
 
 /** Tamaño máximo de los parámetros textuales */
 static const uint16_t AMTextParamLength = 32;
+
+
+/** Tamaño máximo del nombre de las versiones de los objetos */
+static const uint8_t AMVersionLength = 16;
 
 
  /** Flags de evento que utiliza AMManager para notificar un cambio de estado o alarma
@@ -69,7 +76,13 @@ static const uint16_t AMTextParamLength = 32;
 	 AMFrequencyOverLimitEvt	= (1 << 21),	//!< Evento al superar el límite superior (frecuencia)
 	 AMFrequencyBelowLimitEvt	= (1 << 22),	//!< Evento al superar el límite inferior (frecuencia)
 	 AMFrequencyInRangeEvt 		= (1 << 23),	//!< Evento al volver a entrar en rango (frecuencia)
-	 AMInstantMeasureEvt 		= (1 << 24),	//!< Evento al realizar una medida
+	 AMThdAOverLimitEvt			= (1 << 24),	//!< Evento al superar el límite superior (THD-A)
+	 AMThdABelowLimitEvt		= (1 << 25),	//!< Evento al superar el límite inferior (THD-A)
+	 AMThdAInRangeEvt 			= (1 << 26),	//!< Evento al volver a entrar en rango (THD-A)
+	 AMThdVOverLimitEvt			= (1 << 27),	//!< Evento al superar el límite superior (THD-V)
+	 AMThdVBelowLimitEvt		= (1 << 28),	//!< Evento al superar el límite inferior (THD-V)
+	 AMThdVInRangeEvt 			= (1 << 29),	//!< Evento al volver a entrar en rango (THD-V)
+	 AMInstantMeasureEvt 		= (1 << 30),	//!< Evento al realizar una medida
 	 /* elemento inválido */
 	 AMInvalidEvt				= (1 << 31)
   };
@@ -90,11 +103,14 @@ enum AMKeyNames{
  	AMKeyCfgMnxRpow		= (1 << 8),
  	AMKeyCfgMnxMpow		= (1 << 9),
  	AMKeyCfgMnxFreq		= (1 << 10),
- 	AMKeyCfgCalMetr		= (1 << 11),
- 	AMKeyCfgCalMea		= (1 << 12),
-	AMKeyCfgVerbosity	= (1 << 13),
+ 	AMKeyCfgMnxThdA		= (1 << 11),
+ 	AMKeyCfgMnxThdV		= (1 << 12),
+ 	AMKeyCfgCalMetr		= (1 << 13),
+ 	AMKeyCfgCalMea		= (1 << 14),
+	AMKeyCfgVerbosity	= (1 << 15),
+	AMKeyCfgVersion		= (1 << 16),
 	//
-	AMKeyCfgAll			= 0x3FFF,
+	AMKeyCfgAll			= 0x1FFFF,
 };
 
 
@@ -114,7 +130,10 @@ struct __packed AMMinMax_t{
 	 double max;
 	 double thres;
  };
+
+
 struct __packed AMMinMaxData_t{
+	char version[AMVersionLength];
  	AMMinMax_t voltage;
  	AMMinMax_t current;
  	AMMinMax_t phase;
@@ -123,6 +142,8 @@ struct __packed AMMinMaxData_t{
  	AMMinMax_t aPow;
  	AMMinMax_t rPow;
  	AMMinMax_t freq;
+ 	AMMinMax_t thdA;
+ 	AMMinMax_t thdV;
 };
 
 
@@ -131,6 +152,7 @@ struct __packed AMMinMaxData_t{
  * 	@var measRegs Valores de calibración de los registros de medida
  */
 struct __packed AMCalibData_t{
+	char version[AMVersionLength];
 	uint16_t meterRegs[AMCalibRegCount];
 	uint16_t measRegs[AMCalibRegCount];
 };
@@ -146,11 +168,12 @@ struct __packed AMCalibData_t{
    * 	@var verbosity Nivel de visualización de trazas de depuración
    */
 struct __packed AMCfgData_t{
+	char version[AMVersionLength];
 	AMUpdFlags updFlagMask;
 	AMEvtFlags evtFlagMask;
 	uint32_t measPeriod;
 	AMMinMaxData_t minmaxData;
-  	AMCalibData_t calibData;
+	AMCalibData_t calibData;
 	esp_log_level_t verbosity;
 };
 
@@ -160,6 +183,7 @@ struct __packed AMCfgData_t{
  * 	@var reactive Energía reactiva en KW
  */
 struct __packed AMEnergyValues_t{
+	char version[AMVersionLength];
 	int32_t active;
 	int32_t reactive;
 };
@@ -174,8 +198,11 @@ struct __packed AMEnergyValues_t{
  * 	@var pfactor Factor de potencia
  * 	@var phase Ángulo de fase V-I (º)
  * 	@var msPow Potencia aparente media (KVA)
+ * 	@var thdA Distorsión harmónica total de corriente
+ * 	@var thdV Distorsión harmónicoa total de tensión
  */
 struct __packed AMMeasureValues_t{
+	char version[AMVersionLength];
 	double current;
 	double aPow;
 	double rPow;
@@ -184,6 +211,8 @@ struct __packed AMMeasureValues_t{
 	double pfactor;
 	double phase;
 	double msPow;
+	double thdA;
+	double thdV;
 };
 
 
@@ -194,6 +223,7 @@ struct __packed AMMeasureValues_t{
  * 	@var measureValues Valores de medida de potencia
  */
 struct __packed AMStatData_t{
+	char version[AMVersionLength];
 	uint32_t flags;
 	AMEnergyValues_t energyValues;
 	AMMeasureValues_t measureValues;
@@ -203,6 +233,7 @@ struct __packed AMStatData_t{
 /** Estructura de datos asociado al boot
  */
 struct __packed AMBootData_t{
+	char version[AMVersionLength];
 	AMCfgData_t cfg;
 	AMStatData_t stat;
 };

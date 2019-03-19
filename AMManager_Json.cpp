@@ -31,6 +31,10 @@ cJSON* getJsonFromAMCfg(const Blob::AMCfgData_t& cfg){
 	cJSON *calibData = NULL;
 	cJSON *regs = NULL;
 	cJSON *value = NULL;
+
+	// key: energy.version
+	cJSON_AddStringToObject(energy, JsonParser::p_version, cfg.version);
+
 	// key: energy.updFlags
 	cJSON_AddNumberToObject(energy, JsonParser::p_updFlags, cfg.updFlagMask);
 
@@ -45,6 +49,9 @@ cJSON* getJsonFromAMCfg(const Blob::AMCfgData_t& cfg){
 		cJSON_Delete(energy);
 		return NULL;
 	}
+
+	// key: minmaxData.version
+	cJSON_AddStringToObject(minmaxData, JsonParser::p_version, cfg.minmaxData.version);
 
 	// key: minmaxData.voltage
 	if((value=cJSON_CreateObject()) == NULL){
@@ -134,6 +141,30 @@ cJSON* getJsonFromAMCfg(const Blob::AMCfgData_t& cfg){
 	cJSON_AddNumberToObject(value, JsonParser::p_thres, cfg.minmaxData.freq.thres);
 	cJSON_AddItemToObject(minmaxData, JsonParser::p_freq, value);
 
+	// key: minmaxData.thdA
+	if((value=cJSON_CreateObject()) == NULL){
+		cJSON_Delete(minmaxData);
+		cJSON_Delete(energy);
+		return NULL;
+	}
+	if(strcmp(cfg.minmaxData.version, AM_OBJ_VERSION_DEFAULT)==0){
+		cJSON_AddNumberToObject(value, JsonParser::p_min, cfg.minmaxData.thdA.min);
+		cJSON_AddNumberToObject(value, JsonParser::p_max, cfg.minmaxData.thdA.max);
+		cJSON_AddNumberToObject(value, JsonParser::p_thres, cfg.minmaxData.thdA.thres);
+		cJSON_AddItemToObject(minmaxData, JsonParser::p_thdA, value);
+
+		// key: minmaxData.thdV
+		if((value=cJSON_CreateObject()) == NULL){
+			cJSON_Delete(minmaxData);
+			cJSON_Delete(energy);
+			return NULL;
+		}
+		cJSON_AddNumberToObject(value, JsonParser::p_min, cfg.minmaxData.thdV.min);
+		cJSON_AddNumberToObject(value, JsonParser::p_max, cfg.minmaxData.thdV.max);
+		cJSON_AddNumberToObject(value, JsonParser::p_thres, cfg.minmaxData.thdV.thres);
+		cJSON_AddItemToObject(minmaxData, JsonParser::p_thdV, value);
+}
+
 	cJSON_AddItemToObject(energy, JsonParser::p_minmaxData, minmaxData);
 
 	// key: calibData
@@ -142,39 +173,45 @@ cJSON* getJsonFromAMCfg(const Blob::AMCfgData_t& cfg){
 		return NULL;
 	}
 
-	// key: calibData.meterRegs
-	if((regs=cJSON_CreateArray()) == NULL){
-		cJSON_Delete(calibData);
-		cJSON_Delete(energy);
-		return NULL;
-	}
-	for(int i=0; i < Blob::AMCalibRegCount; i++){
-		if((value = cJSON_CreateNumber(cfg.calibData.meterRegs[i])) == NULL){
-			cJSON_Delete(regs);
-			cJSON_Delete(calibData);
-			cJSON_Delete(energy);
-			return NULL;
-		}
-		cJSON_AddItemToArray(regs, value);
-	}
-	cJSON_AddItemToObject(calibData, JsonParser::p_meterRegs, regs);
+	// key: calibData.version
+	cJSON_AddStringToObject(calibData, JsonParser::p_version, cfg.calibData.version);
 
-	// key: calibData.measRegs
-	if((regs=cJSON_CreateArray()) == NULL){
-		cJSON_Delete(calibData);
-		cJSON_Delete(energy);
-		return NULL;
-	}
-	for(int i=0; i < Blob::AMCalibRegCount; i++){
-		if((value = cJSON_CreateNumber(cfg.calibData.measRegs[i])) == NULL){
-			cJSON_Delete(regs);
+	if(strcmp(cfg.calibData.version, AM_OBJ_VERSION_M90E26)==0){
+		// key: calibData.meterRegs
+		if((regs=cJSON_CreateArray()) == NULL){
 			cJSON_Delete(calibData);
 			cJSON_Delete(energy);
 			return NULL;
 		}
-		cJSON_AddItemToArray(regs, value);
+		for(int i=0; i < Blob::AMCalibRegCount; i++){
+			if((value = cJSON_CreateNumber(cfg.calibData.meterRegs[i])) == NULL){
+				cJSON_Delete(regs);
+				cJSON_Delete(calibData);
+				cJSON_Delete(energy);
+				return NULL;
+			}
+			cJSON_AddItemToArray(regs, value);
+		}
+		cJSON_AddItemToObject(calibData, JsonParser::p_meterRegs, regs);
+
+		// key: calibData.measRegs
+		if((regs=cJSON_CreateArray()) == NULL){
+			cJSON_Delete(calibData);
+			cJSON_Delete(energy);
+			return NULL;
+		}
+		for(int i=0; i < Blob::AMCalibRegCount; i++){
+			if((value = cJSON_CreateNumber(cfg.calibData.measRegs[i])) == NULL){
+				cJSON_Delete(regs);
+				cJSON_Delete(calibData);
+				cJSON_Delete(energy);
+				return NULL;
+			}
+			cJSON_AddItemToArray(regs, value);
+		}
+		cJSON_AddItemToObject(calibData, JsonParser::p_measRegs, regs);
 	}
-	cJSON_AddItemToObject(calibData, JsonParser::p_measRegs, regs);
+
 	cJSON_AddItemToObject(energy, JsonParser::p_calibData, calibData);
 
 	// key: verbosity
@@ -193,6 +230,9 @@ cJSON* getJsonFromAMStat(const Blob::AMStatData_t& stat) {
 		return NULL;
 	}
 
+	// key: version
+	cJSON_AddStringToObject(energy, JsonParser::p_version, stat.version);
+
 	// key: flags
 	cJSON_AddNumberToObject(energy, JsonParser::p_flags, stat.flags);
 
@@ -201,6 +241,7 @@ cJSON* getJsonFromAMStat(const Blob::AMStatData_t& stat) {
 		cJSON_Delete(energy);
 		return NULL;
 	}
+	cJSON_AddStringToObject(value, JsonParser::p_version, stat.energyValues.version);
 	cJSON_AddNumberToObject(value, JsonParser::p_active, stat.energyValues.active);
 	cJSON_AddNumberToObject(value, JsonParser::p_reactive, stat.energyValues.reactive);
 	cJSON_AddItemToObject(energy, JsonParser::p_energyValues, value);
@@ -210,6 +251,7 @@ cJSON* getJsonFromAMStat(const Blob::AMStatData_t& stat) {
 		cJSON_Delete(energy);
 		return NULL;
 	}
+	cJSON_AddStringToObject(value, JsonParser::p_version, stat.measureValues.version);
 	cJSON_AddNumberToObject(value, JsonParser::p_voltage, stat.measureValues.voltage);
 	cJSON_AddNumberToObject(value, JsonParser::p_current, stat.measureValues.current);
 	cJSON_AddNumberToObject(value, JsonParser::p_phase, stat.measureValues.phase);
@@ -218,6 +260,10 @@ cJSON* getJsonFromAMStat(const Blob::AMStatData_t& stat) {
 	cJSON_AddNumberToObject(value, JsonParser::p_rPow, stat.measureValues.rPow);
 	cJSON_AddNumberToObject(value, JsonParser::p_msPow, stat.measureValues.msPow);
 	cJSON_AddNumberToObject(value, JsonParser::p_freq, stat.measureValues.freq);
+	if(strcmp(stat.measureValues.version, AM_OBJ_VERSION_DEFAULT)==0){
+		cJSON_AddNumberToObject(value, JsonParser::p_thdA, stat.measureValues.thdA);
+		cJSON_AddNumberToObject(value, JsonParser::p_thdV, stat.measureValues.thdV);
+	}
 	cJSON_AddItemToObject(energy, JsonParser::p_measureValues, value);
 	return energy;
 }
@@ -230,6 +276,8 @@ cJSON* getJsonFromAMBoot(const Blob::AMBootData_t& boot){
 	if((energy=cJSON_CreateObject()) == NULL){
 		return NULL;
 	}
+
+	cJSON_AddStringToObject(energy, JsonParser::p_version, boot.version);
 
 	if((item = getJsonFromAMCfg(boot.cfg)) == NULL){
 		goto __encodeBoot_Err;
@@ -276,6 +324,10 @@ uint32_t getAMCfgFromJson(Blob::AMCfgData_t &cfg, cJSON* json){
 		return 0;
 	}
 
+	if((obj = cJSON_GetObjectItem(json,JsonParser::p_version)) != NULL){
+		strncpy(cfg.version, obj->valuestring, Blob::AMVersionLength-1);
+		keys |= Blob::AMKeyCfgVersion;
+	}
 	if((obj = cJSON_GetObjectItem(json,JsonParser::p_updFlags)) != NULL){
 		cfg.updFlagMask = (Blob::AMUpdFlags)obj->valueint;
 		keys |= Blob::AMKeyCfgUpd;
@@ -295,6 +347,9 @@ uint32_t getAMCfgFromJson(Blob::AMCfgData_t &cfg, cJSON* json){
 
 	//key: minmaxData
 	if((minmaxData = cJSON_GetObjectItem(json, JsonParser::p_minmaxData)) != NULL){
+		if((obj = cJSON_GetObjectItem(minmaxData,JsonParser::p_version)) != NULL){
+			strncpy(cfg.minmaxData.version, obj->valuestring, Blob::AMVersionLength-1);
+		}
 		//key: minmaxData.voltage
 		if((value = cJSON_GetObjectItem(minmaxData, JsonParser::p_voltage)) != NULL){
 			if((obj = cJSON_GetObjectItem(value, JsonParser::p_min)) != NULL){
@@ -407,25 +462,59 @@ uint32_t getAMCfgFromJson(Blob::AMCfgData_t &cfg, cJSON* json){
 			keys |= Blob::AMKeyCfgMnxFreq;
 		}
 
+		if(strcmp(cfg.minmaxData.version, AM_OBJ_VERSION_DEFAULT)==0){
+			//key: minmaxData.thdA
+			if((value = cJSON_GetObjectItem(minmaxData, JsonParser::p_thdA)) != NULL){
+				if((obj = cJSON_GetObjectItem(value, JsonParser::p_min)) != NULL){
+					cfg.minmaxData.thdA.min = obj->valuedouble;
+				}
+				if((obj = cJSON_GetObjectItem(value, JsonParser::p_max)) != NULL){
+					cfg.minmaxData.thdA.max = obj->valuedouble;
+				}
+				if((obj = cJSON_GetObjectItem(value, JsonParser::p_thres)) != NULL){
+					cfg.minmaxData.thdA.thres = obj->valuedouble;
+				}
+				keys |= Blob::AMKeyCfgMnxThdA;
+			}
+
+			//key: minmaxData.thdV
+			if((value = cJSON_GetObjectItem(minmaxData, JsonParser::p_thdV)) != NULL){
+				if((obj = cJSON_GetObjectItem(value, JsonParser::p_min)) != NULL){
+					cfg.minmaxData.thdV.min = obj->valuedouble;
+				}
+				if((obj = cJSON_GetObjectItem(value, JsonParser::p_max)) != NULL){
+					cfg.minmaxData.thdV.max = obj->valuedouble;
+				}
+				if((obj = cJSON_GetObjectItem(value, JsonParser::p_thres)) != NULL){
+					cfg.minmaxData.thdV.thres = obj->valuedouble;
+				}
+				keys |= Blob::AMKeyCfgMnxThdV;
+			}
+		}
 	}
 
 	if((calibData = cJSON_GetObjectItem(json, JsonParser::p_calibData)) != NULL){
-		if((array = cJSON_GetObjectItem(calibData, JsonParser::p_meterRegs)) != NULL){
-			if(cJSON_GetArraySize(array) <= Blob::AMCalibRegCount){
-				for(int i=0;i<cJSON_GetArraySize(array);i++){
-					value = cJSON_GetArrayItem(array, i);
-					cfg.calibData.meterRegs[i] = value->valueint;
-				}
-				keys |= Blob::AMKeyCfgCalMetr;
-			}
+		if((obj = cJSON_GetObjectItem(calibData,JsonParser::p_version)) != NULL){
+			strncpy(cfg.calibData.version, obj->valuestring, Blob::AMVersionLength-1);
 		}
-		if((array = cJSON_GetObjectItem(calibData, JsonParser::p_measRegs)) != NULL){
-			if(cJSON_GetArraySize(array) <= Blob::AMCalibRegCount){
-				for(int i=0;i<cJSON_GetArraySize(array);i++){
-					value = cJSON_GetArrayItem(array, i);
-					cfg.calibData.measRegs[i] = value->valueint;
+		if(strcmp(cfg.calibData.version, AM_OBJ_VERSION_M90E26)==0){
+			if((array = cJSON_GetObjectItem(calibData, JsonParser::p_meterRegs)) != NULL){
+				if(cJSON_GetArraySize(array) <= Blob::AMCalibRegCount){
+					for(int i=0;i<cJSON_GetArraySize(array);i++){
+						value = cJSON_GetArrayItem(array, i);
+						cfg.calibData.meterRegs[i] = value->valueint;
+					}
+					keys |= Blob::AMKeyCfgCalMetr;
 				}
-				keys |= Blob::AMKeyCfgCalMea;
+			}
+			if((array = cJSON_GetObjectItem(calibData, JsonParser::p_measRegs)) != NULL){
+				if(cJSON_GetArraySize(array) <= Blob::AMCalibRegCount){
+					for(int i=0;i<cJSON_GetArraySize(array);i++){
+						value = cJSON_GetArrayItem(array, i);
+						cfg.calibData.measRegs[i] = value->valueint;
+					}
+					keys |= Blob::AMKeyCfgCalMea;
+				}
 			}
 		}
 	}
@@ -446,6 +535,9 @@ uint32_t getAMStatFromJson(Blob::AMStatData_t &stat, cJSON* json) {
 	if(json == NULL){
 		return 0;
 	}
+	if((obj = cJSON_GetObjectItem(json,JsonParser::p_version)) != NULL){
+		strncpy(stat.version, obj->valuestring, Blob::AMVersionLength-1);
+	}
 
 	if((obj = cJSON_GetObjectItem(json,JsonParser::p_flags)) == NULL){
 		return 0;
@@ -455,6 +547,10 @@ uint32_t getAMStatFromJson(Blob::AMStatData_t &stat, cJSON* json) {
 	//key: energyValues
 	if((obj = cJSON_GetObjectItem(json, JsonParser::p_energyValues)) == NULL){
 		return 0;
+	}
+	// key: energyValues.version
+	if((value = cJSON_GetObjectItem(obj,JsonParser::p_version)) != NULL){
+		strncpy(stat.energyValues.version, value->valuestring, Blob::AMVersionLength-1);
 	}
 	//key: active
 	if((value = cJSON_GetObjectItem(obj, JsonParser::p_active)) == NULL){
@@ -470,6 +566,10 @@ uint32_t getAMStatFromJson(Blob::AMStatData_t &stat, cJSON* json) {
 	//key: measureValues
 	if((obj = cJSON_GetObjectItem(json, JsonParser::p_measureValues)) == NULL){
 		return 0;
+	}
+	//key: version
+	if((value = cJSON_GetObjectItem(obj,JsonParser::p_version)) != NULL){
+		strncpy(stat.measureValues.version, value->valuestring, Blob::AMVersionLength-1);
 	}
 	//key: current
 	if((value = cJSON_GetObjectItem(obj, JsonParser::p_current)) == NULL){
@@ -511,6 +611,20 @@ uint32_t getAMStatFromJson(Blob::AMStatData_t &stat, cJSON* json) {
 		return 0;
 	}
 	stat.measureValues.msPow = value->valuedouble;
+
+	if(strcmp(stat.measureValues.version, AM_OBJ_VERSION_DEFAULT)==0){
+		//key: thdA
+		if((value = cJSON_GetObjectItem(obj, JsonParser::p_thdA)) == NULL){
+			return 0;
+		}
+		stat.measureValues.thdA = value->valuedouble;
+		//key: thdV
+		if((value = cJSON_GetObjectItem(obj, JsonParser::p_thdV)) == NULL){
+			return 0;
+		}
+		stat.measureValues.thdV = value->valuedouble;
+	}
+
 	return 1;
 }
 
@@ -519,10 +633,15 @@ uint32_t getAMStatFromJson(Blob::AMStatData_t &stat, cJSON* json) {
 uint32_t getAMBootFromJson(Blob::AMBootData_t &obj, cJSON* json){
 	cJSON* cfg = NULL;
 	cJSON* stat = NULL;
+	cJSON* value = NULL;
 	uint32_t keys = 0;
 
 	if(json == NULL){
 		return 0;
+	}
+	//key: version
+	if((value = cJSON_GetObjectItem(json,JsonParser::p_version)) != NULL){
+		strncpy(obj.version, value->valuestring, Blob::AMVersionLength-1);
 	}
 	if((cfg = cJSON_GetObjectItem(json, JsonParser::p_cfg)) == NULL){
 		return 0;
