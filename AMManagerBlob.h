@@ -27,7 +27,9 @@ namespace Blob {
  *  modificado.
  */
  enum AMUpdFlags{
-	 EnableAMCfgUpdNotif 		= (1 << 0),	/// Flag activado para notificar cambios en la configuración en bloque del objeto
+	 EnableAMCfgUpdNotif 		= (1 << 0),	/// Habilita notificación de cambios en cualquier parámetro de la configuración
+	 EnableAMMinMaxCfgUpdNotif 	= (1 << 1),	/// Habilita notificación de cambios en ppl:energy:analyzer:cfg:minmax
+	 EnableAMCalibCfgUpdNotif 	= (1 << 2),	/// Habilita notificación de cambios en ppl:energy:analyzer:cfg:calib
  };
 
 
