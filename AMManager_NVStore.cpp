@@ -56,7 +56,9 @@ bool AMManager::checkIntegrity(){
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "~~~~ TODO ~~~~ AMManager::checkIntegrity");
 	// Hacer lo que corresponda
 	// ...
-	if(_amdata.cfg.measPeriod < Blob::AMMinMeasPeriod)
+	if(_amdata.cfg.measPeriod < MeteringManagerCfgMeasPeriodMin)
+		return false;
+	if(_amdata._numAnalyzers > MeteringManagerCfgMaxNumAnalyzers)
 		return false;
 
 	return true;
@@ -66,42 +68,78 @@ bool AMManager::checkIntegrity(){
 //------------------------------------------------------------------------------------
 void AMManager::setDefaultConfig(){
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "~~~~ TODO ~~~~ AMManager::setDefaultConfig");
-	// por defecto sólo notifica las medidas instantáneas cada 15min
-	_amdata.cfg.evtFlagMask = Blob::AMInstantMeasureEvt;
-	_amdata.cfg.measPeriod = Blob::AMDefaultMeasPeriod;
-	_amdata.cfg.verbosity = ESP_LOG_DEBUG;
-	strcpy(_amdata.version, _obj_version);
-	strcpy(_amdata.cfg.version, _obj_version);
-	strcpy(_amdata.cfg.minmaxData.version, _obj_version);
-	strcpy(_amdata.cfg.calibData.version, _obj_version);
-	strcpy(_amdata.stat.version, _obj_version);
-	strcpy(_amdata.stat.energyValues.version, _obj_version);
-	strcpy(_amdata.stat.measureValues.version, _obj_version);
-	// precarga los valores de calibración por defecto
-	for(int i=0;i<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i++){
-		_amdata.cfg.calibData.meterRegs[i] = _meter_cal_values[i];
-	}
-	for(int i=sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i<Blob::AMCalibRegCount;i++){
-		_amdata.cfg.calibData.meterRegs[i] = 0;
-	}
-	for(int i=0;i<sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);i++){
-		_amdata.cfg.calibData.measRegs[i] = _meas_cal_values[i];
-	}
-	for(int i=sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);i<Blob::AMCalibRegCount;i++){
-		_amdata.cfg.calibData.measRegs[i] = 0;
+
+	// borro la configuración
+	_amdata.cfg = {0};
+	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+		_amdata.analyzers[i].cfg = {0};
 	}
 
-	// establece rangos por defecto
-	_amdata.cfg.minmaxData.voltage = {210, 245, 5};
-	_amdata.cfg.minmaxData.current = {0.015, 15, 0.005};
-	_amdata.cfg.minmaxData.phase = {-185, 185, 5};
-	_amdata.cfg.minmaxData.pfactor = {0.8, 1.2, 0.1};
-	_amdata.cfg.minmaxData.aPow = {0, 15, 0.01};
-	_amdata.cfg.minmaxData.rPow = {0, 15, 0.01};
-	_amdata.cfg.minmaxData.msPow = {0, 15, 0.01};
-	_amdata.cfg.minmaxData.freq = {49.7, 50.3, 0.1};
-	_amdata.cfg.minmaxData.thdA = {0.0, 1.0, 0.001};
-	_amdata.cfg.minmaxData.thdV = {0.0, 1.0, 0.001};
+	// lee la versión del driver integrado para formar el uid
+	if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
+		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_EMi10_YTL);
+		_amdata.cfg.uid 	= UID_METERING_MANAGER_CFG(VERS_METERING_EMi10_YTL);
+		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_EMi10_YTL);
+		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].cfg.uid 				= UID_METERING_ANALYZER_CFG(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].cfg.minmaxData.uid 	= UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].cfg.calibData.uid 		= UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL);
+		}
+	}
+	else if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
+		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_M90E26);
+		_amdata.cfg.uid 	= UID_METERING_MANAGER_CFG(VERS_METERING_M90E26);
+		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_M90E26);
+		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_M90E26);
+			_amdata.analyzers[i].cfg.uid 				= UID_METERING_ANALYZER_CFG(VERS_METERING_M90E26);
+			_amdata.analyzers[i].cfg.minmaxData.uid 	= UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_M90E26);
+			_amdata.analyzers[i].cfg.calibData.uid 		= UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_M90E26);
+			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_M90E26);
+			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_M90E26);
+			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_M90E26);
+		}
+	}
+	else{
+		DEBUG_TRACE_E(_EXPR_, _MODULE_, "UID no definido para versión %s", _driver->getVersion());
+	}
+
+	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
+	_amdata._numAnalyzers 	= _driver->getNumAnalyzers();
+	_amdata.cfg.updFlags 	= MeteringManagerCfgUpdNotif;
+	_amdata.cfg.measPeriod 	= MeteringManagerCfgMeasPeriodDefault;
+	_amdata.cfg.verbosity 	= ESP_LOG_DEBUG;
+	for(int i=0;i<_amdata._numAnalyzers;i++){
+		_driver->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
+		_amdata.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
+		_amdata.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
+		_amdata.analyzers[i].cfg.minmaxData.voltage = {210, 245, 5};
+		_amdata.analyzers[i].cfg.minmaxData.current = {0.015, 15, 0.005};
+		_amdata.analyzers[i].cfg.minmaxData.phase 	= {-185, 185, 5};
+		_amdata.analyzers[i].cfg.minmaxData.pfactor = {0.8, 1.2, 0.1};
+		_amdata.analyzers[i].cfg.minmaxData.aPow 	= {0, 15, 0.01};
+		_amdata.analyzers[i].cfg.minmaxData.rPow 	= {0, 15, 0.01};
+		_amdata.analyzers[i].cfg.minmaxData.msPow 	= {0, 15, 0.01};
+		_amdata.analyzers[i].cfg.minmaxData.freq 	= {49.7, 50.3, 0.1};
+		_amdata.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 1.0, 0.001};
+		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 1.0, 0.001};
+		for(int i=0;i<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i++){
+			_amdata.analyzers[i].cfg.calibData.meterRegs[i] = _meter_cal_values[i];
+		}
+		for(int i=sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i<MeteringAnalyzerCfgCalibRegCount;i++){
+			_amdata.analyzers[i].cfg.calibData.meterRegs[i] = 0;
+		}
+		for(int i=0;i<sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);i++){
+			_amdata.analyzers[i].cfg.calibData.measRegs[i] = _meas_cal_values[i];
+		}
+		for(int i=sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);i<MeteringAnalyzerCfgCalibRegCount;i++){
+			_amdata.analyzers[i].cfg.calibData.measRegs[i] = 0;
+		}
+	}
 
 	// guarda la configuración
 	saveConfig();
@@ -110,47 +148,47 @@ void AMManager::setDefaultConfig(){
 
 //------------------------------------------------------------------------------------
 void AMManager::restoreConfig(){
-	uint32_t crc = 0;
-	// establece datos por defecto
-	_load_data.outValue = 0;
-	_amdata.stat.flags = Blob::AMNoEvents;
 
-	// inicia la recuperación de datos
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Recuperando datos de memoria NV...");
 	bool success = true;
-	if(!restoreParameter("AMUpdFlags", &_amdata.cfg.updFlagMask, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo UpdFlags!");
+	char nvs_key[16];
+	// recupera el objeto metering:manager:cfg
+	snprintf(nvs_key, 16, "%s_cfg", _name);
+	if(!restoreParameter(nvs_key, &_amdata.cfg, sizeof(metering_manager_cfg), NVSInterface::TypeBlob)){
+		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo %s", _name);
 		success = false;
 	}
-	if(!restoreParameter("AMEvtFlags", &_amdata.cfg.evtFlagMask, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo EvtFlags!");
-		success = false;
+
+	// recupera la configuración de los analizadores metering:analyzer:cfg
+	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+		snprintf(nvs_key, 16, "%s_an%dcfg", _name, i);
+		if(!restoreParameter(nvs_key, &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg), NVSInterface::TypeBlob)){
+			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo %s", _name);
+			success = false;
+		}
 	}
-	if(!restoreParameter("AMMeasPeriod", &_amdata.cfg.measPeriod, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo EvtFlags!");
-		success = false;
-	}
-	if(!restoreParameter("AMMinMaxData", &_amdata.cfg.minmaxData, sizeof(Blob::AMMinMaxData_t), NVSInterface::TypeBlob)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo IVData!");
-		success = false;
-	}
-	if(!restoreParameter("AMCalibData", &_amdata.cfg.calibData, sizeof(Blob::AMCalibData_t), NVSInterface::TypeBlob)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo AstData!");
-		success = false;
-	}
-	if(!restoreParameter("AMChecksum", &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
+
+	uint32_t crc = 0;
+	snprintf(nvs_key, 16, "%s_crc", _name);
+	if(!restoreParameter(nvs_key, &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo Checksum!");
-		success = false;
-	}
-	if(!restoreParameter("AMVerbosity", &_amdata.cfg.verbosity, sizeof(esp_log_level_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo verbosity!");
 		success = false;
 	}
 
 	if(success){
-		// chequea el checksum crc32 y después la integridad de los datos
 		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Datos recuperados. Chequeando integridad...");
-		if(Blob::getCRC32(&_amdata.cfg, sizeof(Blob::AMCfgData_t)) != crc){
+
+		// chequea el crc
+		uint8_t* crc_buf = (char*)malloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
+		MBED_ASSERT(crc_buf);
+		memcpy(crc_buf, &_amdata.cfg, sizeof(metering_manager_cfg));
+		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+			memcpy(&crc_buf[sizeof(metering_manager_cfg) + (i*sizeof(metering_analyzer_cfg))], &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg));
+		}
+		uint32_t calc_crc = Blob::getCRC32(crc_buf, sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
+		free(crc_buf);
+
+		if(calc_crc != crc){
 			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_CFG. Ha fallado el checksum");
 		}
     	else if(!checkIntegrity()){
@@ -170,91 +208,127 @@ void AMManager::restoreConfig(){
 //------------------------------------------------------------------------------------
 void AMManager::saveConfig(){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Guardando datos en memoria NV...");
-	if(!saveParameter("AMUpdFlags", &_amdata.cfg.updFlagMask, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando UpdFlags!");
+	char nvs_key[16];
+	// graba el objeto metering:manager:cfg
+	snprintf(nvs_key, 16, "%s_cfg", _name);
+	if(!saveParameter(nvs_key, &_amdata.cfg, sizeof(metering_manager_cfg), NVSInterface::TypeBlob)){
+		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando %s", _name);
+		success = false;
 	}
-	if(!saveParameter("AMEvtFlags", &_amdata.cfg.evtFlagMask, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando EvtFlags!");
+
+	// graba la configuración de los analizadores metering:analyzer:cfg
+	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+		snprintf(nvs_key, 16, "%s_an%dcfg", _name, i);
+		if(!saveParameter(nvs_key, &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg), NVSInterface::TypeBlob)){
+			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo %s", _name);
+			success = false;
+		}
 	}
-	if(!saveParameter("AMMeasPeriod", &_amdata.cfg.measPeriod, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando EvtFlags!");
+
+	// genera el crc
+	uint8_t* crc_buf = (char*)malloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
+	MBED_ASSERT(crc_buf);
+	memcpy(crc_buf, &_amdata.cfg, sizeof(metering_manager_cfg));
+	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+		memcpy(&crc_buf[sizeof(metering_manager_cfg) + (i*sizeof(metering_analyzer_cfg))], &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg));
 	}
-	if(!saveParameter("AMMinMaxData", &_amdata.cfg.minmaxData, sizeof(Blob::AMMinMaxData_t), NVSInterface::TypeBlob)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando IVData!");
-	}
-	if(!saveParameter("AMCalibData", &_amdata.cfg.calibData, sizeof(Blob::AMCalibData_t), NVSInterface::TypeBlob)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando AstData!");
-	}
-	if(!saveParameter("AMVerbosity", &_amdata.cfg.verbosity, sizeof(esp_log_level_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando verbosity!");
-	}
-	else{
-		esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
-	}
-	uint32_t crc = Blob::getCRC32(&_amdata.cfg, sizeof(Blob::AMCfgData_t));
+	uint32_t crc = Blob::getCRC32(crc_buf, sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
+	free(crc_buf);
+
+	// graba el crc
 	if(!saveParameter("AMChecksum", &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando Checksum!");
 	}
+
+	// aplica el nivel de verbosidad configurado
+	esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
 }
 
 
 //------------------------------------------------------------------------------------
-void AMManager::_updateConfig(const Blob::AMCfgData_t& cfg, uint32_t keys, Blob::ErrorData_t& err){
-	if(keys == Blob::AMKeyNone){
-		err.code = Blob::ErrEmptyContent;
+void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& err){
+	err.code = Blob::ErrOK;
+	// evalúo metering:manager:cfg
+	if((data.cfg._keys & (1 << 0)) && data.cfg.uid != _amdata.cfg.uid){
+		err.code = Blob::ErrUidInvalid;
 		goto _updateConfigExit;
 	}
-	#warning TODO : Verificar datos entrantes para generar errores si son datos incorrectos
-	if(keys & Blob::AMKeyCfgUpd){
-		_amdata.cfg.updFlagMask = cfg.updFlagMask;
+	if((data.cfg._keys & (1 << 1))){
+		_amdata.cfg.updFlags = data.cfg.updFlags;
 	}
-	if(keys & Blob::AMKeyCfgEvt){
-		_amdata.cfg.evtFlagMask = cfg.evtFlagMask;
+	if((data.cfg._keys & (1 << 2))){
+		_amdata.cfg.measPeriod = data.cfg.measPeriod;
 	}
-	if(keys & Blob::AMKeyCfgMeas){
-		_amdata.cfg.measPeriod = cfg.measPeriod;
+	if((data.cfg._keys & (1 << 3))){
+		_amdata.cfg.verbosity = data.cfg.verbosity;
 	}
-	if(keys & Blob::AMKeyCfgMnxVolt){
-		_amdata.cfg.minmaxData.voltage = cfg.minmaxData.voltage;
+	// evalúo analizadores
+	for(int i=0;i<_amdata._numAnalyzers;i++){
+		// evalúo metering:manager:analyzer[]:cfg
+		if((data.analyzers[i].cfg._keys & (1 << 0)) && data.analyzers[i].cfg.uid != _amdata.analyzers[i].cfg.uid){
+			err.code = Blob::ErrUidInvalid;
+			goto _updateConfigExit;
+		}
+		if((data.analyzers[i].cfg._keys & (1 << 1))){
+			_amdata.analyzers[i].cfg.updFlags = data.analyzers[i].cfg.updFlags;
+		}
+		if((data.analyzers[i].cfg._keys & (1 << 2))){
+			_amdata.analyzers[i].cfg.evtFlags = data.analyzers[i].cfg.evtFlags;
+		}
+		// evalúo metering:manager:analyzer[]:minmax:cfg
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 0)) && data.analyzers[i].cfg.minmaxData.uid != _amdata.analyzers[i].cfg.minmaxData.uid){
+			err.code = Blob::ErrUidInvalid;
+			goto _updateConfigExit;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 1))){
+			_amdata.analyzers[i].cfg.minmaxData.voltage = data.analyzers[i].cfg.minmaxData.voltage;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 2))){
+			_amdata.analyzers[i].cfg.minmaxData.current = data.analyzers[i].cfg.minmaxData.current;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 3))){
+			_amdata.analyzers[i].cfg.minmaxData.phase = data.analyzers[i].cfg.minmaxData.phase;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 4))){
+			_amdata.analyzers[i].cfg.minmaxData.pfactor = data.analyzers[i].cfg.minmaxData.pfactor;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 5))){
+			_amdata.analyzers[i].cfg.minmaxData.aPow = data.analyzers[i].cfg.minmaxData.aPow;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 6))){
+			_amdata.analyzers[i].cfg.minmaxData.rPow = data.analyzers[i].cfg.minmaxData.rPow;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 7))){
+			_amdata.analyzers[i].cfg.minmaxData.msPow = data.analyzers[i].cfg.minmaxData.msPow;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 8))){
+			_amdata.analyzers[i].cfg.minmaxData.freq = data.analyzers[i].cfg.minmaxData.freq;
+		}
+		if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 9))){
+				_amdata.analyzers[i].cfg.minmaxData.thdA = data.analyzers[i].cfg.minmaxData.thdA;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 10))){
+				_amdata.analyzers[i].cfg.minmaxData.thdV = data.analyzers[i].cfg.minmaxData.thdV;
+			}
+		}
+		// evalúo metering:manager:analyzer[]:calib:cfg
+		if((data.analyzers[i].cfg.calibData._keys & (1 << 0)) && data.analyzers[i].cfg.calibData.uid != _amdata.analyzers[i].cfg.calibData.uid){
+			err.code = Blob::ErrUidInvalid;
+			goto _updateConfigExit;
+		}
+		if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
+			if((data.analyzers[i].cfg.calibData._keys & (1 << 1))){
+				for(int i=0; i<MeteringAnalyzerCfgCalibRegCount; i++)
+					_amdata.analyzers[i].cfg.calibData.meterRegs[i] = data.analyzers[i].cfg.calibData.meterRegs[i];
+			}
+			if((data.analyzers[i].cfg.calibData._keys & (1 << 2))){
+				for(int i=0; i<MeteringAnalyzerCfgCalibRegCount; i++)
+					_amdata.analyzers[i].cfg.calibData.measRegs[i] = data.analyzers[i].cfg.calibData.measRegs[i];
+			}
+		}
 	}
-	if(keys & Blob::AMKeyCfgMnxCurr){
-		_amdata.cfg.minmaxData.current = cfg.minmaxData.current;
-	}
-	if(keys & Blob::AMKeyCfgMnxPhase){
-		_amdata.cfg.minmaxData.phase = cfg.minmaxData.phase;
-	}
-	if(keys & Blob::AMKeyCfgMnxPfact){
-		_amdata.cfg.minmaxData.pfactor = cfg.minmaxData.pfactor;
-	}
-	if(keys & Blob::AMKeyCfgMnxApow){
-		_amdata.cfg.minmaxData.aPow = cfg.minmaxData.aPow;
-	}
-	if(keys & Blob::AMKeyCfgMnxRpow){
-		_amdata.cfg.minmaxData.rPow = cfg.minmaxData.rPow;
-	}
-	if(keys & Blob::AMKeyCfgMnxMpow){
-		_amdata.cfg.minmaxData.msPow = cfg.minmaxData.msPow;
-	}
-	if(keys & Blob::AMKeyCfgMnxFreq){
-		_amdata.cfg.minmaxData.freq = cfg.minmaxData.freq;
-	}
-	if(keys & Blob::AMKeyCfgMnxThdA){
-		_amdata.cfg.minmaxData.thdA = cfg.minmaxData.thdA;
-	}
-	if(keys & Blob::AMKeyCfgMnxThdV){
-		_amdata.cfg.minmaxData.thdV = cfg.minmaxData.thdV;
-	}
-	if(keys & Blob::AMKeyCfgCalMetr){
-		for(int i=0;i<Blob::AMCalibRegCount;i++)
-			_amdata.cfg.calibData.meterRegs[i] = cfg.calibData.meterRegs[i];
-	}
-	if(keys & Blob::AMKeyCfgCalMea){
-		for(int i=0;i<Blob::AMCalibRegCount;i++)
-			_amdata.cfg.calibData.measRegs[i] = cfg.calibData.measRegs[i];
-	}
-	if(keys & Blob::AMKeyCfgVerbosity){
-		_amdata.cfg.verbosity = cfg.verbosity;
-	}
+
 _updateConfigExit:
 	strcpy(err.descr, Blob::errList[err.code]);
 }

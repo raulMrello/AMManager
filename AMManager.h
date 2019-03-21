@@ -34,7 +34,7 @@ class AMManager : public ActiveModule {
      * 	@param fs Objeto FSManager para operaciones de backup
      * 	@param defdbg Flag para habilitar depuración por defecto
      */
-    AMManager(AMDriver* driver, FSManager* fs, bool defdbg = false);
+    AMManager(AMDriver* driver, FSManager* fs, bool defdbg = false, const char* name = "AMM");
 
 
     /** Destructor
@@ -60,9 +60,9 @@ class AMManager : public ActiveModule {
     virtual osStatus putMessage(State::Msg *msg);
 
     /** Getters */
-    void getLoadData(Blob::AMLoadData_t& ld) { ld = _load_data; }
-    void getBootData(Blob::AMBootData_t& bd) { bd = _amdata; }
-    void getCfgData(Blob::AMCfgData_t& cd)   { cd = _amdata.cfg; }
+    void getLoadData(uint8_t& ld) { ld = _load_data; }
+    void getBootData(metering_manager& bd) { bd = _amdata; }
+    void getCfgData(metering_manager_cfg& cd)   { cd = _amdata.cfg; }
 
 
     /**
@@ -106,8 +106,11 @@ class AMManager : public ActiveModule {
     /** Cola de mensajes de la máquina de estados */
     Queue<State::Msg, MaxQueueMessages> _queue;
 
-    /** Datos de configuración y de estado */
-    Blob::AMBootData_t _amdata;
+    /** Nombre del objeto creado */
+    const char* _name;
+
+    /** Objetos metering */
+    metering_manager _amdata;
 
     /** Timer de realización de medidas */
     RtosTimer* _meas_tmr;
@@ -119,13 +122,10 @@ class AMManager : public ActiveModule {
     AMDriver* _driver;
 
     /** Gestor de la carga activa en el medidor */
-    Blob::AMLoadData_t _load_data;
+    uint8_t _load_data;
 
     /** Flag de control para el soporte de objetos json */
     bool _json_supported;
-
-    /** Versión de los objetos */
-    const char* _obj_version;
 
     /** Parámetros de calibración */
     static const uint16_t _meter_cal_values[];
@@ -229,7 +229,7 @@ class AMManager : public ActiveModule {
 	 */
 	void alarmChecking(	bool& alarm_notif,
 						double measure,
-						Blob::AMMinMax_t data_range,
+						common_range_minmaxthres_double data_range,
 						uint32_t flag_over_limit,
 						uint32_t flag_below_limit,
 						uint32_t flag_in_range);
@@ -237,11 +237,10 @@ class AMManager : public ActiveModule {
 
 	/** Actualiza la configuración
 	 *
-	 * @param cfg Nueva configuración a aplicar
-	 * @param keys Flags de parámetros actualizados
+	 * @param data Nueva configuración a aplicar
 	 * @param err Recibe los errores generados durante la actualización
 	 */
-	void _updateConfig(const Blob::AMCfgData_t& cfg, uint32_t keys, Blob::ErrorData_t& err);
+	void _updateConfig(const metering_manager& data, Blob::ErrorData_t& err);
 
 };
      

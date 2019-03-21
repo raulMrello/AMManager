@@ -21,7 +21,7 @@ static const char* _MODULE_ = "[AMM]...........";
 
 
 //------------------------------------------------------------------------------------
-AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg) : ActiveModule("AMM", osPriorityNormal, 4096, fs, defdbg) {
+AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* name) : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg), _name(name) {
 
 	// Establece el soporte de JSON
 	_json_supported = false;
@@ -36,9 +36,8 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg) : ActiveModul
     	esp_log_level_set(_MODULE_, ESP_LOG_WARN);
     }
 
-	// referencia el driver a través de la interfaz que expone
+	// referencia al driver registrado
 	_driver = driver;
-	_obj_version = _driver->getVersion();
 
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -104,120 +103,124 @@ void AMManager::_measure(bool enable_notif) {
 	double value;
 	uint32_t multiplier = 1000;
 
-	AMDriver::ElectricParams eparam[1];
-	uint32_t keys[1];
+	AMDriver::ElectricParams eparam;
+	uint32_t keys;
 
-	// lee todos los parámetros eléctricos monofásicos
-	if(_driver->getElectricParams(eparam, keys, AMDriver::LineL1) == AMDriver::Success){
-		// visualiza los parámetros leídos
-		if(keys[0] & AMDriver::ElecKey_Voltage){
-			_amdata.stat.measureValues.voltage = eparam[0].voltage;
+
+	// lee todos los parámetros eléctricos de cada analizador
+	for(int i=0; i<_amdata._numAnalyzers; i++){
+		if(_driver->getElectricParams(eparam, keys, i) == AMDriver::Success){
+			// visualiza los parámetros leídos
+			if(keys & AMDriver::ElecKey_Voltage){
+				_amdata.analyzers[i].stat.measureValues.voltage = eparam.voltage;
+			}
+			if(keys & AMDriver::ElecKey_Current){
+				_amdata.analyzers[i].stat.measureValues.current = eparam.current;
+			}
+			if(keys & AMDriver::ElecKey_ActivePow){
+				_amdata.analyzers[i].stat.measureValues.aPow = eparam.aPow;
+			}
+			if(keys & AMDriver::ElecKey_ReactivePow){
+				_amdata.analyzers[i].stat.measureValues.rPow = eparam.rPow;
+			}
+			if(keys & AMDriver::ElecKey_ApparentPow){
+				_amdata.analyzers[i].stat.measureValues.msPow = eparam.mPow;
+			}
+			if(keys & AMDriver::ElecKey_PowFactor){
+				_amdata.analyzers[i].stat.measureValues.pfactor = eparam.pFactor;
+			}
+			if(keys & AMDriver::ElecKey_THDAmpere){
+				_amdata.analyzers[i].stat.measureValues.thdA = eparam.thdAmp;
+			}
+			if(keys & AMDriver::ElecKey_THDVoltage){
+				_amdata.analyzers[i].stat.measureValues.thdV = eparam.thdVolt;
+			}
+			if(keys & AMDriver::ElecKey_Frequency){
+				_amdata.analyzers[i].stat.measureValues.freq = eparam.freq;
+			}
+			if(keys & AMDriver::ElecKey_ActiveEnergy){
+				_amdata.analyzers[i].stat.energyValues.active = eparam.aEnergy;
+			}
+			if(keys & AMDriver::ElecKey_ReactiveEnergy){
+				_amdata.analyzers[i].stat.energyValues.reactive = eparam.rEnergy;
+			}
 		}
-		if(keys[0] & AMDriver::ElecKey_Current){
-			_amdata.stat.measureValues.current = eparam[0].current;
+		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Realizando medida... stat=%x", _amdata.analyzers[i].stat.flags);
+
+		// chequeo cada una de las alarmas:
+		bool alarm_notif = false;
+
+		// en primer lugar si hay carga activa
+		if(_load_data[i] > 0){
+			// chequeo tensión
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.voltage, _amdata.cfg.minmaxData.voltage,
+							Blob::AMVoltageOverLimitEvt,
+							Blob::AMVoltageBelowLimitEvt,
+							Blob::AMVoltageInRangeEvt);
+			// chequeo corriente
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.current, _amdata.cfg.minmaxData.current,
+							Blob::AMCurrentOverLimitEvt,
+							Blob::AMCurrentBelowLimitEvt,
+							Blob::AMCurrentInRangeEvt);
+			// chequeo phase
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.phase, _amdata.cfg.minmaxData.phase,
+							Blob::AMPhaseOverLimitEvt,
+							Blob::AMPhaseBelowLimitEvt,
+							Blob::AMPhaseInRangeEvt);
+			// chequeo factor de potencia
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.pfactor, _amdata.cfg.minmaxData.pfactor,
+							Blob::AMPFactorOverLimitEvt,
+							Blob::AMPFactorBelowLimitEvt,
+							Blob::AMPFactorInRangeEvt);
+			// chequeo potencia activa
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.aPow, _amdata.cfg.minmaxData.aPow,
+							Blob::AMActPowOverLimitEvt,
+							Blob::AMActPowBelowLimitEvt,
+							Blob::AMActPowInRangeEvt);
+			// chequeo potencia reactiva
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.rPow, _amdata.cfg.minmaxData.rPow,
+							Blob::AMReactPowOverLimitEvt,
+							Blob::AMReactPowBelowLimitEvt,
+							Blob::AMReactPowInRangeEvt);
+			// chequeo frecuencia
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.freq, _amdata.cfg.minmaxData.freq,
+							Blob::AMFrequencyOverLimitEvt,
+							Blob::AMFrequencyBelowLimitEvt,
+							Blob::AMFrequencyInRangeEvt);
+			// chequeo THD-A
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.thdA, _amdata.cfg.minmaxData.thdA,
+							Blob::AMThdAOverLimitEvt,
+							Blob::AMThdABelowLimitEvt,
+							Blob::AMThdAInRangeEvt);
+			// chequeo THD-V
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.thdV, _amdata.cfg.minmaxData.thdV,
+							Blob::AMThdVOverLimitEvt,
+							Blob::AMThdVBelowLimitEvt,
+							Blob::AMThdVInRangeEvt);
 		}
-		if(keys[0] & AMDriver::ElecKey_ActivePow){
-			_amdata.stat.measureValues.aPow = eparam[0].aPow;
-		}
-		if(keys[0] & AMDriver::ElecKey_ReactivePow){
-			_amdata.stat.measureValues.rPow = eparam[0].rPow;
-		}
-		if(keys[0] & AMDriver::ElecKey_ApparentPow){
-			_amdata.stat.measureValues.msPow = eparam[0].mPow;
-		}
-		if(keys[0] & AMDriver::ElecKey_PowFactor){
-			_amdata.stat.measureValues.pfactor = eparam[0].pFactor;
-		}
-		if(keys[0] & AMDriver::ElecKey_THDAmpere){
-			_amdata.stat.measureValues.thdA = eparam[0].thdAmp;
-		}
-		if(keys[0] & AMDriver::ElecKey_THDVoltage){
-			_amdata.stat.measureValues.thdV = eparam[0].thdVolt;
-		}
-		if(keys[0] & AMDriver::ElecKey_Frequency){
-			_amdata.stat.measureValues.freq = eparam[0].freq;
-		}
-		if(keys[0] & AMDriver::ElecKey_ActiveEnergy){
-			_amdata.stat.energyValues.active = eparam[0].aEnergy;
-		}
-		if(keys[0] & AMDriver::ElecKey_ReactiveEnergy){
-			_amdata.stat.energyValues.reactive = eparam[0].rEnergy;
+		//o si no hay carga activa
+		else{
+			Blob::AMMinMax_t minmax;
+			// chequeo corriente
+			minmax = {0, _amdata.analyzers[i].cfg.minmaxData.current.min, _amdata.analyzers[i].cfg.minmaxData.current.thres};
+			alarmChecking(	alarm_notif,
+							_amdata.analyzers[i].stat.measureValues.current, minmax,
+							Blob::AMCurrentOverLimitEvt,
+							Blob::AMCurrentBelowLimitEvt,
+							Blob::AMCurrentInRangeEvt);
 		}
 	}
 
-	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Realizando medida... stat=%x", _amdata.stat.flags);
 
-	// chequeo cada una de las alarmas:
-	bool alarm_notif = false;
-
-	// en primer lugar si hay carga activa
-	if(_load_data.outValue > 0){
-		// chequeo tensión
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.voltage, _amdata.cfg.minmaxData.voltage,
-						Blob::AMVoltageOverLimitEvt,
-						Blob::AMVoltageBelowLimitEvt,
-						Blob::AMVoltageInRangeEvt);
-		// chequeo corriente
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.current, _amdata.cfg.minmaxData.current,
-						Blob::AMCurrentOverLimitEvt,
-						Blob::AMCurrentBelowLimitEvt,
-						Blob::AMCurrentInRangeEvt);
-		// chequeo phase
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.phase, _amdata.cfg.minmaxData.phase,
-						Blob::AMPhaseOverLimitEvt,
-						Blob::AMPhaseBelowLimitEvt,
-						Blob::AMPhaseInRangeEvt);
-		// chequeo factor de potencia
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.pfactor, _amdata.cfg.minmaxData.pfactor,
-						Blob::AMPFactorOverLimitEvt,
-						Blob::AMPFactorBelowLimitEvt,
-						Blob::AMPFactorInRangeEvt);
-		// chequeo potencia activa
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.aPow, _amdata.cfg.minmaxData.aPow,
-						Blob::AMActPowOverLimitEvt,
-						Blob::AMActPowBelowLimitEvt,
-						Blob::AMActPowInRangeEvt);
-		// chequeo potencia reactiva
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.rPow, _amdata.cfg.minmaxData.rPow,
-						Blob::AMReactPowOverLimitEvt,
-						Blob::AMReactPowBelowLimitEvt,
-						Blob::AMReactPowInRangeEvt);
-		// chequeo frecuencia
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.freq, _amdata.cfg.minmaxData.freq,
-						Blob::AMFrequencyOverLimitEvt,
-						Blob::AMFrequencyBelowLimitEvt,
-						Blob::AMFrequencyInRangeEvt);
-		// chequeo THD-A
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.thdA, _amdata.cfg.minmaxData.thdA,
-						Blob::AMThdAOverLimitEvt,
-						Blob::AMThdABelowLimitEvt,
-						Blob::AMThdAInRangeEvt);
-		// chequeo THD-V
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.thdV, _amdata.cfg.minmaxData.thdV,
-						Blob::AMThdVOverLimitEvt,
-						Blob::AMThdVBelowLimitEvt,
-						Blob::AMThdVInRangeEvt);
-	}
-	//o si no hay carga activa
-	else{
-		Blob::AMMinMax_t minmax;
-		// chequeo corriente
-		minmax = {0, _amdata.cfg.minmaxData.current.min, _amdata.cfg.minmaxData.current.thres};
-		alarmChecking(	alarm_notif,
-						_amdata.stat.measureValues.current, minmax,
-						Blob::AMCurrentOverLimitEvt,
-						Blob::AMCurrentBelowLimitEvt,
-						Blob::AMCurrentInRangeEvt);
-	}
 
 
 	// cada N medidas, envía un evento de medida para no saturar las comunicaciones
