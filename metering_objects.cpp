@@ -21,7 +21,7 @@ namespace JSON{
 
 
 //------------------------------------------------------------------------------------
-cJSON* getJsonFromMeteringManager(const metering_manager& obj, JsonParser::DataType type){
+cJSON* getJsonFromMeteringManager(const metering_manager& obj, ObjDataSelection type){
 	cJSON* json = NULL;
 	cJSON* item = NULL;
 	if((json=cJSON_CreateObject()) == NULL){
@@ -32,7 +32,7 @@ cJSON* getJsonFromMeteringManager(const metering_manager& obj, JsonParser::DataT
 	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 
 	// cfg
-	if(type != JsonParser::Status){
+	if(type != ObjSelectState){
 		if((item = getJsonFromMeteringManagerCfg(obj.cfg)) == NULL){
 			cJSON_Delete(json);
 			return NULL;
@@ -41,7 +41,7 @@ cJSON* getJsonFromMeteringManager(const metering_manager& obj, JsonParser::DataT
 	}
 
 	// stat
-	if(type != JsonParser::Status){
+	if(type != ObjSelectCfg){
 		if((item = getJsonFromMeteringManagerStat(obj.stat)) == NULL){
 			cJSON_Delete(json);
 			return NULL;
@@ -99,12 +99,29 @@ cJSON* getJsonFromMeteringManagerStat(const metering_manager_stat& obj){
 	// uid
 	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 
+	// loadPercentage
+	cJSON* array = NULL;
+	if((array=cJSON_CreateArray()) == NULL){
+		cJSON_Delete(json);
+		return NULL;
+	}
+	for(int i=0; i<obj._numAnalyzers; i++){
+		cJSON* item = NULL;
+		if((item = cJSON_CreateNumber(obj.loadPercent[i])) == NULL){
+			cJSON_Delete(array);
+			cJSON_Delete(json);
+			return NULL;
+		}
+		cJSON_AddItemToArray(array, item);
+	}
+	cJSON_AddItemToObject(json, JsonParser::p_loadPercent, array);
+
 	return json;
 }
 
 
 //------------------------------------------------------------------------------------
-cJSON* getJsonFromMeteringAnalyzer(const metering_analyzer& obj, JsonParser::DataType type){
+cJSON* getJsonFromMeteringAnalyzer(const metering_analyzer& obj, ObjDataSelection type){
 	cJSON* json = NULL;
 	cJSON* item = NULL;
 
@@ -119,7 +136,7 @@ cJSON* getJsonFromMeteringAnalyzer(const metering_analyzer& obj, JsonParser::Dat
 	cJSON_AddStringToObject(json, JsonParser::p_serial, obj.serial);
 
 	// cfg
-	if(type != JsonParser::Status){
+	if(type != ObjSelectState){
 		if((item = getJsonFromMeteringAnalyzerCfg(obj.cfg)) == NULL){
 			cJSON_Delete(json);
 			return NULL;
@@ -128,7 +145,7 @@ cJSON* getJsonFromMeteringAnalyzer(const metering_analyzer& obj, JsonParser::Dat
 	}
 
 	// stat
-	if(type != JsonParser::Config){
+	if(type != ObjSelectCfg){
 		if((item = getJsonFromMeteringAnalyzerStat(obj.stat)) == NULL){
 			cJSON_Delete(json);
 			return NULL;
@@ -476,7 +493,24 @@ uint32_t getMeteringManagerStatFromJson(metering_manager_stat &obj, cJSON* json)
 		obj.uid = value->valueint;
 		keys |= (1 << 0);
 	}
-	return keys;
+	// loadPercent
+	cJSON* array = NULL;
+	if((array = cJSON_GetObjectItem(json, JsonParser::p_loadPercent)) != NULL){
+		if(cJSON_GetArraySize(array) <= MeteringManagerCfgMaxNumAnalyzers){
+			obj._numAnalyzers = cJSON_GetArraySize(array);
+			subkey = 0;
+			for(int i=0;i<obj._numAnalyzers;i++){
+				value = cJSON_GetArrayItem(array, i);
+				if(value != NULL){
+					obj.loadPercent[i] = value->valueint;
+					subkey++;
+				}
+			}
+			if(subkey == obj._numAnalyzers){
+				keys |= (1 << 1);
+			}
+		}
+	}	return keys;
 }
 
 

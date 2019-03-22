@@ -16,6 +16,7 @@
 #include "AMManagerBlob.h"
 #include "AMDriver.h"
 #include "JsonParserBlob.h"
+#include "metering_objects.h"
 
 /** Flag para habilitar el soporte de objetos JSON en las suscripciones a MQLib
  *  Por defecto DESACTIVADO
@@ -221,6 +222,8 @@ class AMManager : public ActiveModule {
 	/** Chequea si hay que notificar alarmas
 	 *
 	 * @param alarm_notif Recibe el flag 'True' si hay que notificar, en caso contrario no se actualiza
+	 * @param flags Recibe los flags actualizados
+	 * @param flagmask Máscara de flags activos para la generación de alarmas
 	 * @param measure Parámetro de medida
 	 * @param data_range Rando minmax del parámetro
 	 * @param flag_over_limit Flag al salir de rango por arriba
@@ -228,6 +231,8 @@ class AMManager : public ActiveModule {
 	 * @param flag_in_range Flag al entrar en rango
 	 */
 	void alarmChecking(	bool& alarm_notif,
+						uint32_t& flags,
+						uint32_t flagmask,
 						double measure,
 						common_range_minmaxthres_double data_range,
 						uint32_t flag_over_limit,

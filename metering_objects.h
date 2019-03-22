@@ -11,7 +11,9 @@
 #define METERING_OBJECTS_
 
 #include <cstdint>
+#include <type_traits>
 #include "common_objects.h"
+#include "cJSON.h"
 
 
 /** UIDs */
@@ -28,12 +30,19 @@
 
 /** Versiones */
 #define VERS_METERING_EMi10_YTL		0
-#define VERS_METERING_NAME_0		"EMi10 YTL"
+#define VERS_METERING_NAME_0		"EMi10YTL"
 
 #define VERS_METERING_M90E26		1
 #define VERS_METERING_NAME_1		"M90E26"
 
-#define VERS_METERING_NAME(v)		VERS_METERING_NAME_##v
+
+static inline const char* VERS_METERING_NAME(int vers){
+	switch(vers){
+		case VERS_METERING_EMi10_YTL:	return VERS_METERING_NAME_0;
+		case VERS_METERING_M90E26:		return VERS_METERING_NAME_1;
+		default: 						return "";
+	}
+}
 
 
 /** Flags para la variable ppl:energy:cfg/updFlags */
@@ -187,7 +196,8 @@ struct metering_analyzer{
 /**Objeto ppl:energy:stat */
 struct metering_manager_stat{
 	uint32_t uid;
-	uint8_t loadPercentage[MeteringManagerCfgMaxNumAnalyzers];
+	uint8_t loadPercent[MeteringManagerCfgMaxNumAnalyzers];
+	uint8_t _numAnalyzers;
 };
 
 
@@ -217,7 +227,7 @@ namespace JSON {
  * @param obj Objeto
  * @return JSON resultante o NULL en caso de error
  */
-cJSON* getJsonFromMeteringManager(const metering_manager& obj, JsonParser::DataType type);
+cJSON* getJsonFromMeteringManager(const metering_manager& obj, ObjDataSelection type);
 
 /**
  * Codifica el objeto en un JSON
@@ -238,7 +248,7 @@ cJSON* getJsonFromMeteringManagerStat(const metering_manager_stat& obj);
  * @param obj Objeto
  * @return JSON resultante o NULL en caso de error
  */
-cJSON* getJsonFromMeteringAnalyzer(const metering_analyzer& obj, JsonParser::DataType type);
+cJSON* getJsonFromMeteringAnalyzer(const metering_analyzer& obj, ObjDataSelection type);
 
 /**
  * Codifica el objeto en un JSON
@@ -290,35 +300,35 @@ cJSON* getJsonFromMeteringAnalyzerStatMeasure(const metering_analyzer_stat_measu
  * @return JSON resultante o NULL en caso de error
  */
 template <typename T>
-cJSON* getJsonFromMetering(T& obj, JsonParser::DataType type){
+cJSON* getJsonFromMetering(const T& obj, ObjDataSelection type){
 	if (std::is_same<T, metering_manager>::value){
 		return getJsonFromMeteringManager((const metering_manager&)obj, type);
 	}
-	if (std::is_same<T, metering_manager_cfg>::value && type != JsonParser::Status){
+	if (std::is_same<T, metering_manager_cfg>::value && type != ObjSelectState){
 		return getJsonFromMeteringManagerCfg((const metering_manager_cfg&)obj);
 	}
-	if (std::is_same<T, metering_manager_stat>::value && type != JsonParser::Config){
+	if (std::is_same<T, metering_manager_stat>::value && type != ObjSelectCfg){
 		return getJsonFromMeteringManagerStat((const metering_manager_stat&)obj);
 	}
 	if (std::is_same<T, metering_analyzer>::value){
 		return getJsonFromMeteringAnalyzer((const metering_analyzer&)obj, type);
 	}
-	if (std::is_same<T, metering_analyzer_cfg>::value && type != JsonParser::Status){
+	if (std::is_same<T, metering_analyzer_cfg>::value && type != ObjSelectState){
 		return getJsonFromMeteringAnalyzerCfg((const metering_analyzer_cfg&)obj);
 	}
-	if (std::is_same<T, metering_analyzer_cfg_minmax>::value && type != JsonParser::Status){
+	if (std::is_same<T, metering_analyzer_cfg_minmax>::value && type != ObjSelectState){
 		return getJsonFromMeteringAnalyzerCfgMinMax((const metering_analyzer_cfg_minmax&)obj);
 	}
-	if (std::is_same<T, metering_analyzer_cfg_calib>::value && type != JsonParser::Status){
+	if (std::is_same<T, metering_analyzer_cfg_calib>::value && type != ObjSelectState){
 		return getJsonFromMeteringAnalyzerCfgCalib((const metering_analyzer_cfg_calib&)obj);
 	}
-	if (std::is_same<T, metering_analyzer_stat>::value && type != JsonParser::Config){
+	if (std::is_same<T, metering_analyzer_stat>::value && type != ObjSelectCfg){
 		return getJsonFromMeteringAnalyzerStat((const metering_analyzer_stat&)obj);
 	}
-	if (std::is_same<T, metering_analyzer_stat_totals>::value && type != JsonParser::Config){
+	if (std::is_same<T, metering_analyzer_stat_totals>::value && type != ObjSelectCfg){
 		return getJsonFromMeteringAnalyzerStatTotals((const metering_analyzer_stat_totals&)obj);
 	}
-	if (std::is_same<T, metering_analyzer_stat_measure>::value && type != JsonParser::Config){
+	if (std::is_same<T, metering_analyzer_stat_measure>::value && type != ObjSelectCfg){
 		return getJsonFromMeteringAnalyzerStatMeasure((const metering_analyzer_stat_measure&)obj);
 	}
 	return NULL;
