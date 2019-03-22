@@ -69,11 +69,8 @@ bool AMManager::checkIntegrity(){
 void AMManager::setDefaultConfig(){
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "~~~~ TODO ~~~~ AMManager::setDefaultConfig");
 
-	// borro la configuración
-	_amdata.cfg = {0};
-	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
-		_amdata.analyzers[i].cfg = {0};
-	}
+	// borro la configuración y el estado
+	_amdata = {0};
 
 	// lee la versión del driver integrado para formar el uid
 	if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
@@ -113,20 +110,21 @@ void AMManager::setDefaultConfig(){
 	_amdata.cfg.updFlags 	= MeteringManagerCfgUpdNotif;
 	_amdata.cfg.measPeriod 	= MeteringManagerCfgMeasPeriodDefault;
 	_amdata.cfg.verbosity 	= ESP_LOG_DEBUG;
+	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
 	for(int i=0;i<_amdata._numAnalyzers;i++){
 		_driver->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
 		_amdata.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
 		_amdata.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
-		_amdata.analyzers[i].cfg.minmaxData.voltage = {210, 245, 5};
-		_amdata.analyzers[i].cfg.minmaxData.current = {0.015, 15, 0.005};
-		_amdata.analyzers[i].cfg.minmaxData.phase 	= {-185, 185, 5};
-		_amdata.analyzers[i].cfg.minmaxData.pfactor = {0.8, 1.2, 0.1};
-		_amdata.analyzers[i].cfg.minmaxData.aPow 	= {0, 15, 0.01};
-		_amdata.analyzers[i].cfg.minmaxData.rPow 	= {0, 15, 0.01};
-		_amdata.analyzers[i].cfg.minmaxData.msPow 	= {0, 15, 0.01};
-		_amdata.analyzers[i].cfg.minmaxData.freq 	= {49.7, 50.3, 0.1};
-		_amdata.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 1.0, 0.001};
-		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 1.0, 0.001};
+		_amdata.analyzers[i].cfg.minmaxData.voltage = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 210.0, 	245.0, 	5.0};
+		_amdata.analyzers[i].cfg.minmaxData.current = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.015, 	15.0, 	0.005};
+		_amdata.analyzers[i].cfg.minmaxData.phase 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), -185.0, 	185.0, 	5.0};
+		_amdata.analyzers[i].cfg.minmaxData.pfactor = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.8, 	1.2, 	0.1};
+		_amdata.analyzers[i].cfg.minmaxData.aPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
+		_amdata.analyzers[i].cfg.minmaxData.rPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
+		_amdata.analyzers[i].cfg.minmaxData.msPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
+		_amdata.analyzers[i].cfg.minmaxData.freq 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 49.7, 	50.3, 	0.1};
+		_amdata.analyzers[i].cfg.minmaxData.thdA 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
+		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
 		for(int i=0;i<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i++){
 			_amdata.analyzers[i].cfg.calibData.meterRegs[i] = _meter_cal_values[i];
 		}
@@ -209,11 +207,11 @@ void AMManager::restoreConfig(){
 void AMManager::saveConfig(){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Guardando datos en memoria NV...");
 	char nvs_key[16];
+
 	// graba el objeto metering:manager:cfg
 	snprintf(nvs_key, 16, "%s_cfg", _name);
 	if(!saveParameter(nvs_key, &_amdata.cfg, sizeof(metering_manager_cfg), NVSInterface::TypeBlob)){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando %s", _name);
-		success = false;
 	}
 
 	// graba la configuración de los analizadores metering:analyzer:cfg
@@ -221,7 +219,6 @@ void AMManager::saveConfig(){
 		snprintf(nvs_key, 16, "%s_an%dcfg", _name, i);
 		if(!saveParameter(nvs_key, &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg), NVSInterface::TypeBlob)){
 			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo %s", _name);
-			success = false;
 		}
 	}
 
@@ -236,7 +233,8 @@ void AMManager::saveConfig(){
 	free(crc_buf);
 
 	// graba el crc
-	if(!saveParameter("AMChecksum", &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
+	snprintf(nvs_key, 16, "%s_crc", _name);
+	if(!saveParameter(nvs_key, &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando Checksum!");
 	}
 
@@ -304,7 +302,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 8))){
 			_amdata.analyzers[i].cfg.minmaxData.freq = data.analyzers[i].cfg.minmaxData.freq;
 		}
-		if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
+		if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
 			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 9))){
 				_amdata.analyzers[i].cfg.minmaxData.thdA = data.analyzers[i].cfg.minmaxData.thdA;
 			}

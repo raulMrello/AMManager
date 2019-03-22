@@ -21,10 +21,10 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
     if(MQ::MQClient::isTokenRoot(topic, "set/cfg")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
-        Blob::SetRequest_t<Blob::AMCfgData_t>* req = NULL;
+        Blob::SetRequest_t<metering_manager>* req = NULL;
         bool json_decoded = false;
 		if(_json_supported){
-			req = (Blob::SetRequest_t<Blob::AMCfgData_t>*)Heap::memAlloc(sizeof(Blob::SetRequest_t<Blob::AMCfgData_t>));
+			req = (Blob::SetRequest_t<metering_manager>*)Heap::memAlloc(sizeof(Blob::SetRequest_t<metering_manager>));
 			MBED_ASSERT(req);
 			if(!(json_decoded = JsonParser::getSetRequestFromJson(*req, (char*)msg))){
 				Heap::memFree(req);
@@ -33,7 +33,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		}
 
         // en primer lugar asegura que los datos tienen el tamaño correcto
-        if(!json_decoded && msg_len != sizeof(Blob::SetRequest_t<Blob::AMCfgData_t>)){
+        if(!json_decoded && msg_len != sizeof(Blob::SetRequest_t<metering_manager>)){
         	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nº de datos del mensaje, topic [%s]", topic);
 			return;
         }
@@ -43,10 +43,10 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         MBED_ASSERT(op);
 
         if(!json_decoded){
-			// el mensaje es un blob tipo Blob::AMCfgData_t
-			req = (Blob::SetRequest_t<Blob::AMCfgData_t>*)Heap::memAlloc(sizeof(Blob::SetRequest_t<Blob::AMCfgData_t>));
+			// el mensaje es un blob tipo metering_manager
+			req = (Blob::SetRequest_t<metering_manager>*)Heap::memAlloc(sizeof(Blob::SetRequest_t<metering_manager>));
 			MBED_ASSERT(req);
-			*req = *((Blob::SetRequest_t<Blob::AMCfgData_t>*)msg);
+			*req = *((Blob::SetRequest_t<metering_manager>*)msg);
         }
         op->sig = RecvCfgSet;
 		// apunta a los datos
