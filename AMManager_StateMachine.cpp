@@ -44,11 +44,17 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// inicializa el driver con los datos de calibración
             DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando driver!");
         	while(!_driver->ready()){
-        		// inicia con la calibración de medida por defecto
-        		//_driver->initEnergyIC(NULL, 0, NULL, 0);
-        		_driver->initEnergyIC((uint16_t*)_meter_cal_values, Blob::AMCalibRegCount, (uint16_t*)_meas_cal_values, Blob::AMCalibRegCount);
+        		// inicia por defecto si es un driver EMi10 YTL
+        		if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
+        			_driver->initEnergyIC();
+        		}
+        		// ajusta la calibración si es un driver M90E26
+        		else if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
+        			_driver->initEnergyIC((uint16_t*)_meter_cal_values, MeteringAnalyzerCfgCalibRegCount, (uint16_t*)_meas_cal_values, MeteringAnalyzerCfgCalibRegCount);
+        		}
         		if(!_driver->ready()){
         			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_DRV. Reintentando en 1sec");
+        			Thread::wait(1000);
         		}
         	}
             DEBUG_TRACE_I(_EXPR_, _MODULE_, "Driver OK!");
@@ -56,12 +62,16 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// inicializa el estado de las medidas realizando una medida inicial pero sin notificarla
         	_measure(false);
 
-        	// obtiene los parámetros de calibración
-        	if(_driver->getMeterCalib(_amdata.cfg.calibData.meterRegs, Blob::AMCalibRegCount) != 0){
-        		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeterCalib");
-        	}
-        	if(_driver->getMeasureCalib(_amdata.cfg.calibData.measRegs, Blob::AMCalibRegCount) != 0){
-        		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeasureCalib");
+			// obtiene los parámetros de calibración de cada analizador en caso del M90E26
+        	if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
+        		for(int i=0; i<_driver->getNumAnalyzers(); i++){
+					if(_driver->getMeterCalib(_amdata.analyzers[i].cfg.calibData.meterRegs, MeteringAnalyzerCfgCalibRegCount, i) != 0){
+						DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeterCalib AN=%d", i);
+					}
+					if(_driver->getMeasureCalib(_amdata.analyzers[i].cfg.calibData.measRegs, MeteringAnalyzerCfgCalibRegCount, i) != 0){
+						DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeasureCalib AN=%d", i);
+					}
+        		}
         	}
 
         	// chequea el estado del driver para ver si está en estado de error
@@ -89,13 +99,13 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         // Procesa datos recibidos de la publicación en cmd/$BASE/cfg/set
         case RecvCfgSet:{
-         	Blob::SetRequest_t<Blob::AMCfgData_t>* req = (Blob::SetRequest_t<Blob::AMCfgData_t>*)st_msg->msg;
+         	Blob::SetRequest_t<metering_manager>* req = (Blob::SetRequest_t<metering_manager>*)st_msg->msg;
         	MBED_ASSERT(req);
 
         	// si no hay errores, actualiza la configuración
         	if(req->_error.code == Blob::ErrOK){
         		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando actualización");
-				_updateConfig(req->data, req->keys, req->_error);
+				_updateConfig(req->data, req->_error);
         	}
         	// si hay errores en el mensaje o en la actualización, devuelve resultado sin hacer nada
         	if(req->_error.code != Blob::ErrOK){
@@ -104,11 +114,11 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				MBED_ASSERT(pub_topic);
 				sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
 
-				Blob::Response_t<Blob::AMCfgData_t>* resp = new Blob::Response_t<Blob::AMCfgData_t>(req->idTrans, req->_error, _amdata.cfg);
+				Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
 				MBED_ASSERT(resp);
 
 				if(_json_supported){
-					cJSON* jresp = JsonParser::getJsonFromResponse(*resp);
+					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
 					if(jresp){
 						char* jmsg = cJSON_Print(jresp);
 						cJSON_Delete(jresp);
@@ -120,7 +130,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 					}
 				}
 
-				MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<Blob::AMCfgData_t>), &_publicationCb);
+				MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
 				delete(resp);
 				Heap::memFree(pub_topic);
 				return State::HANDLED;
@@ -136,16 +146,16 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	startMeasureWork();
 
         	// si está habilitada la notificación de actualización, lo notifica
-        	if((_amdata.cfg.updFlagMask & Blob::EnableAMCfgUpdNotif) != 0){
+        	if((_amdata.cfg.updFlags & MeteringManagerCfgUpdNotif) != 0){
         		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Notificando actualización");
 				char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 				MBED_ASSERT(pub_topic);
 				sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
 
-				Blob::Response_t<Blob::AMCfgData_t>* resp = new Blob::Response_t<Blob::AMCfgData_t>(req->idTrans, req->_error, _amdata.cfg);
+				Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
 				MBED_ASSERT(resp);
 				if(_json_supported){
-					cJSON* jresp = JsonParser::getJsonFromResponse(*resp);
+					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
 					if(jresp){
 						char* jmsg = cJSON_Print(jresp);
 						cJSON_Delete(jresp);
@@ -161,7 +171,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 					}
 				}
 				else{
-					MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<Blob::AMCfgData_t>), &_publicationCb);
+					MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
 					delete(resp);
 				}
 				Heap::memFree(pub_topic);
@@ -178,10 +188,10 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
 
 			// responde con los datos solicitados y con los errores (si hubiera) de la decodificación de la solicitud
-			Blob::Response_t<Blob::AMCfgData_t>* resp = new Blob::Response_t<Blob::AMCfgData_t>(req->idTrans, req->_error, _amdata.cfg);
+			Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
 			MBED_ASSERT(resp);
 			if(_json_supported){
-				cJSON* jresp = JsonParser::getJsonFromResponse(*resp);
+				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
 				if(jresp){
 					char* jmsg = cJSON_Print(jresp);
 					cJSON_Delete(jresp);
@@ -193,7 +203,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				}
 			}
 
-			MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<Blob::AMCfgData_t>), &_publicationCb);
+			MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
 			delete(resp);
 
         	// libera la memoria asignada al topic de publicación
@@ -212,10 +222,10 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
 
 			// responde con los datos solicitados y con los errores (si hubiera) de la decodificación de la solicitud
-			Blob::Response_t<Blob::AMStatData_t>* resp = new Blob::Response_t<Blob::AMStatData_t>(req->idTrans, req->_error, _amdata.stat);
+			Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
 			MBED_ASSERT(resp);
 			if(_json_supported){
-				cJSON* jresp = JsonParser::getJsonFromResponse(*resp);
+				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
 				if(jresp){
 					char* jmsg = cJSON_Print(jresp);
 					cJSON_Delete(jresp);
@@ -227,7 +237,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				}
 			}
 
-			MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<Blob::AMStatData_t>), &_publicationCb);
+			MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
 			delete(resp);
 
         	// libera la memoria asignada al topic de publicación
@@ -242,7 +252,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 			MBED_ASSERT(pub_topic);
 			sprintf(pub_topic, "stat/boot/%s", _pub_topic_base);
-			Blob::NotificationData_t<Blob::AMBootData_t> *notif = new Blob::NotificationData_t<Blob::AMBootData_t>(_amdata);
+			Blob::NotificationData_t<metering_manager> *notif = new Blob::NotificationData_t<metering_manager>(_amdata);
 			MBED_ASSERT(notif);
 			if(_json_supported){
 				cJSON* jboot = JsonParser::getJsonFromNotification(*notif);
@@ -257,7 +267,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				}
 			}
 
-			MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<Blob::AMBootData_t>), &_publicationCb);
+			MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<metering_manager>), &_publicationCb);
 			delete(notif);
 			Heap::memFree(pub_topic);
 
@@ -271,11 +281,15 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         case RecvLoadSet:{
         	// actualiza el control de carga actual
         	Blob::AMLoadData_t ld = *(Blob::AMLoadData_t*)st_msg->msg;
-        	if(ld.outValue != _load_data.outValue){
-        		_load_data = ld;
-        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Carga actualizada al %d",_load_data.outValue);
-        		// planifica una nueva notificación de medida en 3 segundos
-        		_instant_meas_counter = SecondsToForcedNotifOnLoadChange;
+        	for(int i=0; i<MeteringManagerCfgMaxNumAnalyzers; i++){
+        		if(ld.ids[i] >= 0){
+        			if(_amdata.stat.loadPercent[ld.ids[i]] != ld.loads[i]){
+        				_amdata.stat.loadPercent[ld.ids[i]] = ld.loads[i];
+        				DEBUG_TRACE_I(_EXPR_, _MODULE_, "Carga del Analiz=%d actualizada al %d", ld.ids[i], ld.loads[i]);
+        				// planifica una nueva notificación de medida en 3 segundos
+        				_instant_meas_counter = SecondsToForcedNotifOnLoadChange;
+        			}
+        		}
         	}
             return State::HANDLED;
         }
