@@ -260,6 +260,18 @@ cJSON* getJsonFromMeteringAnalyzerCfgMinMax(const metering_analyzer_cfg_minmax& 
 		}
 		cJSON_AddItemToObject(json, JsonParser::p_thdV, item);
 	}
+	// active
+	if((item = JsonParser::getJsonFromObj(obj.active)) == NULL){
+		cJSON_Delete(json);
+		return NULL;
+	}
+	cJSON_AddItemToObject(json, JsonParser::p_active, item);
+	// reactive
+	if((item = JsonParser::getJsonFromObj(obj.reactive)) == NULL){
+		cJSON_Delete(json);
+		return NULL;
+	}
+	cJSON_AddItemToObject(json, JsonParser::p_reactive, item);
 
 	return json;
 }
@@ -656,6 +668,16 @@ uint32_t getMeteringAnalyzerCfgMinMaxFromJson(metering_analyzer_cfg_minmax &obj,
 			keys |= subkey;
 		}
 
+	}
+	// active
+	if((value = cJSON_GetObjectItem(json,JsonParser::p_active)) != NULL){
+		subkey = JsonParser::getObjFromJson(obj.active, value)? (1 << 11) : 0;
+		keys |= subkey;
+	}
+	// reactive
+	if((value = cJSON_GetObjectItem(json,JsonParser::p_reactive)) != NULL){
+		subkey = JsonParser::getObjFromJson(obj.reactive, value)? (1 << 12) : 0;
+		keys |= subkey;
 	}
 	obj._keys = keys;
 	return keys;
