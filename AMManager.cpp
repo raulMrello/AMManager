@@ -155,7 +155,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.voltage, _amdata.analyzers[i].cfg.minmaxData.voltage,
 							MeteringAnalyzerVoltageOverLimitEvt,
 							MeteringAnalyzerVoltageBelowLimitEvt,
-							MeteringAnalyzerVoltageInRangeEvt);
+							0);
 			// chequeo corriente
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -163,7 +163,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.current, _amdata.analyzers[i].cfg.minmaxData.current,
 							MeteringAnalyzerCurrentOverLimitEvt,
 							MeteringAnalyzerCurrentBelowLimitEvt,
-							MeteringAnalyzerCurrentInRangeEvt);
+							0);
 			// chequeo phase
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -171,7 +171,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.phase, _amdata.analyzers[i].cfg.minmaxData.phase,
 							MeteringAnalyzerPhaseOverLimitEvt,
 							MeteringAnalyzerPhaseBelowLimitEvt,
-							MeteringAnalyzerPhaseInRangeEvt);
+							0);
 			// chequeo factor de potencia
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -179,7 +179,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.pfactor, _amdata.analyzers[i].cfg.minmaxData.pfactor,
 							MeteringAnalyzerPFactorOverLimitEvt,
 							MeteringAnalyzerPFactorBelowLimitEvt,
-							MeteringAnalyzerPFactorInRangeEvt);
+							0);
 			// chequeo potencia activa
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -187,7 +187,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.aPow, _amdata.analyzers[i].cfg.minmaxData.aPow,
 							MeteringAnalyzerActPowOverLimitEvt,
 							MeteringAnalyzerActPowBelowLimitEvt,
-							MeteringAnalyzerActPowInRangeEvt);
+							0);
 			// chequeo potencia reactiva
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -195,7 +195,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.rPow, _amdata.analyzers[i].cfg.minmaxData.rPow,
 							MeteringAnalyzerReactPowOverLimitEvt,
 							MeteringAnalyzerReactPowBelowLimitEvt,
-							MeteringAnalyzerReactPowInRangeEvt);
+							0);
 			// chequeo frecuencia
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -203,7 +203,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.freq, _amdata.analyzers[i].cfg.minmaxData.freq,
 							MeteringAnalyzerFrequencyOverLimitEvt,
 							MeteringAnalyzerFrequencyBelowLimitEvt,
-							MeteringAnalyzerFrequencyInRangeEvt);
+							0);
 			// chequeo THD-A
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -211,7 +211,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.thdA, _amdata.analyzers[i].cfg.minmaxData.thdA,
 							MeteringAnalyzerThdAOverLimitEvt,
 							MeteringAnalyzerThdABelowLimitEvt,
-							MeteringAnalyzerThdAInRangeEvt);
+							0);
 			// chequeo THD-V
 			alarmChecking(	alarm_notif[i],
 							_amdata.analyzers[i].stat.flags,
@@ -219,7 +219,23 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.thdV, _amdata.analyzers[i].cfg.minmaxData.thdV,
 							MeteringAnalyzerThdVOverLimitEvt,
 							MeteringAnalyzerThdVBelowLimitEvt,
-							MeteringAnalyzerThdVInRangeEvt);
+							0);
+			// chequeo energía activa
+			alarmChecking(	alarm_notif[i],
+							_amdata.analyzers[i].stat.flags,
+							_amdata.analyzers[i].cfg.evtFlags,
+							_amdata.analyzers[i].stat.energyValues.active, _amdata.analyzers[i].cfg.minmaxData.active,
+							MeteringAnalyzerActEnergyOverLimitEvt,
+							0,
+							0);
+			// chequeo energía activa
+			alarmChecking(	alarm_notif[i],
+							_amdata.analyzers[i].stat.flags,
+							_amdata.analyzers[i].cfg.evtFlags,
+							_amdata.analyzers[i].stat.energyValues.reactive, _amdata.analyzers[i].cfg.minmaxData.reactive,
+							MeteringAnalyzerReactEnergyOverLimitEvt,
+							0,
+							0);
 		}
 		//o si no hay carga activa
 		else{
@@ -231,7 +247,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[i].stat.measureValues.current, minmax,
 							MeteringAnalyzerCurrentOverLimitEvt,
 							MeteringAnalyzerCurrentBelowLimitEvt,
-							MeteringAnalyzerCurrentInRangeEvt);
+							0);
 		}
 	}
 
@@ -309,8 +325,8 @@ void AMManager::alarmChecking(	bool& alarm_notif,
 		flags &= ~(flag_over_limit|flag_below_limit);
 		//_amdata.stat.flags |= flag_in_range;
 
-		// si el flag está activado, notifica evento
-		if(flagmask & flag_in_range){
+		// si el flag está activado o no éste no se utiliza, notifica evento al volver al rango
+		if((flagmask & flag_in_range) || (flag_in_range==0)){
 			alarm_notif = true;
 		}
 	}
