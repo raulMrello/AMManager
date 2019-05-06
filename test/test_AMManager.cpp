@@ -102,7 +102,7 @@ TEST_CASE("Create AMManager with EMi10YTL Driver.....................", "[AMMana
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "YTLBus UART driver setup");
 	static const uint8_t ytl_address[] = {0x54,0x30,0x0a,0xba,0x95,0x03};
 	static const uint8_t ytl_password[] = {0x06, 0x45, 0x4d, 0x69, 0x80, 0x90, 0xa0};
-	ytlbus = new YTLBus(GPIO_NUM_12, GPIO_NUM_13, ytl_address, ytl_password, 1024, ESP_LOG_DEBUG);
+	ytlbus = new YTLBus(GPIO_NUM_17, GPIO_NUM_16, ytl_address, ytl_password, 1024, ESP_LOG_DEBUG);
 	MBED_ASSERT(ytlbus);
 	while(!ytlbus->ready()){
 		Thread::wait(100);

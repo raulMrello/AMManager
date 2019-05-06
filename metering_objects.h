@@ -63,35 +63,27 @@ enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerNoEvents				= 0,			//!< Flag para indicar que no hay eventos
 	MeteringAnalyzerVoltageOverLimitEvt		= (1 << 0),		//!< Evento al superar el límite superior (voltaje)
 	MeteringAnalyzerVoltageBelowLimitEvt	= (1 << 1),		//!< Evento al superar el límite inferior (voltaje)
-	MeteringAnalyzerVoltageInRangeEvt 		= (1 << 2),		//!< Evento al volver a entrar en rango (voltaje)
-	MeteringAnalyzerCurrentOverLimitEvt		= (1 << 3),		//!< Evento al superar el límite superior (corriente)
-	MeteringAnalyzerCurrentBelowLimitEvt 	= (1 << 4),		//!< Evento al superar el límite inferior (corriente)
-	MeteringAnalyzerCurrentInRangeEvt 		= (1 << 5),		//!< Evento al volver a entrar en rango (corriente)
-	MeteringAnalyzerPhaseOverLimitEvt		= (1 << 6),		//!< Evento al superar el límite superior (fase)
-	MeteringAnalyzerPhaseBelowLimitEvt 		= (1 << 7),		//!< Evento al superar el límite inferior (fase)
-	MeteringAnalyzerPhaseInRangeEvt 		= (1 << 8),		//!< Evento al volver a entrar en rango (fase)
-	MeteringAnalyzerPFactorOverLimitEvt		= (1 << 9),		//!< Evento al superar el límite superior (factor de potencia)
-	MeteringAnalyzerPFactorBelowLimitEvt 	= (1 << 10),	//!< Evento al superar el límite inferior (factor de potencia)
-	MeteringAnalyzerPFactorInRangeEvt 		= (1 << 11),	//!< Evento al volver a entrar en rango (factor de potencia)
-	MeteringAnalyzerCosPhyOverLimitEvt		= (1 << 12),	//!< Evento al superar el límite superior (coseno phy)
-	MeteringAnalyzerCosPhyBelowLimitEvt 	= (1 << 13),	//!< Evento al superar el límite inferior (coseno phy)
-	MeteringAnalyzerCosPhyInRangeEvt 		= (1 << 14),	//!< Evento al volver a entrar en rango (coseno phy)
-	MeteringAnalyzerActPowOverLimitEvt		= (1 << 15),	//!< Evento al superar el límite superior (potencia activa)
-	MeteringAnalyzerActPowBelowLimitEvt 	= (1 << 16),	//!< Evento al superar el límite inferior (potencia activa)
-	MeteringAnalyzerActPowInRangeEvt 		= (1 << 17),	//!< Evento al volver a entrar en rango (potencia activa)
-	MeteringAnalyzerReactPowOverLimitEvt	= (1 << 18),	//!< Evento al superar el límite superior (potencia reactiva)
-	MeteringAnalyzerReactPowBelowLimitEvt	= (1 << 19),	//!< Evento al superar el límite inferior (potencia reactiva)
-	MeteringAnalyzerReactPowInRangeEvt 		= (1 << 20),	//!< Evento al volver a entrar en rango (potencia reactiva)
-	MeteringAnalyzerFrequencyOverLimitEvt	= (1 << 21),	//!< Evento al superar el límite superior (frecuencia)
-	MeteringAnalyzerFrequencyBelowLimitEvt	= (1 << 22),	//!< Evento al superar el límite inferior (frecuencia)
-	MeteringAnalyzerFrequencyInRangeEvt 	= (1 << 23),	//!< Evento al volver a entrar en rango (frecuencia)
-	MeteringAnalyzerThdAOverLimitEvt		= (1 << 24),	//!< Evento al superar el límite superior (THD-A)
-	MeteringAnalyzerThdABelowLimitEvt		= (1 << 25),	//!< Evento al superar el límite inferior (THD-A)
-	MeteringAnalyzerThdAInRangeEvt 			= (1 << 26),	//!< Evento al volver a entrar en rango (THD-A)
-	MeteringAnalyzerThdVOverLimitEvt		= (1 << 27),	//!< Evento al superar el límite superior (THD-V)
-	MeteringAnalyzerThdVBelowLimitEvt		= (1 << 28),	//!< Evento al superar el límite inferior (THD-V)
-	MeteringAnalyzerThdVInRangeEvt 			= (1 << 29),	//!< Evento al volver a entrar en rango (THD-V)
-	MeteringAnalyzerInstantMeasureEvt 		= (1 << 30),	//!< Evento al realizar una medida
+	MeteringAnalyzerCurrentOverLimitEvt		= (1 << 2),		//!< Evento al superar el límite superior (corriente)
+	MeteringAnalyzerCurrentBelowLimitEvt 	= (1 << 3),		//!< Evento al superar el límite inferior (corriente)
+	MeteringAnalyzerPhaseOverLimitEvt		= (1 << 4),		//!< Evento al superar el límite superior (fase)
+	MeteringAnalyzerPhaseBelowLimitEvt 		= (1 << 5),		//!< Evento al superar el límite inferior (fase)
+	MeteringAnalyzerPFactorOverLimitEvt		= (1 << 6),		//!< Evento al superar el límite superior (factor de potencia)
+	MeteringAnalyzerPFactorBelowLimitEvt 	= (1 << 7),		//!< Evento al superar el límite inferior (factor de potencia)
+	MeteringAnalyzerCosPhyOverLimitEvt		= (1 << 8),		//!< Evento al superar el límite superior (coseno phy)
+	MeteringAnalyzerCosPhyBelowLimitEvt 	= (1 << 9),		//!< Evento al superar el límite inferior (coseno phy)
+	MeteringAnalyzerActPowOverLimitEvt		= (1 << 10),	//!< Evento al superar el límite superior (potencia activa)
+	MeteringAnalyzerActPowBelowLimitEvt 	= (1 << 11),	//!< Evento al superar el límite inferior (potencia activa)
+	MeteringAnalyzerReactPowOverLimitEvt	= (1 << 12),	//!< Evento al superar el límite superior (potencia reactiva)
+	MeteringAnalyzerReactPowBelowLimitEvt	= (1 << 13),	//!< Evento al superar el límite inferior (potencia reactiva)
+	MeteringAnalyzerFrequencyOverLimitEvt	= (1 << 14),	//!< Evento al superar el límite superior (frecuencia)
+	MeteringAnalyzerFrequencyBelowLimitEvt	= (1 << 15),	//!< Evento al superar el límite inferior (frecuencia)
+	MeteringAnalyzerThdAOverLimitEvt		= (1 << 16),	//!< Evento al superar el límite superior (THD-A)
+	MeteringAnalyzerThdABelowLimitEvt		= (1 << 17),	//!< Evento al superar el límite inferior (THD-A)
+	MeteringAnalyzerThdVOverLimitEvt		= (1 << 18),	//!< Evento al superar el límite superior (THD-V)
+	MeteringAnalyzerThdVBelowLimitEvt		= (1 << 19),	//!< Evento al superar el límite inferior (THD-V)
+	MeteringAnalyzerActEnergyOverLimitEvt	= (1 << 20),	//!< Evento al superar el límite superior (energía activa)
+	MeteringAnalyzerReactEnergyOverLimitEvt = (1 << 21),	//!< Evento al superar el límite superior (energía reactiva)
+	MeteringAnalyzerInstantMeasureEvt 		= (1 << 22),	//!< Evento al realizar una medida
 	/* elemento inválido */
 	MeteringAnalyzerInvalidEvt				= (1 << 31)
 };
@@ -169,6 +161,8 @@ struct metering_analyzer_cfg_minmax{
 	common_range_minmaxthres_double freq;
 	common_range_minmaxthres_double thdA;
 	common_range_minmaxthres_double thdV;
+	common_range_minmaxthres_double active;
+	common_range_minmaxthres_double reactive;
 	uint8_t _keys;
 };
 

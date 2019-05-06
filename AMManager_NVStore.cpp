@@ -125,6 +125,8 @@ void AMManager::setDefaultConfig(){
 		_amdata.analyzers[i].cfg.minmaxData.freq 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 49.7, 	50.3, 	0.1};
 		_amdata.analyzers[i].cfg.minmaxData.thdA 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
 		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
+		_amdata.analyzers[i].cfg.minmaxData.active 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
+		_amdata.analyzers[i].cfg.minmaxData.reactive= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
 		for(int i=0;i<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i++){
 			_amdata.analyzers[i].cfg.calibData.meterRegs[i] = _meter_cal_values[i];
 		}
@@ -310,6 +312,13 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 				_amdata.analyzers[i].cfg.minmaxData.thdV = data.analyzers[i].cfg.minmaxData.thdV;
 			}
 		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 11))){
+			_amdata.analyzers[i].cfg.minmaxData.active = data.analyzers[i].cfg.minmaxData.active;
+		}
+		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 12))){
+			_amdata.analyzers[i].cfg.minmaxData.reactive = data.analyzers[i].cfg.minmaxData.reactive;
+		}
+
 		// evalúo metering:manager:analyzer[]:calib:cfg
 		if((data.analyzers[i].cfg.calibData._keys & (1 << 0)) && data.analyzers[i].cfg.calibData.uid != _amdata.analyzers[i].cfg.calibData.uid){
 			err.code = Blob::ErrUidInvalid;
