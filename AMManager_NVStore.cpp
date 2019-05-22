@@ -127,17 +127,17 @@ void AMManager::setDefaultConfig(){
 		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
 		_amdata.analyzers[i].cfg.minmaxData.active 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
 		_amdata.analyzers[i].cfg.minmaxData.reactive= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
-		for(int i=0;i<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i++){
-			_amdata.analyzers[i].cfg.calibData.meterRegs[i] = _meter_cal_values[i];
+		for(int j=0;j<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);j++){
+			_amdata.analyzers[i].cfg.calibData.meterRegs[j] = _meter_cal_values[j];
 		}
-		for(int i=sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);i<MeteringAnalyzerCfgCalibRegCount;i++){
-			_amdata.analyzers[i].cfg.calibData.meterRegs[i] = 0;
+		for(int j=sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);j<MeteringAnalyzerCfgCalibRegCount;j++){
+			_amdata.analyzers[i].cfg.calibData.meterRegs[j] = 0;
 		}
-		for(int i=0;i<sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);i++){
-			_amdata.analyzers[i].cfg.calibData.measRegs[i] = _meas_cal_values[i];
+		for(int j=0;j<sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);j++){
+			_amdata.analyzers[i].cfg.calibData.measRegs[j] = _meas_cal_values[j];
 		}
-		for(int i=sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);i<MeteringAnalyzerCfgCalibRegCount;i++){
-			_amdata.analyzers[i].cfg.calibData.measRegs[i] = 0;
+		for(int j=sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);j<MeteringAnalyzerCfgCalibRegCount;j++){
+			_amdata.analyzers[i].cfg.calibData.measRegs[j] = 0;
 		}
 	}
 
@@ -179,7 +179,7 @@ void AMManager::restoreConfig(){
 		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Datos recuperados. Chequeando integridad...");
 
 		// chequea el crc
-		uint8_t* crc_buf = (char*)malloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
+		uint8_t* crc_buf = (char*)Heap::memAlloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
 		MBED_ASSERT(crc_buf);
 		memcpy(crc_buf, &_amdata.cfg, sizeof(metering_manager_cfg));
 		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
@@ -225,7 +225,7 @@ void AMManager::saveConfig(){
 	}
 
 	// genera el crc
-	uint8_t* crc_buf = (char*)malloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
+	uint8_t* crc_buf = (char*)Heap::memAlloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
 	MBED_ASSERT(crc_buf);
 	memcpy(crc_buf, &_amdata.cfg, sizeof(metering_manager_cfg));
 	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
@@ -326,12 +326,12 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		}
 		if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
 			if((data.analyzers[i].cfg.calibData._keys & (1 << 1))){
-				for(int i=0; i<MeteringAnalyzerCfgCalibRegCount; i++)
-					_amdata.analyzers[i].cfg.calibData.meterRegs[i] = data.analyzers[i].cfg.calibData.meterRegs[i];
+				for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
+					_amdata.analyzers[i].cfg.calibData.meterRegs[j] = data.analyzers[i].cfg.calibData.meterRegs[j];
 			}
 			if((data.analyzers[i].cfg.calibData._keys & (1 << 2))){
-				for(int i=0; i<MeteringAnalyzerCfgCalibRegCount; i++)
-					_amdata.analyzers[i].cfg.calibData.measRegs[i] = data.analyzers[i].cfg.calibData.measRegs[i];
+				for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
+					_amdata.analyzers[i].cfg.calibData.measRegs[j] = data.analyzers[i].cfg.calibData.measRegs[j];
 			}
 		}
 	}

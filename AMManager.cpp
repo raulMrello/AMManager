@@ -279,10 +279,16 @@ void AMManager::_measure(bool enable_notif) {
 			if(_json_supported){
 				cJSON* jstat = JsonParser::getJsonFromNotification(*notif, ObjSelectState);
 				if(jstat){
-					char* jmsg = cJSON_Print(jstat);
+					char* jmsg = cJSON_PrintUnformatted(jstat);
 					cJSON_Delete(jstat);
 					MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
 					Heap::memFree(jmsg);
+					delete(notif);
+					Heap::memFree(pub_topic);
+					return;
+				}
+				else{
+					DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERROR al formar Blob::NotificationData_t<metering_manager>");
 					delete(notif);
 					Heap::memFree(pub_topic);
 					return;
