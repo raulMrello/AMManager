@@ -119,23 +119,13 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
 				if(_json_supported){
 					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
-					if(jresp){
-						char* jmsg = cJSON_PrintUnformatted(jresp);
-						cJSON_Delete(jresp);
-						MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
-						Heap::memFree(jmsg);
-						delete(resp);
-						Heap::memFree(pub_topic);
-						return State::HANDLED;
-					}
-					else{
-						DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERROR al formar Blob::Response_t<metering_manager>");
-						Heap::memFree(pub_topic);
-						return State::HANDLED;
-					}
+					MBED_ASSERT(jresp);
+					MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+					cJSON_Delete(jresp);
 				}
-
-				MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+				else {
+					MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+				}
 				delete(resp);
 				Heap::memFree(pub_topic);
 				return State::HANDLED;
@@ -161,26 +151,14 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				MBED_ASSERT(resp);
 				if(_json_supported){
 					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
-					if(jresp){
-						char* jmsg = cJSON_PrintUnformatted(jresp);
-						cJSON_Delete(jresp);
-						MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
-						Heap::memFree(jmsg);
-						delete(resp);
-						Heap::memFree(pub_topic);
-						return State::HANDLED;
-					}
-					else{
-						DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error on getJsonFromResponse <%s>", resp->error.descr);
-						delete(resp);
-						Heap::memFree(pub_topic);
-						return State::HANDLED;
-					}
+					MBED_ASSERT(jresp);
+					MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+					cJSON_Delete(jresp);
 				}
 				else{
 					MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
-					delete(resp);
 				}
+				delete(resp);
 				Heap::memFree(pub_topic);
         	}
             return State::HANDLED;
@@ -199,29 +177,15 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			MBED_ASSERT(resp);
 			if(_json_supported){
 				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
-				if(jresp){
-					char* jmsg = cJSON_PrintUnformatted(jresp);
-					cJSON_Delete(jresp);
-					MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
-					Heap::memFree(jmsg);
-					delete(resp);
-					Heap::memFree(pub_topic);
-					return State::HANDLED;
-				}
-				else{
-					DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error on getJsonFromResponse <%s>", resp->error.descr);
-					delete(resp);
-					Heap::memFree(pub_topic);
-					return State::HANDLED;
-				}
+				MBED_ASSERT(jresp);
+				MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+				cJSON_Delete(jresp);
 			}
-
-			MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+			else{
+				MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+			}
 			delete(resp);
-
-        	// libera la memoria asignada al topic de publicación
 			Heap::memFree(pub_topic);
-
 			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con configuracion solicitada");
             return State::HANDLED;
         }
@@ -239,29 +203,15 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			MBED_ASSERT(resp);
 			if(_json_supported){
 				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
-				if(jresp){
-					char* jmsg = cJSON_PrintUnformatted(jresp);
-					cJSON_Delete(jresp);
-					MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
-					Heap::memFree(jmsg);
-					delete(resp);
-					Heap::memFree(pub_topic);
-					return State::HANDLED;
-				}
-				else{
-					DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error on getJsonFromResponse <%s>", resp->error.descr);
-					delete(resp);
-					Heap::memFree(pub_topic);
-					return State::HANDLED;
-				}
+				MBED_ASSERT(jresp);
+				MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+				cJSON_Delete(jresp);
 			}
-
-			MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+			else{
+				MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+			}
 			delete(resp);
-
-        	// libera la memoria asignada al topic de publicación
 			Heap::memFree(pub_topic);
-
 			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
             return State::HANDLED;
         }
@@ -275,30 +225,16 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			MBED_ASSERT(notif);
 			if(_json_supported){
 				cJSON* jboot = JsonParser::getJsonFromNotification(*notif);
-				if(jboot){
-					char* jmsg = cJSON_PrintUnformatted(jboot);
-					cJSON_Delete(jboot);
-					MQ::MQClient::publish(pub_topic, jmsg, strlen(jmsg)+1, &_publicationCb);
-					Heap::memFree(jmsg);
-					delete(notif);
-					Heap::memFree(pub_topic);
-					return State::HANDLED;
-				}
-				else{
-					DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error on Blob::NotificationData_t<metering_manager>");
-					delete(notif);
-					Heap::memFree(pub_topic);
-					return State::HANDLED;
-				}
+				MBED_ASSERT(jboot);
+				MQ::MQClient::publish(pub_topic, jboot, sizeof(cJSON*), &_publicationCb);
+				cJSON_Delete(jboot);
 			}
-
-			MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<metering_manager>), &_publicationCb);
+			else {
+				MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<metering_manager>), &_publicationCb);
+			}
 			delete(notif);
 			Heap::memFree(pub_topic);
-
-			// una vez notificado el boot inicia el proceso de medida
 			startMeasureWork();
-
             return State::HANDLED;
         }
 
