@@ -26,7 +26,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		if(_json_supported){
 			req = (Blob::SetRequest_t<metering_manager>*)Heap::memAlloc(sizeof(Blob::SetRequest_t<metering_manager>));
 			MBED_ASSERT(req);
-			if(!(json_decoded = JsonParser::getSetRequestFromJson(*req, (char*)msg))){
+			if(!(json_decoded = JsonParser::getSetRequestFromJson(*req, (cJSON*)msg))){
 				Heap::memFree(req);
 				DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_JSON. Decodificando el mensaje");
 			}
@@ -71,7 +71,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         if(_json_supported){
 			req = (Blob::GetRequest_t*)Heap::memAlloc(sizeof(Blob::GetRequest_t));
 			MBED_ASSERT(req);
-			if(!(json_decoded = JsonParser::getGetRequestFromJson(*req, (char*)msg))){
+			if(!(json_decoded = JsonParser::getGetRequestFromJson(*req, (cJSON*)msg))){
 				Heap::memFree(req);
 			}
         }
@@ -137,7 +137,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         if(_json_supported){
 			req = (Blob::GetRequest_t*)Heap::memAlloc(sizeof(Blob::GetRequest_t));
 			MBED_ASSERT(req);
-			if(!(json_decoded = JsonParser::getGetRequestFromJson(*req, (char*)msg))){
+			if(!(json_decoded = JsonParser::getGetRequestFromJson(*req, (cJSON*)msg))){
 				Heap::memFree(req);
 			}
         }
@@ -181,7 +181,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		if(_json_supported){
 			load = (Blob::AMLoadData_t*)Heap::memAlloc(sizeof(Blob::AMLoadData_t));
 			MBED_ASSERT(load);
-			if(!(json_decoded = JsonParser::getObjFromJson(*load, (char*)msg))){
+			if(!(json_decoded = JsonParser::getObjFromJson(*load, (cJSON*)msg))){
 				Heap::memFree(load);
 			}
 		}
