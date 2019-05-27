@@ -120,7 +120,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				if(_json_supported){
 					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
 					MBED_ASSERT(jresp);
-					MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+					MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
 					cJSON_Delete(jresp);
 				}
 				else {
@@ -152,7 +152,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 				if(_json_supported){
 					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
 					MBED_ASSERT(jresp);
-					MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+					MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
 					cJSON_Delete(jresp);
 				}
 				else{
@@ -178,7 +178,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			if(_json_supported){
 				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
 				MBED_ASSERT(jresp);
-				MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+				MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
 				cJSON_Delete(jresp);
 			}
 			else{
@@ -204,7 +204,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			if(_json_supported){
 				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
 				MBED_ASSERT(jresp);
-				MQ::MQClient::publish(pub_topic, jresp, sizeof(cJSON*), &_publicationCb);
+				MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
 				cJSON_Delete(jresp);
 			}
 			else{
@@ -226,7 +226,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			if(_json_supported){
 				cJSON* jboot = JsonParser::getJsonFromNotification(*notif);
 				MBED_ASSERT(jboot);
-				MQ::MQClient::publish(pub_topic, jboot, sizeof(cJSON*), &_publicationCb);
+				MQ::MQClient::publish(pub_topic, &jboot, sizeof(cJSON**), &_publicationCb);
 				cJSON_Delete(jboot);
 			}
 			else {
