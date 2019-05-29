@@ -148,6 +148,40 @@ void AMManager::setDefaultConfig(){
 
 //------------------------------------------------------------------------------------
 void AMManager::restoreConfig(){
+	// inicio el estado por defecto
+	_amdata = {0};
+
+	// lee la versión del driver integrado para formar el uid
+	if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
+		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_EMi10_YTL);
+		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_EMi10_YTL);
+		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_EMi10_YTL);
+			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL);
+		}
+	}
+	else if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
+		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_M90E26);
+		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_M90E26);
+		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_M90E26);
+			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_M90E26);
+			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_M90E26);
+			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_M90E26);
+		}
+	}
+	else{
+		DEBUG_TRACE_E(_EXPR_, _MODULE_, "UID no definido para versión %s", _driver->getVersion());
+	}
+
+	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
+	_amdata._numAnalyzers 	= _driver->getNumAnalyzers();
+	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
+	for(int i=0;i<_amdata._numAnalyzers;i++){
+		_driver->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
+	}
 
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Recuperando datos de memoria NV...");
 	bool success = true;
