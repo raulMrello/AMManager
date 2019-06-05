@@ -101,6 +101,8 @@ class AMManager : public ActiveModule {
     	RecvStatGet	  = (State::EV_RESERVED_USER << 2),  /// Flag activado al recibir mensaje en "get/stat"
     	RecvBootGet	  = (State::EV_RESERVED_USER << 3),  /// Flag activado al recibir mensaje en "get/boot"
     	RecvLoadSet	  = (State::EV_RESERVED_USER << 4),  /// Flag activado al recibir mensaje en "set/load"
+    	RecvStopSet	  = (State::EV_RESERVED_USER << 5),  /// Flag activado al recibir mensaje en "set/stop"
+    	RecvRestartSet	  = (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
     };
 
 

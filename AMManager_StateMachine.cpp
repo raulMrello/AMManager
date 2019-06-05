@@ -255,6 +255,20 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
+        // Procesa datos recibidos de la publicación en get/boot
+        case RecvStopSet:{
+        	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Deteniendo medidas electricas");
+			stopMeasureWork();
+            return State::HANDLED;
+        }
+
+        // Procesa datos recibidos de la publicación en get/boot
+        case RecvRestartSet:{
+        	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Reanudando medidas electricas");
+			startMeasureWork();
+            return State::HANDLED;
+        }
+
         case State::EV_EXIT:{
             nextState();
             return State::HANDLED;

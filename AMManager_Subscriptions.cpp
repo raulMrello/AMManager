@@ -216,6 +216,51 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		}
         return;
     }
+
+    // si es un comando para solicitar los datos de arranque
+    if(MQ::MQClient::isTokenRoot(topic, "set/stop")){
+        DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
+
+        // crea el mensaje para publicar en la máquina de estados
+        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        MBED_ASSERT(op);
+
+        op->sig = RecvStopSet;
+		// apunta a los datos
+		op->msg = NULL;
+
+		// postea en la cola de la máquina de estados
+		if(putMessage(op) != osOK){
+			if(op->msg){
+				Heap::memFree(op->msg);
+			}
+			Heap::memFree(op);
+		}
+        return;
+    }
+
+    // si es un comando para solicitar los datos de arranque
+    if(MQ::MQClient::isTokenRoot(topic, "set/restart")){
+        DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
+
+        // crea el mensaje para publicar en la máquina de estados
+        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        MBED_ASSERT(op);
+
+        op->sig = RecvRestartSet;
+		// apunta a los datos
+		op->msg = NULL;
+
+		// postea en la cola de la máquina de estados
+		if(putMessage(op) != osOK){
+			if(op->msg){
+				Heap::memFree(op->msg);
+			}
+			Heap::memFree(op);
+		}
+        return;
+    }
+
     DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_TOPIC. No se puede procesar el topic [%s]", topic);
 }
 
