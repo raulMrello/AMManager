@@ -15,31 +15,26 @@
 #include "common_objects.h"
 #include "cJSON.h"
 
-
-/** UIDs */
-#define UID_METERING_MANAGER(vers)					(uint32_t)(0x00000001 | ((uint32_t)vers << 20))
-#define UID_METERING_MANAGER_CFG(vers)				(uint32_t)(0x00000002 | ((uint32_t)vers << 20))
-#define UID_METERING_MANAGER_STAT(vers)				(uint32_t)(0x00000003 | ((uint32_t)vers << 20))
-#define UID_METERING_ANALYZER(vers)					(uint32_t)(0x00000004 | ((uint32_t)vers << 20))
-#define UID_METERING_ANALYZER_CFG(vers)				(uint32_t)(0x00000005 | ((uint32_t)vers << 20))
-#define UID_METERING_ANALYZER_CFG_MINMAX(vers)		(uint32_t)(0x00000006 | ((uint32_t)vers << 20))
-#define UID_METERING_ANALYZER_CFG_CALIB(vers)		(uint32_t)(0x00000007 | ((uint32_t)vers << 20))
-#define UID_METERING_ANALYZER_STAT(vers)			(uint32_t)(0x00000008 | ((uint32_t)vers << 20))
-#define UID_METERING_ANALYZER_STAT_TOTALS(vers)		(uint32_t)(0x00000009 | ((uint32_t)vers << 20))
-#define UID_METERING_ANALYZER_STAT_MEASURE(vers)	(uint32_t)(0x0000000A | ((uint32_t)vers << 20))
-
-/** Versiones */
-#define VERS_METERING_EMi10_YTL		0
-#define VERS_METERING_NAME_0		"EMi10YTL"
-
-#define VERS_METERING_M90E26		1
-#define VERS_METERING_NAME_1		"M90E26"
+/** Versiones soportadas */
+#define VERS_METERING_EMi10_YTL			0
+#define VERS_METERING_EMi10_YTL_NAME	(const char*)"EMi10YTL"
+#define VERS_METERING_M90E26			1
+#define VERS_METERING_M90E26_NAME		(const char*)"M90E26"
 
 
-static inline const char* VERS_METERING_NAME(int vers){
-	switch(vers){
-		case VERS_METERING_EMi10_YTL:	return VERS_METERING_NAME_0;
-		case VERS_METERING_M90E26:		return VERS_METERING_NAME_1;
+/** Selección de la versión utilizada 	*/
+/** DEFINIR SEGÚN APLICACIÓN 			*/
+#define VERS_METERING_SELECTED		VERS_METERING_EMi10_YTL /*VERS_METERING_M90E26*/
+
+/** Macro de generación de UIDs*/
+#define UID_METERING_MANAGER		(uint32_t)(0x00000001 | ((uint32_t)VERS_METERING_SELECTED << 20))
+#define UID_METERING_ANALYZER		(uint32_t)(0x00000002 | ((uint32_t)VERS_METERING_SELECTED << 20))
+
+/** Macro de generación de nombre de versión */
+static inline const char* VERS_METERING_NAME(){
+	switch(VERS_METERING_SELECTED){
+		case VERS_METERING_EMi10_YTL:	return VERS_METERING_EMi10_YTL_NAME;
+		case VERS_METERING_M90E26:		return VERS_METERING_M90E26_NAME;
 		default: 						return "";
 	}
 }
@@ -108,7 +103,6 @@ static const uint8_t MeteringAnalyzerCfgCalibRegCount = 16;
 
 /**Objeto ppl:energy:analyzer:stat:measure */
 struct metering_analyzer_stat_measure{
-	uint32_t uid;
 	double voltage;
 	double current;
 	double phase;
@@ -124,7 +118,6 @@ struct metering_analyzer_stat_measure{
 
 /**Objeto ppl:energy:analyzer:stat:totals */
 struct metering_analyzer_stat_totals{
-	uint32_t uid;
 	double active;
 	double reactive;
 };
@@ -132,7 +125,6 @@ struct metering_analyzer_stat_totals{
 
 /**Objeto ppl:energy:analyzer:stat */
 struct metering_analyzer_stat{
-	uint32_t uid;
 	uint32_t flags;
 	metering_analyzer_stat_totals energyValues;
 	metering_analyzer_stat_measure measureValues;
@@ -141,7 +133,6 @@ struct metering_analyzer_stat{
 
 /**Objeto ppl:energy:analyzer:cfg:calib */
 struct metering_analyzer_cfg_calib{
-	uint32_t uid;
 	uint16_t meterRegs[MeteringAnalyzerCfgCalibRegCount];
 	uint16_t measRegs[MeteringAnalyzerCfgCalibRegCount];
 	uint8_t _keys;
@@ -150,7 +141,6 @@ struct metering_analyzer_cfg_calib{
 
 /**Objeto ppl:energy:analyzer:cfg:minmax */
 struct metering_analyzer_cfg_minmax{
-	uint32_t uid;
 	common_range_minmaxthres_double voltage;
 	common_range_minmaxthres_double current;
 	common_range_minmaxthres_double phase;
@@ -169,7 +159,6 @@ struct metering_analyzer_cfg_minmax{
 
 /**Objeto ppl:energy:analyzer:cfg */
 struct metering_analyzer_cfg{
-	uint32_t uid;
 	uint32_t updFlags;
 	uint32_t evtFlags;
 	metering_analyzer_cfg_minmax minmaxData;
@@ -189,7 +178,6 @@ struct metering_analyzer{
 
 /**Objeto ppl:energy:stat */
 struct metering_manager_stat{
-	uint32_t uid;
 	uint8_t loadPercent[MeteringManagerCfgMaxNumAnalyzers];
 	uint8_t _numAnalyzers;
 };
@@ -197,7 +185,6 @@ struct metering_manager_stat{
 
 /**Objeto ppl:energy:cfg */
 struct metering_manager_cfg{
-	uint32_t uid;
 	uint32_t updFlags;
 	uint16_t measPeriod;
 	uint8_t  verbosity;
