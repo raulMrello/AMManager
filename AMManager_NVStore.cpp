@@ -73,36 +73,9 @@ void AMManager::setDefaultConfig(){
 	_amdata = {0};
 
 	// lee la versión del driver integrado para formar el uid
-	if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
-		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_EMi10_YTL);
-		_amdata.cfg.uid 	= UID_METERING_MANAGER_CFG(VERS_METERING_EMi10_YTL);
-		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_EMi10_YTL);
-		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
-			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].cfg.uid 				= UID_METERING_ANALYZER_CFG(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].cfg.minmaxData.uid 	= UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].cfg.calibData.uid 		= UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL);
-		}
-	}
-	else if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
-		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_M90E26);
-		_amdata.cfg.uid 	= UID_METERING_MANAGER_CFG(VERS_METERING_M90E26);
-		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_M90E26);
-		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
-			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_M90E26);
-			_amdata.analyzers[i].cfg.uid 				= UID_METERING_ANALYZER_CFG(VERS_METERING_M90E26);
-			_amdata.analyzers[i].cfg.minmaxData.uid 	= UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_M90E26);
-			_amdata.analyzers[i].cfg.calibData.uid 		= UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_M90E26);
-			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_M90E26);
-			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_M90E26);
-			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_M90E26);
-		}
-	}
-	else{
-		DEBUG_TRACE_E(_EXPR_, _MODULE_, "UID no definido para versión %s", _driver->getVersion());
+	_amdata.uid = UID_METERING_MANAGER;
+	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+		_amdata.analyzers[i].uid = UID_METERING_ANALYZER;
 	}
 
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
@@ -115,18 +88,18 @@ void AMManager::setDefaultConfig(){
 		_driver->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
 		_amdata.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
 		_amdata.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
-		_amdata.analyzers[i].cfg.minmaxData.voltage = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 210.0, 	245.0, 	5.0};
-		_amdata.analyzers[i].cfg.minmaxData.current = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.015, 	15.0, 	0.005};
-		_amdata.analyzers[i].cfg.minmaxData.phase 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), -185.0, 	185.0, 	5.0};
-		_amdata.analyzers[i].cfg.minmaxData.pfactor = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.8, 	1.2, 	0.1};
-		_amdata.analyzers[i].cfg.minmaxData.aPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		_amdata.analyzers[i].cfg.minmaxData.rPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		_amdata.analyzers[i].cfg.minmaxData.msPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		_amdata.analyzers[i].cfg.minmaxData.freq 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 49.7, 	50.3, 	0.1};
-		_amdata.analyzers[i].cfg.minmaxData.thdA 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
-		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
-		_amdata.analyzers[i].cfg.minmaxData.active 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
-		_amdata.analyzers[i].cfg.minmaxData.reactive= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
+		_amdata.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
+		_amdata.analyzers[i].cfg.minmaxData.current = {0.015, 	15.0, 	0.005};
+		_amdata.analyzers[i].cfg.minmaxData.phase 	= {-185.0, 	185.0, 	5.0};
+		_amdata.analyzers[i].cfg.minmaxData.pfactor = {0.8, 	1.2, 	0.1};
+		_amdata.analyzers[i].cfg.minmaxData.aPow 	= {0.0, 	15.0, 	0.01};
+		_amdata.analyzers[i].cfg.minmaxData.rPow 	= {0.0, 	15.0, 	0.01};
+		_amdata.analyzers[i].cfg.minmaxData.msPow 	= {0.0, 	15.0, 	0.01};
+		_amdata.analyzers[i].cfg.minmaxData.freq 	= {49.7, 	50.3, 	0.1};
+		_amdata.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 	1.0, 	0.001};
+		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 	1.0, 	0.001};
+		_amdata.analyzers[i].cfg.minmaxData.active 	= {0.0, 	1.0, 	0.001};
+		_amdata.analyzers[i].cfg.minmaxData.reactive= {0.0, 	1.0, 	0.001};
 		for(int j=0;j<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);j++){
 			_amdata.analyzers[i].cfg.calibData.meterRegs[j] = _meter_cal_values[j];
 		}
@@ -152,28 +125,9 @@ void AMManager::restoreConfig(){
 	_amdata = {0};
 
 	// lee la versión del driver integrado para formar el uid
-	if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
-		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_EMi10_YTL);
-		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_EMi10_YTL);
-		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
-			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_EMi10_YTL);
-			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL);
-		}
-	}
-	else if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
-		_amdata.uid 		= UID_METERING_MANAGER(VERS_METERING_M90E26);
-		_amdata.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_M90E26);
-		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
-			_amdata.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_M90E26);
-			_amdata.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_M90E26);
-			_amdata.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_M90E26);
-			_amdata.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_M90E26);
-		}
-	}
-	else{
-		DEBUG_TRACE_E(_EXPR_, _MODULE_, "UID no definido para versión %s", _driver->getVersion());
+	_amdata.uid = UID_METERING_MANAGER;
+	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
+		_amdata.analyzers[i].uid = UID_METERING_ANALYZER;
 	}
 
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
@@ -282,11 +236,6 @@ void AMManager::saveConfig(){
 //------------------------------------------------------------------------------------
 void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& err){
 	err.code = Blob::ErrOK;
-	// evalúo metering:manager:cfg
-	if((data.cfg._keys & (1 << 0)) && data.cfg.uid != _amdata.cfg.uid){
-		err.code = Blob::ErrUidInvalid;
-		goto _updateConfigExit;
-	}
 	if((data.cfg._keys & (1 << 1))){
 		_amdata.cfg.updFlags = data.cfg.updFlags;
 	}
@@ -299,10 +248,6 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 	// evalúo analizadores
 	for(int i=0;i<_amdata._numAnalyzers;i++){
 		// evalúo metering:manager:analyzer[]:cfg
-		if((data.analyzers[i].cfg._keys & (1 << 0)) && data.analyzers[i].cfg.uid != _amdata.analyzers[i].cfg.uid){
-			err.code = Blob::ErrUidInvalid;
-			goto _updateConfigExit;
-		}
 		if((data.analyzers[i].cfg._keys & (1 << 1))){
 			_amdata.analyzers[i].cfg.updFlags = data.analyzers[i].cfg.updFlags;
 		}
@@ -310,10 +255,6 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 			_amdata.analyzers[i].cfg.evtFlags = data.analyzers[i].cfg.evtFlags;
 		}
 		// evalúo metering:manager:analyzer[]:minmax:cfg
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 0)) && data.analyzers[i].cfg.minmaxData.uid != _amdata.analyzers[i].cfg.minmaxData.uid){
-			err.code = Blob::ErrUidInvalid;
-			goto _updateConfigExit;
-		}
 		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 1))){
 			_amdata.analyzers[i].cfg.minmaxData.voltage = data.analyzers[i].cfg.minmaxData.voltage;
 		}
@@ -338,7 +279,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 8))){
 			_amdata.analyzers[i].cfg.minmaxData.freq = data.analyzers[i].cfg.minmaxData.freq;
 		}
-		if(strcmp(_driver->getVersion(), VERS_METERING_NAME(VERS_METERING_EMi10_YTL)) == 0){
+		if(strcmp(_driver->getVersion(), VERS_METERING_EMi10_YTL_NAME) == 0){
 			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 9))){
 				_amdata.analyzers[i].cfg.minmaxData.thdA = data.analyzers[i].cfg.minmaxData.thdA;
 			}
@@ -354,11 +295,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		}
 
 		// evalúo metering:manager:analyzer[]:calib:cfg
-		if((data.analyzers[i].cfg.calibData._keys & (1 << 0)) && data.analyzers[i].cfg.calibData.uid != _amdata.analyzers[i].cfg.calibData.uid){
-			err.code = Blob::ErrUidInvalid;
-			goto _updateConfigExit;
-		}
-		if(strcmp(_driver->getVersion(), (const char*)VERS_METERING_NAME(VERS_METERING_M90E26)) == 0){
+		if(strcmp(_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
 			if((data.analyzers[i].cfg.calibData._keys & (1 << 1))){
 				for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
 					_amdata.analyzers[i].cfg.calibData.meterRegs[j] = data.analyzers[i].cfg.calibData.meterRegs[j];
@@ -370,7 +307,6 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		}
 	}
 
-_updateConfigExit:
 	strcpy(err.descr, Blob::errList[err.code]);
 }
 
