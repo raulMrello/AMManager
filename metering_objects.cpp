@@ -76,8 +76,6 @@ cJSON* getJsonFromMeteringManagerCfg(const metering_manager_cfg& obj){
 		return NULL;
 	}
 
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 	// updFlags
 	cJSON_AddNumberToObject(json, JsonParser::p_updFlags, obj.updFlags);
 	// measPeriod
@@ -95,9 +93,6 @@ cJSON* getJsonFromMeteringManagerStat(const metering_manager_stat& obj){
 	if((json=cJSON_CreateObject()) == NULL){
 		return NULL;
 	}
-
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 
 	// loadPercentage
 	cJSON* array = NULL;
@@ -163,8 +158,6 @@ cJSON* getJsonFromMeteringAnalyzerCfg(const metering_analyzer_cfg& obj){
 		return NULL;
 	}
 
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 	// updFlags
 	cJSON_AddNumberToObject(json, JsonParser::p_updFlags, obj.updFlags);
 	// evtFlags
@@ -194,8 +187,6 @@ cJSON* getJsonFromMeteringAnalyzerCfgMinMax(const metering_analyzer_cfg_minmax& 
 		return NULL;
 	}
 
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 	// voltage
 	if((item = JsonParser::getJsonFromObj(obj.voltage)) == NULL){
 		cJSON_Delete(json);
@@ -246,7 +237,7 @@ cJSON* getJsonFromMeteringAnalyzerCfgMinMax(const metering_analyzer_cfg_minmax& 
 	cJSON_AddItemToObject(json, JsonParser::p_freq, item);
 
 	// thdA, thdV sólo para versión EMi10 YTL
-	if(obj.uid == UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_EMi10_YTL)){
+	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		if((item = JsonParser::getJsonFromObj(obj.thdA)) == NULL){
 			cJSON_Delete(json);
@@ -259,7 +250,7 @@ cJSON* getJsonFromMeteringAnalyzerCfgMinMax(const metering_analyzer_cfg_minmax& 
 			return NULL;
 		}
 		cJSON_AddItemToObject(json, JsonParser::p_thdV, item);
-	}
+	#endif
 	// active
 	if((item = JsonParser::getJsonFromObj(obj.active)) == NULL){
 		cJSON_Delete(json);
@@ -284,11 +275,8 @@ cJSON* getJsonFromMeteringAnalyzerCfgCalib(const metering_analyzer_cfg_calib& ob
 		return NULL;
 	}
 
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
-
 	// meterRegs, measRegs sólo en versión M90E26
-	if(obj.uid == UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_M90E26)){
+	#if VERS_METERING_SELECTED == VERS_METERING_M90E26
 		cJSON* regs = NULL;
 		// key: calibData.meterRegs
 		if((regs=cJSON_CreateArray()) == NULL){
@@ -321,7 +309,7 @@ cJSON* getJsonFromMeteringAnalyzerCfgCalib(const metering_analyzer_cfg_calib& ob
 			cJSON_AddItemToArray(regs, value);
 		}
 		cJSON_AddItemToObject(json, JsonParser::p_measRegs, regs);
-	}
+	#endif
 
 	return json;
 }
@@ -333,9 +321,6 @@ cJSON* getJsonFromMeteringAnalyzerStat(const metering_analyzer_stat& obj){
 	if((json=cJSON_CreateObject()) == NULL){
 		return NULL;
 	}
-
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 	// flags
 	cJSON_AddNumberToObject(json, JsonParser::p_flags, obj.flags);
 
@@ -363,9 +348,6 @@ cJSON* getJsonFromMeteringAnalyzerStatTotals(const metering_analyzer_stat_totals
 	if((json=cJSON_CreateObject()) == NULL){
 		return NULL;
 	}
-
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 	// active
 	cJSON_AddNumberToObject(json, JsonParser::p_active, obj.active);
 	// reactive
@@ -381,9 +363,6 @@ cJSON* getJsonFromMeteringAnalyzerStatMeasure(const metering_analyzer_stat_measu
 	if((json=cJSON_CreateObject()) == NULL){
 		return NULL;
 	}
-
-	// uid
-	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 	// voltage
 	cJSON_AddNumberToObject(json, JsonParser::p_voltage, obj.voltage);
 	// current
@@ -402,12 +381,12 @@ cJSON* getJsonFromMeteringAnalyzerStatMeasure(const metering_analyzer_stat_measu
 	cJSON_AddNumberToObject(json, JsonParser::p_freq, obj.freq);
 
 	// thdA, thdV sólo para versión EMi10 YTL
-	if(obj.uid == UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL)){
+	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		cJSON_AddNumberToObject(json, JsonParser::p_thdA, obj.thdA);
 		// thdV
 		cJSON_AddNumberToObject(json, JsonParser::p_thdV, obj.thdV);
-	}
+	#endif
 
 	return json;
 }
@@ -466,11 +445,6 @@ uint32_t getMeteringManagerCfgFromJson(metering_manager_cfg &obj, cJSON* json){
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
 	// updFlags
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_updFlags)) != NULL){
 		obj.updFlags = value->valueint;
@@ -500,11 +474,6 @@ uint32_t getMeteringManagerStatFromJson(metering_manager_stat &obj, cJSON* json)
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
 	// loadPercent
 	cJSON* array = NULL;
 	if((array = cJSON_GetObjectItem(json, JsonParser::p_loadPercent)) != NULL){
@@ -569,11 +538,6 @@ uint32_t getMeteringAnalyzerCfgFromJson(metering_analyzer_cfg &obj, cJSON* json)
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
 	// updFlags
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_updFlags)) != NULL){
 		obj.updFlags = value->valueint;
@@ -609,11 +573,6 @@ uint32_t getMeteringAnalyzerCfgMinMaxFromJson(metering_analyzer_cfg_minmax &obj,
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
 	// voltage
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_voltage)) != NULL){
 		subkey = JsonParser::getObjFromJson(obj.voltage, value)? (1 << 1) : 0;
@@ -656,7 +615,7 @@ uint32_t getMeteringAnalyzerCfgMinMaxFromJson(metering_analyzer_cfg_minmax &obj,
 	}
 
 	// thdA, thdV sólo en versión EMi10 YTL
-	if(obj.uid == UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_EMi10_YTL)){
+	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		if((value = cJSON_GetObjectItem(json,JsonParser::p_thdA)) != NULL){
 			subkey = JsonParser::getObjFromJson(obj.thdA, value)? (1 << 9) : 0;
@@ -667,8 +626,8 @@ uint32_t getMeteringAnalyzerCfgMinMaxFromJson(metering_analyzer_cfg_minmax &obj,
 			subkey = JsonParser::getObjFromJson(obj.thdV, value)? (1 << 10) : 0;
 			keys |= subkey;
 		}
+	#endif
 
-	}
 	// active
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_active)) != NULL){
 		subkey = JsonParser::getObjFromJson(obj.active, value)? (1 << 11) : 0;
@@ -694,14 +653,8 @@ uint32_t getMeteringAnalyzerCfgCalibFromJson(metering_analyzer_cfg_calib &obj, c
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
-
 	// meterRegs, measRegs sólo en versión M90E26
-	if(obj.uid == UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_M90E26)){
+	#if VERS_METERING_SELECTED == VERS_METERING_M90E26
 		// meterRegs
 		cJSON* array = NULL;
 		if((array = cJSON_GetObjectItem(json, JsonParser::p_meterRegs)) != NULL){
@@ -731,7 +684,7 @@ uint32_t getMeteringAnalyzerCfgCalibFromJson(metering_analyzer_cfg_calib &obj, c
 				}
 			}
 		}
-	}
+	#endif
 	obj._keys = keys;
 	return keys;
 }
@@ -746,11 +699,6 @@ uint32_t getMeteringAnalyzerStatFromJson(metering_analyzer_stat &obj, cJSON* jso
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
 	// flags
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_flags)) != NULL){
 		obj.flags = value->valueint;
@@ -778,11 +726,6 @@ uint32_t getMeteringAnalyzerStatTotalsFromJson(metering_analyzer_stat_totals &ob
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
 	// active
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_active)) != NULL){
 		obj.active = value->valuedouble;
@@ -805,11 +748,6 @@ uint32_t getMeteringAnalyzerStatMeasureFromJson(metering_analyzer_stat_measure &
 		return 0;
 	}
 
-	// uid
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_uid)) != NULL){
-		obj.uid = value->valueint;
-		keys |= (1 << 0);
-	}
 	// voltage
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_voltage)) != NULL){
 		obj.voltage = value->valuedouble;
@@ -852,7 +790,7 @@ uint32_t getMeteringAnalyzerStatMeasureFromJson(metering_analyzer_stat_measure &
 	}
 
 	// thdA, thdV sólo en versión EMi10 YTL
-	if(obj.uid == UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL)){
+	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		if((value = cJSON_GetObjectItem(json,JsonParser::p_thdA)) != NULL){
 			obj.thdA = value->valuedouble;
@@ -863,8 +801,8 @@ uint32_t getMeteringAnalyzerStatMeasureFromJson(metering_analyzer_stat_measure &
 			obj.thdV = value->valuedouble;
 			keys |= (1 << 10);
 		}
+	#endif
 
-	}
 	return keys;
 }
 
