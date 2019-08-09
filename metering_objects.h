@@ -15,29 +15,19 @@
 #include "common_objects.h"
 #include "cJSON.h"
 
-/** Versiones soportadas */
-#define VERS_METERING_EMi10_YTL			0
-#define VERS_METERING_EMi10_YTL_NAME	(const char*)"EMi10YTL"
-#define VERS_METERING_M90E26			1
-#define VERS_METERING_M90E26_NAME		(const char*)"M90E26"
 
 
 /** Selección de la versión utilizada 	*/
 /** DEFINIR SEGÚN APLICACIÓN 			*/
-#define VERS_METERING_SELECTED		VERS_METERING_EMi10_YTL /*VERS_METERING_M90E26*/
+#include "metering_objects_UserConfig.h"
+
+#ifndef VERS_METERING_SELECTED
+#error En metering_objects_UserConfig.h se require definir VERS_METERING_SELECTED
+#endif
 
 /** Macro de generación de UIDs*/
 #define UID_METERING_MANAGER		(uint32_t)(0x00000001 | ((uint32_t)VERS_METERING_SELECTED << 20))
 #define UID_METERING_ANALYZER		(uint32_t)(0x00000002 | ((uint32_t)VERS_METERING_SELECTED << 20))
-
-/** Macro de generación de nombre de versión */
-static inline const char* VERS_METERING_NAME(){
-	switch(VERS_METERING_SELECTED){
-		case VERS_METERING_EMi10_YTL:	return VERS_METERING_EMi10_YTL_NAME;
-		case VERS_METERING_M90E26:		return VERS_METERING_M90E26_NAME;
-		default: 						return "";
-	}
-}
 
 
 /** Flags para la variable ppl:energy:cfg/updFlags */
