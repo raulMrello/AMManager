@@ -66,7 +66,7 @@ TEST_CASE("Create AMManager with VirtualDriver.......................", "[AMMana
 	TEST_ASSERT_NULL(energy);
 
     DEBUG_TRACE_I(_EXPR_, _MODULE_, "VirtualDriver creation");
-	vd = new VirtualAMDriver("EMi10YTL");
+	vd = new VirtualAMDriver(VERS_METERING_VIRTUALAM_NAME);
 	TEST_ASSERT_NOT_NULL(vd);
 
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "AMManager creation");
