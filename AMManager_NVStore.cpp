@@ -279,6 +279,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 8))){
 			_amdata.analyzers[i].cfg.minmaxData.freq = data.analyzers[i].cfg.minmaxData.freq;
 		}
+		#if defined(VERS_METERING_EMi10_YTL_NAME)
 		if(strcmp(_driver->getVersion(), VERS_METERING_EMi10_YTL_NAME) == 0){
 			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 9))){
 				_amdata.analyzers[i].cfg.minmaxData.thdA = data.analyzers[i].cfg.minmaxData.thdA;
@@ -287,6 +288,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 				_amdata.analyzers[i].cfg.minmaxData.thdV = data.analyzers[i].cfg.minmaxData.thdV;
 			}
 		}
+		#endif
 		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 11))){
 			_amdata.analyzers[i].cfg.minmaxData.active = data.analyzers[i].cfg.minmaxData.active;
 		}
@@ -295,6 +297,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		}
 
 		// evalúo metering:manager:analyzer[]:calib:cfg
+		#if defined(VERS_METERING_M90E26_NAME)
 		if(strcmp(_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
 			if((data.analyzers[i].cfg.calibData._keys & (1 << 1))){
 				for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
@@ -305,6 +308,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 					_amdata.analyzers[i].cfg.calibData.measRegs[j] = data.analyzers[i].cfg.calibData.measRegs[j];
 			}
 		}
+		#endif
 	}
 
 	strcpy(err.descr, Blob::errList[err.code]);
