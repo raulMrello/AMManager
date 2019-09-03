@@ -43,14 +43,22 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     _publicationCb = callback(this, &AMManager::publicationCb);
 
     // crea el timer para el worker de medida
-	_meas_tmr = new RtosTimer(callback(this, &AMManager::eventMeasureWorkCb), osTimerPeriodic, "AMMeasWork");
+	_meas_tmr = NULL;
 
 }
 
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork() {
+	if(_meas_tmr != NULL){
+		_meas_tmr->stop();
+		delete(_meas_tmr);
+		_meas_tmr = NULL;
+	}
+
 	_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
+	// crea el timer para el worker de medida
+	_meas_tmr = new RtosTimer(callback(this, &AMManager::eventMeasureWorkCb), osTimerPeriodic, "AMMeasWork");
 	// realiza una medida con una cadencia dada
 	_meas_tmr->start(DefaultMeasurePeriod);
 }
@@ -58,7 +66,10 @@ void AMManager::startMeasureWork() {
 
 //------------------------------------------------------------------------------------
 void AMManager::stopMeasureWork() {
-	_meas_tmr->stop();
+	if(_meas_tmr != NULL){
+		delete(_meas_tmr);
+		_meas_tmr = NULL;
+	}
 }
 
 
