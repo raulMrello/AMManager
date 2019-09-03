@@ -45,13 +45,17 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando driver!");
         	while(!_driver->ready()){
         		// inicia por defecto si es un driver EMi10 YTL
+				#if defined(VERS_METERING_EMi10_YTL_NAME)
         		if(strcmp(_driver->getVersion(), VERS_METERING_EMi10_YTL_NAME) == 0){
         			_driver->initEnergyIC();
         		}
+				#endif
         		// ajusta la calibración si es un driver M90E26
-        		else if(strcmp(_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
+				#if defined(VERS_METERING_M90E26_NAME)
+        		if(strcmp(_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
         			_driver->initEnergyIC((uint16_t*)_meter_cal_values, MeteringAnalyzerCfgCalibRegCount, (uint16_t*)_meas_cal_values, MeteringAnalyzerCfgCalibRegCount);
         		}
+				#endif
         		if(!_driver->ready()){
         			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_DRV. Reintentando en 1sec");
         			Thread::wait(1000);
@@ -63,6 +67,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	_measure(false);
 
 			// obtiene los parámetros de calibración de cada analizador en caso del M90E26
+			#if defined(VERS_METERING_M90E26_NAME)
         	if(strcmp(_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
         		for(int i=0; i<_driver->getNumAnalyzers(); i++){
 					if(_driver->getMeterCalib(_amdata.analyzers[i].cfg.calibData.meterRegs, MeteringAnalyzerCfgCalibRegCount, i) != 0){
@@ -73,7 +78,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 					}
         		}
         	}
-
+			#endif
         	// chequea el estado del driver para ver si está en estado de error
         	uint16_t sys_stat;
         	if(_driver->getSysStatus(&sys_stat) != 0){
