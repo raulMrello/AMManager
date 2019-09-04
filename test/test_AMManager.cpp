@@ -11,9 +11,21 @@
 
 #include "unity.h"
 #include "AMManager.h"
+#if defined(VERS_METERING_VIRTUALAM)
 #include "VirtualAMDriver.h"
+static VirtualAMDriver* vd = NULL;
+
+#endif
+#if defined(VERS_METERING_EMi10_YTL)
 #include "YTLAMDriver.h"
+static YTLBus* ytlbus = NULL;
+static YTLAMDriver* ytl = NULL;
+
+#endif
+#if defined(VERS_METERING_M90E26)
 #include "M90E26.h"
+static M90E26* m90e26 = NULL;
+#endif
 
 //------------------------------------------------------------------------------------
 //-- REQUIRED HEADERS & COMPONENTS FOR TESTING ---------------------------------------
@@ -42,10 +54,6 @@ static const char* _MODULE_ = "[TEST_AMMan]....";
 
 
 
-static VirtualAMDriver* vd = NULL;
-static YTLBus* ytlbus = NULL;
-static YTLAMDriver* ytl = NULL;
-static M90E26* m90e26 = NULL;
 
 
 //------------------------------------------------------------------------------------
@@ -57,6 +65,7 @@ static M90E26* m90e26 = NULL;
  * @brief Se verifica la creación del objeto y la suscripción a topics
  * MQLib
  */
+#if defined(VERS_METERING_VIRTUALAM)
 TEST_CASE("Create AMManager with VirtualDriver.......................", "[AMManager]") {
 
 	// ejecuta requisitos previos
@@ -82,6 +91,7 @@ TEST_CASE("Create AMManager with VirtualDriver.......................", "[AMMana
 	TEST_ASSERT_TRUE(energy->ready());
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "AMManager OK!");
 }
+#endif
 
 
 //---------------------------------------------------------------------------
@@ -89,6 +99,7 @@ TEST_CASE("Create AMManager with VirtualDriver.......................", "[AMMana
  * @brief Se verifica la creación del objeto y la suscripción a topics
  * MQLib
  */
+#if defined(VERS_METERING_EMi10_YTL)
 TEST_CASE("Create AMManager with EMi10YTL Driver.....................", "[AMManager]") {
 
 	// ejecuta requisitos previos
@@ -131,7 +142,7 @@ TEST_CASE("Create AMManager with EMi10YTL Driver.....................", "[AMMana
 	TEST_ASSERT_TRUE(energy->ready());
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "AMManager OK!");
 }
-
+#endif
 
 //---------------------------------------------------------------------------
 /**
