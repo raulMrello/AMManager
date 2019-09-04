@@ -17,6 +17,7 @@
 #include "AMDriver.h"
 #include "JsonParserBlob.h"
 #include "metering_objects.h"
+#include <list>
 
 /** Flag para habilitar el soporte de objetos JSON en las suscripciones a MQLib
  *  Por defecto DESACTIVADO
@@ -36,6 +37,13 @@ class AMManager : public ActiveModule {
      * 	@param defdbg Flag para habilitar depuración por defecto
      */
     AMManager(AMDriver* driver, FSManager* fs, bool defdbg = false, const char* name = "AMM");
+
+    /** Constructor por defecto
+     * 	@param driver_list Lista de drivers gestionados por el componente
+     * 	@param fs Objeto FSManager para operaciones de backup
+     * 	@param defdbg Flag para habilitar depuración por defecto
+     */
+    AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdbg = false, const char* name = "AMM");
 
 
     /** Destructor
@@ -121,8 +129,8 @@ class AMManager : public ActiveModule {
     /** Contador de medidas pendientes para notificar una medida instantánea */
     int32_t _instant_meas_counter;
 
-    /** Controlador del chip de medida */
-    AMDriver* _driver;
+    /** Controladores de los chip de medida */
+    std::list<AMDriver*> _driver_list;
 
     /** Gestor de la carga activa en el medidor */
     uint8_t _load_data;
