@@ -79,40 +79,57 @@ void AMManager::setDefaultConfig(){
 	}
 
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
-	_amdata._numAnalyzers 	= _driver->getNumAnalyzers();
+	_amdata._numAnalyzers = 0;
+	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
+		AMDriver* amd = (*d);
+		_amdata._numAnalyzers += amd->getNumAnalyzers();
+	}
 	_amdata.cfg.updFlags 	= MeteringManagerCfgUpdNotif;
 	_amdata.cfg.measPeriod 	= MeteringManagerCfgMeasPeriodDefault;
 	_amdata.cfg.verbosity 	= ESP_LOG_DEBUG;
 	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
-	for(int i=0;i<_amdata._numAnalyzers;i++){
-		_driver->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
-		_amdata.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
-		_amdata.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
-		_amdata.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
-		_amdata.analyzers[i].cfg.minmaxData.current = {0.015, 	15.0, 	0.005};
-		_amdata.analyzers[i].cfg.minmaxData.phase 	= {-185.0, 	185.0, 	5.0};
-		_amdata.analyzers[i].cfg.minmaxData.pfactor = {0.8, 	1.2, 	0.1};
-		_amdata.analyzers[i].cfg.minmaxData.aPow 	= {0.0, 	15.0, 	0.01};
-		_amdata.analyzers[i].cfg.minmaxData.rPow 	= {0.0, 	15.0, 	0.01};
-		_amdata.analyzers[i].cfg.minmaxData.msPow 	= {0.0, 	15.0, 	0.01};
-		_amdata.analyzers[i].cfg.minmaxData.freq 	= {49.7, 	50.3, 	0.1};
-		_amdata.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 	1.0, 	0.001};
-		_amdata.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 	1.0, 	0.001};
-		_amdata.analyzers[i].cfg.minmaxData.active 	= {0.0, 	1.0, 	0.001};
-		_amdata.analyzers[i].cfg.minmaxData.reactive= {0.0, 	1.0, 	0.001};
-		for(int j=0;j<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);j++){
-			_amdata.analyzers[i].cfg.calibData.meterRegs[j] = _meter_cal_values[j];
-		}
-		for(int j=sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);j<MeteringAnalyzerCfgCalibRegCount;j++){
-			_amdata.analyzers[i].cfg.calibData.meterRegs[j] = 0;
-		}
-		for(int j=0;j<sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);j++){
-			_amdata.analyzers[i].cfg.calibData.measRegs[j] = _meas_cal_values[j];
-		}
-		for(int j=sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);j<MeteringAnalyzerCfgCalibRegCount;j++){
-			_amdata.analyzers[i].cfg.calibData.measRegs[j] = 0;
+
+	int i=0;
+	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
+		AMDriver* amd = (*d);
+		for(int a=0; a<amd->getNumAnalyzers(); a++){
+			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+			if(i >= _amdata._numAnalyzers){
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+				goto __exit_sdefcfg_loop;
+			}
+			amd->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
+			_amdata.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
+			_amdata.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
+			_amdata.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
+			_amdata.analyzers[i].cfg.minmaxData.current = {0.015, 	15.0, 	0.005};
+			_amdata.analyzers[i].cfg.minmaxData.phase 	= {-185.0, 	185.0, 	5.0};
+			_amdata.analyzers[i].cfg.minmaxData.pfactor = {0.8, 	1.2, 	0.1};
+			_amdata.analyzers[i].cfg.minmaxData.aPow 	= {0.0, 	15.0, 	0.01};
+			_amdata.analyzers[i].cfg.minmaxData.rPow 	= {0.0, 	15.0, 	0.01};
+			_amdata.analyzers[i].cfg.minmaxData.msPow 	= {0.0, 	15.0, 	0.01};
+			_amdata.analyzers[i].cfg.minmaxData.freq 	= {49.7, 	50.3, 	0.1};
+			_amdata.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 	1.0, 	0.001};
+			_amdata.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 	1.0, 	0.001};
+			_amdata.analyzers[i].cfg.minmaxData.active 	= {0.0, 	1.0, 	0.001};
+			_amdata.analyzers[i].cfg.minmaxData.reactive= {0.0, 	1.0, 	0.001};
+			for(int j=0;j<sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);j++){
+				_amdata.analyzers[i].cfg.calibData.meterRegs[j] = _meter_cal_values[j];
+			}
+			for(int j=sizeof(_meter_cal_values)/sizeof(_meter_cal_values[0]);j<MeteringAnalyzerCfgCalibRegCount;j++){
+				_amdata.analyzers[i].cfg.calibData.meterRegs[j] = 0;
+			}
+			for(int j=0;j<sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);j++){
+				_amdata.analyzers[i].cfg.calibData.measRegs[j] = _meas_cal_values[j];
+			}
+			for(int j=sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);j<MeteringAnalyzerCfgCalibRegCount;j++){
+				_amdata.analyzers[i].cfg.calibData.measRegs[j] = 0;
+			}
+			// incremento contador de analizador
+			i++;
 		}
 	}
+__exit_sdefcfg_loop:
 
 	// guarda la configuración
 	saveConfig();
@@ -131,11 +148,28 @@ void AMManager::restoreConfig(){
 	}
 
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
-	_amdata._numAnalyzers 	= _driver->getNumAnalyzers();
-	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
-	for(int i=0;i<_amdata._numAnalyzers;i++){
-		_driver->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
+	_amdata._numAnalyzers = 0;
+	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
+		AMDriver* amd = (*d);
+		_amdata._numAnalyzers += amd->getNumAnalyzers();
 	}
+
+	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
+	int i=0;
+	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
+		AMDriver* amd = (*d);
+		for(int a=0; a<amd->getNumAnalyzers(); a++){
+			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+			if(i >= _amdata._numAnalyzers){
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+				goto __exit_rstcfg_loop;
+			}
+			amd->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
+			// incremento contador de analizador
+			i++;
+		}
+	}
+__exit_rstcfg_loop:
 
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Recuperando datos de memoria NV...");
 	bool success = true;
@@ -246,70 +280,83 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		_amdata.cfg.verbosity = data.cfg.verbosity;
 	}
 	// evalúo analizadores
-	for(int i=0;i<_amdata._numAnalyzers;i++){
-		// evalúo metering:manager:analyzer[]:cfg
-		if((data.analyzers[i].cfg._keys & (1 << 1))){
-			_amdata.analyzers[i].cfg.updFlags = data.analyzers[i].cfg.updFlags;
-		}
-		if((data.analyzers[i].cfg._keys & (1 << 2))){
-			_amdata.analyzers[i].cfg.evtFlags = data.analyzers[i].cfg.evtFlags;
-		}
-		// evalúo metering:manager:analyzer[]:minmax:cfg
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 1))){
-			_amdata.analyzers[i].cfg.minmaxData.voltage = data.analyzers[i].cfg.minmaxData.voltage;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 2))){
-			_amdata.analyzers[i].cfg.minmaxData.current = data.analyzers[i].cfg.minmaxData.current;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 3))){
-			_amdata.analyzers[i].cfg.minmaxData.phase = data.analyzers[i].cfg.minmaxData.phase;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 4))){
-			_amdata.analyzers[i].cfg.minmaxData.pfactor = data.analyzers[i].cfg.minmaxData.pfactor;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 5))){
-			_amdata.analyzers[i].cfg.minmaxData.aPow = data.analyzers[i].cfg.minmaxData.aPow;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 6))){
-			_amdata.analyzers[i].cfg.minmaxData.rPow = data.analyzers[i].cfg.minmaxData.rPow;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 7))){
-			_amdata.analyzers[i].cfg.minmaxData.msPow = data.analyzers[i].cfg.minmaxData.msPow;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 8))){
-			_amdata.analyzers[i].cfg.minmaxData.freq = data.analyzers[i].cfg.minmaxData.freq;
-		}
-		#if defined(VERS_METERING_EMi10_YTL_NAME)
-		if(strcmp(_driver->getVersion(), VERS_METERING_EMi10_YTL_NAME) == 0){
-			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 9))){
-				_amdata.analyzers[i].cfg.minmaxData.thdA = data.analyzers[i].cfg.minmaxData.thdA;
+	int i = 0;
+	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
+		AMDriver* am_driver = (*drv);
+		int analyz = am_driver->getNumAnalyzers();
+		for(int a = 0; a < analyz; a++){
+			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+			if(i >= _amdata._numAnalyzers){
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+				goto __exit_updcfg;
 			}
-			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 10))){
-				_amdata.analyzers[i].cfg.minmaxData.thdV = data.analyzers[i].cfg.minmaxData.thdV;
+			// evalúo metering:manager:analyzer[]:cfg
+			if((data.analyzers[i].cfg._keys & (1 << 1))){
+				_amdata.analyzers[i].cfg.updFlags = data.analyzers[i].cfg.updFlags;
 			}
-		}
-		#endif
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 11))){
-			_amdata.analyzers[i].cfg.minmaxData.active = data.analyzers[i].cfg.minmaxData.active;
-		}
-		if((data.analyzers[i].cfg.minmaxData._keys & (1 << 12))){
-			_amdata.analyzers[i].cfg.minmaxData.reactive = data.analyzers[i].cfg.minmaxData.reactive;
-		}
+			if((data.analyzers[i].cfg._keys & (1 << 2))){
+				_amdata.analyzers[i].cfg.evtFlags = data.analyzers[i].cfg.evtFlags;
+			}
+			// evalúo metering:manager:analyzer[]:minmax:cfg
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 1))){
+				_amdata.analyzers[i].cfg.minmaxData.voltage = data.analyzers[i].cfg.minmaxData.voltage;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 2))){
+				_amdata.analyzers[i].cfg.minmaxData.current = data.analyzers[i].cfg.minmaxData.current;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 3))){
+				_amdata.analyzers[i].cfg.minmaxData.phase = data.analyzers[i].cfg.minmaxData.phase;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 4))){
+				_amdata.analyzers[i].cfg.minmaxData.pfactor = data.analyzers[i].cfg.minmaxData.pfactor;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 5))){
+				_amdata.analyzers[i].cfg.minmaxData.aPow = data.analyzers[i].cfg.minmaxData.aPow;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 6))){
+				_amdata.analyzers[i].cfg.minmaxData.rPow = data.analyzers[i].cfg.minmaxData.rPow;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 7))){
+				_amdata.analyzers[i].cfg.minmaxData.msPow = data.analyzers[i].cfg.minmaxData.msPow;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 8))){
+				_amdata.analyzers[i].cfg.minmaxData.freq = data.analyzers[i].cfg.minmaxData.freq;
+			}
+			#if defined(VERS_METERING_EMi10_YTL_NAME)
+			if(strcmp(am_driver->getVersion(), VERS_METERING_EMi10_YTL_NAME) == 0){
+				if((data.analyzers[i].cfg.minmaxData._keys & (1 << 9))){
+					_amdata.analyzers[i].cfg.minmaxData.thdA = data.analyzers[i].cfg.minmaxData.thdA;
+				}
+				if((data.analyzers[i].cfg.minmaxData._keys & (1 << 10))){
+					_amdata.analyzers[i].cfg.minmaxData.thdV = data.analyzers[i].cfg.minmaxData.thdV;
+				}
+			}
+			#endif
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 11))){
+				_amdata.analyzers[i].cfg.minmaxData.active = data.analyzers[i].cfg.minmaxData.active;
+			}
+			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 12))){
+				_amdata.analyzers[i].cfg.minmaxData.reactive = data.analyzers[i].cfg.minmaxData.reactive;
+			}
 
-		// evalúo metering:manager:analyzer[]:calib:cfg
-		#if defined(VERS_METERING_M90E26_NAME)
-		if(strcmp(_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
-			if((data.analyzers[i].cfg.calibData._keys & (1 << 1))){
-				for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
-					_amdata.analyzers[i].cfg.calibData.meterRegs[j] = data.analyzers[i].cfg.calibData.meterRegs[j];
+			// evalúo metering:manager:analyzer[]:calib:cfg
+			#if defined(VERS_METERING_M90E26_NAME)
+			if(strcmp(am_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
+				if((data.analyzers[i].cfg.calibData._keys & (1 << 1))){
+					for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
+						_amdata.analyzers[i].cfg.calibData.meterRegs[j] = data.analyzers[i].cfg.calibData.meterRegs[j];
+				}
+				if((data.analyzers[i].cfg.calibData._keys & (1 << 2))){
+					for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
+						_amdata.analyzers[i].cfg.calibData.measRegs[j] = data.analyzers[i].cfg.calibData.measRegs[j];
+				}
 			}
-			if((data.analyzers[i].cfg.calibData._keys & (1 << 2))){
-				for(int j=0; j<MeteringAnalyzerCfgCalibRegCount; j++)
-					_amdata.analyzers[i].cfg.calibData.measRegs[j] = data.analyzers[i].cfg.calibData.measRegs[j];
-			}
+			#endif
+			// incremento el identificador del analizador analizado
+			i++;
 		}
-		#endif
 	}
+__exit_updcfg:
 
 	strcpy(err.descr, Blob::errList[err.code]);
 }

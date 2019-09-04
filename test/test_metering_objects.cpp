@@ -17,6 +17,7 @@
 //------------------------------------------------------------------------------------
 
 #include "AppConfig.h"
+#include "metering_objects.h"
 
 /** variables requeridas para realizar el test */
 static void executePrerequisites();
@@ -159,19 +160,7 @@ TEST_CASE("Config Emi10 YTL with 1 analyzers for re-test.............", "[meteri
 	// borro la configuración y el estado
 	obj = {0};
 
-	obj.uid 		= UID_METERING_MANAGER(VERS_METERING_EMi10_YTL);
-	obj.cfg.uid 	= UID_METERING_MANAGER_CFG(VERS_METERING_EMi10_YTL);
-	obj.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_EMi10_YTL);
-	for(int i=0;i<1;i++){
-		obj.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].cfg.uid 				= UID_METERING_ANALYZER_CFG(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].cfg.minmaxData.uid 	= UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].cfg.calibData.uid 		= UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL);
-	}
-
+	obj.uid 		= UID_METERING_MANAGER;
 
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
 	obj._numAnalyzers 	= 1;
@@ -183,16 +172,16 @@ TEST_CASE("Config Emi10 YTL with 1 analyzers for re-test.............", "[meteri
 		sprintf(obj.analyzers[i].serial, "EMi10 YTL AN%d",i);
 		obj.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
 		obj.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
-		obj.analyzers[i].cfg.minmaxData.voltage = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 210.0, 	245.0, 	5.0};
-		obj.analyzers[i].cfg.minmaxData.current = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.015, 	15.0, 	0.005};
-		obj.analyzers[i].cfg.minmaxData.phase 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), -185.0, 	185.0, 	5.0};
-		obj.analyzers[i].cfg.minmaxData.pfactor = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.8, 	1.2, 	0.1};
-		obj.analyzers[i].cfg.minmaxData.aPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.rPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.msPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.freq 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 49.7, 	50.3, 	0.1};
-		obj.analyzers[i].cfg.minmaxData.thdA 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
-		obj.analyzers[i].cfg.minmaxData.thdV 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
+		obj.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
+		obj.analyzers[i].cfg.minmaxData.current = {0.015, 	15.0, 	0.005};
+		obj.analyzers[i].cfg.minmaxData.phase 	= {-185.0, 	185.0, 	5.0};
+		obj.analyzers[i].cfg.minmaxData.pfactor = {0.8, 	1.2, 	0.1};
+		obj.analyzers[i].cfg.minmaxData.aPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.rPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.msPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.freq 	= {49.7, 	50.3, 	0.1};
+		obj.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 	1.0, 	0.001};
+		obj.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 	1.0, 	0.001};
 		for(int i=0;i<sizeof(obj.analyzers[i].cfg.calibData.meterRegs)/sizeof(obj.analyzers[i].cfg.calibData.meterRegs[0]);i++){
 			obj.analyzers[i].cfg.calibData.meterRegs[i] = 0;
 		}
@@ -221,19 +210,7 @@ TEST_CASE("Config Emi10 YTL with 3 analyzers for re-test.............", "[meteri
 	// borro la configuración y el estado
 	obj = {0};
 
-	obj.uid 		= UID_METERING_MANAGER(VERS_METERING_EMi10_YTL);
-	obj.cfg.uid 	= UID_METERING_MANAGER_CFG(VERS_METERING_EMi10_YTL);
-	obj.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_EMi10_YTL);
-	for(int i=0;i<3;i++){
-		obj.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].cfg.uid 				= UID_METERING_ANALYZER_CFG(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].cfg.minmaxData.uid 	= UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].cfg.calibData.uid 		= UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_EMi10_YTL);
-		obj.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_EMi10_YTL);
-	}
-
+	obj.uid 		= UID_METERING_MANAGER;
 
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
 	obj._numAnalyzers 	= 3;
@@ -245,16 +222,16 @@ TEST_CASE("Config Emi10 YTL with 3 analyzers for re-test.............", "[meteri
 		sprintf(obj.analyzers[i].serial, "EMi10 YTL AN%d",i);
 		obj.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
 		obj.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
-		obj.analyzers[i].cfg.minmaxData.voltage = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 210.0, 	245.0, 	5.0};
-		obj.analyzers[i].cfg.minmaxData.current = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.015, 	15.0, 	0.005};
-		obj.analyzers[i].cfg.minmaxData.phase 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), -185.0, 	185.0, 	5.0};
-		obj.analyzers[i].cfg.minmaxData.pfactor = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.8, 	1.2, 	0.1};
-		obj.analyzers[i].cfg.minmaxData.aPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.rPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.msPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.freq 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 49.7, 	50.3, 	0.1};
-		obj.analyzers[i].cfg.minmaxData.thdA 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
-		obj.analyzers[i].cfg.minmaxData.thdV 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
+		obj.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
+		obj.analyzers[i].cfg.minmaxData.current = {0.015, 	15.0, 	0.005};
+		obj.analyzers[i].cfg.minmaxData.phase 	= {-185.0, 	185.0, 	5.0};
+		obj.analyzers[i].cfg.minmaxData.pfactor = {0.8, 	1.2, 	0.1};
+		obj.analyzers[i].cfg.minmaxData.aPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.rPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.msPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.freq 	= {49.7, 	50.3, 	0.1};
+		obj.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 	1.0, 	0.001};
+		obj.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 	1.0, 	0.001};
 		for(int i=0;i<sizeof(obj.analyzers[i].cfg.calibData.meterRegs)/sizeof(obj.analyzers[i].cfg.calibData.meterRegs[0]);i++){
 			obj.analyzers[i].cfg.calibData.meterRegs[i] = 0;
 		}
@@ -283,18 +260,7 @@ TEST_CASE("Config M90E26 with 1 analyzers for re-test................", "[meteri
 	// borro la configuración y el estado
 	obj = {0};
 
-	obj.uid 		= UID_METERING_MANAGER(VERS_METERING_M90E26);
-	obj.cfg.uid 	= UID_METERING_MANAGER_CFG(VERS_METERING_M90E26);
-	obj.stat.uid	= UID_METERING_MANAGER_STAT(VERS_METERING_M90E26);
-	for(int i=0;i<1;i++){
-		obj.analyzers[i].uid 					= UID_METERING_ANALYZER(VERS_METERING_M90E26);
-		obj.analyzers[i].cfg.uid 				= UID_METERING_ANALYZER_CFG(VERS_METERING_M90E26);
-		obj.analyzers[i].cfg.minmaxData.uid 	= UID_METERING_ANALYZER_CFG_MINMAX(VERS_METERING_M90E26);
-		obj.analyzers[i].cfg.calibData.uid 		= UID_METERING_ANALYZER_CFG_CALIB(VERS_METERING_M90E26);
-		obj.analyzers[i].stat.uid				= UID_METERING_ANALYZER_STAT(VERS_METERING_M90E26);
-		obj.analyzers[i].stat.energyValues.uid	= UID_METERING_ANALYZER_STAT_TOTALS(VERS_METERING_M90E26);
-		obj.analyzers[i].stat.measureValues.uid	= UID_METERING_ANALYZER_STAT_MEASURE(VERS_METERING_M90E26);
-	}
+	obj.uid 		= UID_METERING_MANAGER;
 
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
 	obj._numAnalyzers 	= 1;
@@ -306,16 +272,16 @@ TEST_CASE("Config M90E26 with 1 analyzers for re-test................", "[meteri
 		sprintf(obj.analyzers[i].serial, "M90E26 AN%d",i);
 		obj.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
 		obj.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
-		obj.analyzers[i].cfg.minmaxData.voltage = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 210.0, 	245.0, 	5.0};
-		obj.analyzers[i].cfg.minmaxData.current = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.015, 	15.0, 	0.005};
-		obj.analyzers[i].cfg.minmaxData.phase 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), -185.0, 	185.0, 	5.0};
-		obj.analyzers[i].cfg.minmaxData.pfactor = {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.8, 	1.2, 	0.1};
-		obj.analyzers[i].cfg.minmaxData.aPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.rPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.msPow 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	15.0, 	0.01};
-		obj.analyzers[i].cfg.minmaxData.freq 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 49.7, 	50.3, 	0.1};
-		obj.analyzers[i].cfg.minmaxData.thdA 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
-		obj.analyzers[i].cfg.minmaxData.thdV 	= {UID_COMMON_RANGE_MINMAXTHRES_DOUBLE(0), 0.0, 	1.0, 	0.001};
+		obj.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
+		obj.analyzers[i].cfg.minmaxData.current = {0.015, 	15.0, 	0.005};
+		obj.analyzers[i].cfg.minmaxData.phase 	= {-185.0, 	185.0, 	5.0};
+		obj.analyzers[i].cfg.minmaxData.pfactor = {0.8, 	1.2, 	0.1};
+		obj.analyzers[i].cfg.minmaxData.aPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.rPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.msPow 	= {0.0, 	15.0, 	0.01};
+		obj.analyzers[i].cfg.minmaxData.freq 	= {49.7, 	50.3, 	0.1};
+		obj.analyzers[i].cfg.minmaxData.thdA 	= {0.0, 	1.0, 	0.001};
+		obj.analyzers[i].cfg.minmaxData.thdV 	= {0.0, 	1.0, 	0.001};
 		for(int i=0;i<sizeof(obj.analyzers[i].cfg.calibData.meterRegs)/sizeof(obj.analyzers[i].cfg.calibData.meterRegs[0]);i++){
 			obj.analyzers[i].cfg.calibData.meterRegs[i] = 0;
 		}
