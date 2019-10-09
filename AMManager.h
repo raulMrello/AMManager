@@ -142,6 +142,9 @@ class AMManager : public ActiveModule {
     static const uint16_t _meter_cal_values[];
     static const uint16_t _meas_cal_values[];
 
+    /** Flag para forzar la notificación en la siguiente medida */
+    bool _forced_notification;
+
 
     /** Interfaz para obtener un evento osEvent de la clase heredera
      *  @param msg Mensaje a postear

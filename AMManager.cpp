@@ -310,6 +310,13 @@ __exit_measure_loop:
 			_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
 		}
 	}
+	else if(_forced_notification){
+		_forced_notification = false;
+		for(int i=0; i<_amdata._numAnalyzers; i++){
+			alarm_notif[i] = true;
+			_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
+		}
+	}
 	else{
 		for(int i=0; i<_amdata._numAnalyzers; i++){
 			_amdata.analyzers[i].stat.flags &= ~MeteringAnalyzerInstantMeasureEvt;

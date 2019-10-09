@@ -22,6 +22,9 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// recupera los datos de memoria NV
         	restoreConfig();
 
+        	// desactiva la notificación forzada
+        	_forced_notification = false;
+
         	// realiza la suscripción local ej: "[get|set]/[cfg|value]/energy"
         	char* sub_topic_local = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
         	MBED_ASSERT(sub_topic_local);
