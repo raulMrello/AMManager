@@ -24,6 +24,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// desactiva la notificación forzada
         	_forced_notification = false;
+        	_forced_measure = false;
 
         	// realiza la suscripción local ej: "[get|set]/[cfg|value]/energy"
         	char* sub_topic_local = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
@@ -121,24 +122,7 @@ __exit_init_loop:
         	// si hay errores en el mensaje o en la actualización, devuelve resultado sin hacer nada
         	if(req->_error.code != Blob::ErrOK){
         		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Notificando error %s", req->_error.descr);
-        		char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
-				MBED_ASSERT(pub_topic);
-				sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
-
-				Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
-				MBED_ASSERT(resp);
-
-				if(_json_supported){
-					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
-					MBED_ASSERT(jresp);
-					MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
-					cJSON_Delete(jresp);
-				}
-				else {
-					MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
-				}
-				delete(resp);
-				Heap::memFree(pub_topic);
+        		_responseWithConfig(req->idTrans, req->_error);
 				return State::HANDLED;
         	}
 
@@ -154,23 +138,7 @@ __exit_init_loop:
         	// si está habilitada la notificación de actualización, lo notifica
         	if((_amdata.cfg.updFlags & MeteringManagerCfgUpdNotif) != 0){
         		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Notificando actualización");
-				char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
-				MBED_ASSERT(pub_topic);
-				sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
-
-				Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
-				MBED_ASSERT(resp);
-				if(_json_supported){
-					cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
-					MBED_ASSERT(jresp);
-					MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
-					cJSON_Delete(jresp);
-				}
-				else{
-					MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
-				}
-				delete(resp);
-				Heap::memFree(pub_topic);
+        		_responseWithConfig(req->idTrans, req->_error);
         	}
             return State::HANDLED;
         }
@@ -178,52 +146,14 @@ __exit_init_loop:
         // Procesa datos recibidos de la publicación en cmd/$BASE/cfg/get
         case RecvCfgGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
-        	// prepara el topic al que responder
-        	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
-			MBED_ASSERT(pub_topic);
-			sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
-
-			// responde con los datos solicitados y con los errores (si hubiera) de la decodificación de la solicitud
-			Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
-			MBED_ASSERT(resp);
-			if(_json_supported){
-				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
-				MBED_ASSERT(jresp);
-				MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
-				cJSON_Delete(jresp);
-			}
-			else{
-				MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
-			}
-			delete(resp);
-			Heap::memFree(pub_topic);
-			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con configuracion solicitada");
+        	_responseWithConfig(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicación en cmd/$BASE/value/get
         case RecvStatGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
-        	// prepara el topic al que responder
-        	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
-			MBED_ASSERT(pub_topic);
-			sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
-
-			// responde con los datos solicitados y con los errores (si hubiera) de la decodificación de la solicitud
-			Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(req->idTrans, req->_error, _amdata);
-			MBED_ASSERT(resp);
-			if(_json_supported){
-				cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
-				MBED_ASSERT(jresp);
-				MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
-				cJSON_Delete(jresp);
-			}
-			else{
-				MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
-			}
-			delete(resp);
-			Heap::memFree(pub_topic);
-			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
+        	_responseWithState(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
@@ -277,6 +207,14 @@ __exit_init_loop:
         case RecvRestartSet:{
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Reanudando medidas electricas");
 			startMeasureWork();
+            return State::HANDLED;
+        }
+
+        // Procesa datos recibidos de la publicación en set/load/$
+        case RecvForcedMeasure:{
+        	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Realiza medida solicitada y notifica");
+        	_measure(false);
+        	_notifyState();
             return State::HANDLED;
         }
 

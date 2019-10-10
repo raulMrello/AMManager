@@ -262,11 +262,32 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
     }
 
     // si es un comando para solicitar que notifique la siguiente medida
-    if(MQ::MQClient::isTokenRoot(topic, "set/notif-meas")){
+    if(MQ::MQClient::isTokenRoot(topic, "set/forced-notif")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
         // activa flag de notificación forzada
         _forced_notification = true;
+        return;
+    }
+
+    // si es un comando para solicitar que notifique la siguiente medida
+    if(MQ::MQClient::isTokenRoot(topic, "set/forced-meas")){
+        DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
+
+        // crea el mensaje para publicar en la máquina de estados
+        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        MBED_ASSERT(op);
+		op->sig = RecvForcedMeasure;
+		// apunta a los datos
+		op->msg = NULL;
+
+		// postea en la cola de la máquina de estados
+		if(putMessage(op) != osOK){
+			if(op->msg){
+				Heap::memFree(op->msg);
+			}
+			Heap::memFree(op);
+		}
         return;
     }
 
