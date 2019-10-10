@@ -104,13 +104,14 @@ class AMManager : public ActiveModule {
 
     /** Flags de operaciones a realizar por la tarea */
     enum MsgEventFlags{
-    	RecvCfgSet 	  = (State::EV_RESERVED_USER << 0),  /// Flag activado al recibir mensaje en "set/cfg"
-    	RecvCfgGet	  = (State::EV_RESERVED_USER << 1),  /// Flag activado al recibir mensaje en "get/cfg"
-    	RecvStatGet	  = (State::EV_RESERVED_USER << 2),  /// Flag activado al recibir mensaje en "get/stat"
-    	RecvBootGet	  = (State::EV_RESERVED_USER << 3),  /// Flag activado al recibir mensaje en "get/boot"
-    	RecvLoadSet	  = (State::EV_RESERVED_USER << 4),  /// Flag activado al recibir mensaje en "set/load"
-    	RecvStopSet	  = (State::EV_RESERVED_USER << 5),  /// Flag activado al recibir mensaje en "set/stop"
-    	RecvRestartSet	  = (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
+    	RecvCfgSet 	  		= (State::EV_RESERVED_USER << 0),  /// Flag activado al recibir mensaje en "set/cfg"
+    	RecvCfgGet	  		= (State::EV_RESERVED_USER << 1),  /// Flag activado al recibir mensaje en "get/cfg"
+    	RecvStatGet	  		= (State::EV_RESERVED_USER << 2),  /// Flag activado al recibir mensaje en "get/stat"
+    	RecvBootGet	  		= (State::EV_RESERVED_USER << 3),  /// Flag activado al recibir mensaje en "get/boot"
+    	RecvLoadSet	  		= (State::EV_RESERVED_USER << 4),  /// Flag activado al recibir mensaje en "set/load"
+    	RecvStopSet	  		= (State::EV_RESERVED_USER << 5),  /// Flag activado al recibir mensaje en "set/stop"
+    	RecvRestartSet	  	= (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
+    	RecvForcedMeasure	= (State::EV_RESERVED_USER << 7),  /// Flag activado al recibir mensaje en "set/forced-meas"
     };
 
 
@@ -142,8 +143,9 @@ class AMManager : public ActiveModule {
     static const uint16_t _meter_cal_values[];
     static const uint16_t _meas_cal_values[];
 
-    /** Flag para forzar la notificación en la siguiente medida */
+    /** Flag para forzar la notificación en la siguiente medida o la medida */
     bool _forced_notification;
+    bool _forced_measure;
 
 
     /** Interfaz para obtener un evento osEvent de la clase heredera
@@ -259,6 +261,24 @@ class AMManager : public ActiveModule {
 	 * @param err Recibe los errores generados durante la actualización
 	 */
 	void _updateConfig(const metering_manager& data, Blob::ErrorData_t& err);
+
+
+	/***
+	 * Responde con el estado actual
+	 */
+	void _responseWithState(uint32_t idTrans, Blob::ErrorData_t& err);
+
+
+	/***
+	 * Responde con la configuración actual
+	 */
+	void _responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err);
+
+
+	/***
+	 * Notifica el estado actual
+	 */
+	void _notifyState();
 
 };
      
