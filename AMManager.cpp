@@ -143,6 +143,7 @@ void AMManager::_measure(bool enable_notif) {
 
 	// lee todos los parámetros eléctricos de cada analizador
 	int i = 0;
+	bool any_update = false;
 	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
 		AMDriver* am_driver = (*drv);
 		int analyz = am_driver->getNumAnalyzers();
@@ -296,6 +297,7 @@ void AMManager::_measure(bool enable_notif) {
 								MeteringAnalyzerCurrentBelowLimitEvt,
 								0);
 			}
+			any_update = (alarm_notif[i])? true : any_update;
 			// incremento el identificador del analizador analizado
 			i++;
 		}
@@ -304,6 +306,7 @@ __exit_measure_loop:
 
 	// cada N medidas, envía un evento de medida para no saturar las comunicaciones
 	if(--_instant_meas_counter <= 0){
+		any_update = true;
 		_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
 		for(int i=0; i<_amdata._numAnalyzers; i++){
 			alarm_notif[i] = true;
@@ -312,6 +315,7 @@ __exit_measure_loop:
 	}
 	else if(_forced_notification){
 		_forced_notification = false;
+		any_update = true;
 		for(int i=0; i<_amdata._numAnalyzers; i++){
 			alarm_notif[i] = true;
 			_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
@@ -323,29 +327,13 @@ __exit_measure_loop:
 		}
 	}
 
-	// notifica alarmas
-	for(int i=0; i<_amdata._numAnalyzers; i++){
-		if(alarm_notif[i] && enable_notif){
-			// envía mensaje con los flags que se han activado y que están operativos
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando evento %x", _amdata.analyzers[i].stat.flags);
-			char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
-			MBED_ASSERT(pub_topic);
-			sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
-			Blob::NotificationData_t<metering_manager> *notif = new Blob::NotificationData_t<metering_manager>(_amdata);
-			MBED_ASSERT(notif);
-			if(_json_supported){
-				cJSON* jstat = JsonParser::getJsonFromNotification(*notif, ObjSelectState);
-				MBED_ASSERT(jstat);
-				MQ::MQClient::publish(pub_topic, &jstat, sizeof(cJSON**), &_publicationCb);
-				cJSON_Delete(jstat);
-			}
-			else {
-				MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<metering_manager>), &_publicationCb);
-			}
-			delete(notif);
-			Heap::memFree(pub_topic);
-		}
+	// notifica un único mensaje que engloba a todos los analizadores
+	if(any_update && enable_notif){
+		// envía mensaje con los flags que se han activado y que están operativos
+		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando evento");
+		_notifyState();
 	}
+
 }
 
 
@@ -384,6 +372,77 @@ void AMManager::alarmChecking(	bool& alarm_notif,
 	}
 }
 
+
+//------------------------------------------------------------------------------------
+void AMManager::_responseWithState(uint32_t idTrans, Blob::ErrorData_t& err){
+	// prepara el topic al que responder
+	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
+	MBED_ASSERT(pub_topic);
+	sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
+
+	// responde con los datos solicitados y con los errores (si hubiera) de la decodificación de la solicitud
+	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
+	MBED_ASSERT(resp);
+	if(_json_supported){
+		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
+		MBED_ASSERT(jresp);
+		MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
+		cJSON_Delete(jresp);
+	}
+	else{
+		MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+	}
+	delete(resp);
+	Heap::memFree(pub_topic);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
+}
+
+
+//------------------------------------------------------------------------------------
+void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err){
+   	// prepara el topic al que responder
+	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
+	MBED_ASSERT(pub_topic);
+	sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
+
+	// responde con los datos solicitados y con los errores (si hubiera) de la decodificación de la solicitud
+	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
+	MBED_ASSERT(resp);
+	if(_json_supported){
+		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
+		MBED_ASSERT(jresp);
+		MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
+		cJSON_Delete(jresp);
+	}
+	else{
+		MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+	}
+	delete(resp);
+	Heap::memFree(pub_topic);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con configuracion solicitada");
+}
+
+
+//------------------------------------------------------------------------------------
+void AMManager::_notifyState(){
+	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
+	MBED_ASSERT(pub_topic);
+	sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
+	Blob::NotificationData_t<metering_manager> *notif = new Blob::NotificationData_t<metering_manager>(_amdata);
+	MBED_ASSERT(notif);
+	if(_json_supported){
+		cJSON* jstat = JsonParser::getJsonFromNotification(*notif, ObjSelectState);
+		MBED_ASSERT(jstat);
+		MQ::MQClient::publish(pub_topic, &jstat, sizeof(cJSON**), &_publicationCb);
+		cJSON_Delete(jstat);
+	}
+	else {
+		MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<metering_manager>), &_publicationCb);
+	}
+	delete(notif);
+	Heap::memFree(pub_topic);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada notificacion de cambio de estado");
+}
 
 
 
