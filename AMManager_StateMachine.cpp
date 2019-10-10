@@ -22,6 +22,9 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// recupera los datos de memoria NV
         	restoreConfig();
 
+        	// desactiva la notificación forzada
+        	_forced_notification = false;
+
         	// realiza la suscripción local ej: "[get|set]/[cfg|value]/energy"
         	char* sub_topic_local = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
         	MBED_ASSERT(sub_topic_local);
@@ -46,28 +49,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
             	AMDriver* am_driver = (*drv);
 				while(!am_driver->ready()){
-					// inicia por defecto si es un driver virtual
-					#if defined(VERS_METERING_VIRTUALAM_NAME)
-					if(strcmp(am_driver->getVersion(), VERS_METERING_VIRTUALAM_NAME) == 0){
-						am_driver->initEnergyIC();
-					}
-					#endif
-					// inicia por defecto si es un driver EMi10 YTL
-					#if defined(VERS_METERING_EMi10_YTL_NAME)
-					if(strcmp(am_driver->getVersion(), VERS_METERING_EMi10_YTL_NAME) == 0){
-						am_driver->initEnergyIC();
-					}
-					#endif
-					// ajusta la calibración si es un driver M90E26
-					#if defined(VERS_METERING_M90E26_NAME)
-					if(strcmp(am_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
-						am_driver->initEnergyIC((uint16_t*)_meter_cal_values, MeteringAnalyzerCfgCalibRegCount, (uint16_t*)_meas_cal_values, MeteringAnalyzerCfgCalibRegCount);
-					}
-					#endif
-					if(!am_driver->ready()){
-						DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_DRV. Reintentando en 1sec");
-						Thread::wait(1000);
-					}
+					Thread::wait(100);
 				}
             }
             DEBUG_TRACE_I(_EXPR_, _MODULE_, "Drivers OK!");

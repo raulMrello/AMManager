@@ -88,7 +88,7 @@ void AMManager::setDefaultConfig(){
 	_amdata.cfg.measPeriod 	= MeteringManagerCfgMeasPeriodDefault;
 	_amdata.cfg.verbosity 	= ESP_LOG_DEBUG;
 	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
-
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
 	int i=0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
 		AMDriver* amd = (*d);
@@ -155,6 +155,7 @@ void AMManager::restoreConfig(){
 	}
 
 	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
 	int i=0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
 		AMDriver* amd = (*d);

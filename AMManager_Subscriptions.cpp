@@ -261,6 +261,15 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         return;
     }
 
+    // si es un comando para solicitar que notifique la siguiente medida
+    if(MQ::MQClient::isTokenRoot(topic, "set/notif-meas")){
+        DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
+
+        // activa flag de notificación forzada
+        _forced_notification = true;
+        return;
+    }
+
     DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_TOPIC. No se puede procesar el topic [%s]", topic);
 }
 
