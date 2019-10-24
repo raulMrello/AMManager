@@ -109,6 +109,11 @@ osStatus AMManager::putMessage(State::Msg *msg){
     return ost;
 }
 
+//------------------------------------------------------------------------------------
+void AMManager::setLoggingLevel(esp_log_level_t level){
+	esp_log_level_set(_MODULE_, level);
+}
+
 
 
 //------------------------------------------------------------------------------------

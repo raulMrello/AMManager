@@ -91,6 +91,12 @@ class AMManager : public ActiveModule {
     	return _json_supported;
     }
 
+
+    /**--------------------------------------------------------------------------------------
+     * Actualiza el nivel de visualización de las tramas de depuración
+     */
+    void setLoggingLevel(esp_log_level_t level);
+
   private:
 
     /** Máximo número de mensajes alojables en la cola asociada a la máquina de estados */
