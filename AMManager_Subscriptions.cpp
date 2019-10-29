@@ -54,6 +54,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
@@ -98,6 +99,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
@@ -120,6 +122,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
@@ -164,6 +167,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
@@ -209,6 +213,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
@@ -231,6 +236,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
@@ -253,6 +259,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
@@ -283,6 +290,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
 		// postea en la cola de la máquina de estados
 		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
 				Heap::memFree(op->msg);
 			}
