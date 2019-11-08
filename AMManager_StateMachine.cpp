@@ -48,7 +48,8 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// inicializa el driver con los datos de calibración
             DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando drivers!");
             for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
-            	AMDriver* am_driver = (*drv);
+        		DriverObj* dobj = (*drv);
+        		AMDriver* am_driver = dobj->drv;
 				while(!am_driver->ready()){
 					Thread::wait(100);
 				}
@@ -61,7 +62,8 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			// obtiene los parámetros de calibración de cada analizador en caso del M90E26
         	int i = 0;
         	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
-        		AMDriver* am_driver = (*drv);
+        		DriverObj* dobj = (*drv);
+        		AMDriver* am_driver = dobj->drv;
         		int analyz = am_driver->getNumAnalyzers();
         		for(int a = 0; a < analyz; a++){
 					// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
