@@ -69,6 +69,15 @@ enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerActEnergyOverLimitEvt	= (1 << 20),	//!< Evento al superar el límite superior (energía activa)
 	MeteringAnalyzerReactEnergyOverLimitEvt = (1 << 21),	//!< Evento al superar el límite superior (energía reactiva)
 	MeteringAnalyzerInstantMeasureEvt 		= (1 << 22),	//!< Evento al realizar una medida
+	MeteringAnalyzerVoltage					= (1 << 23),	//!< Evento al recibir actualización en la medida de tensión
+	MeteringAnalyzerCurrent					= (1 << 24),	//!< Evento al recibir actualización en la medida de corriente
+	MeteringAnalyzerActivePower				= (1 << 25),	//!< Evento al recibir actualización en la medida de aPow
+	MeteringAnalyzerReactivePower			= (1 << 26),	//!< Evento al recibir actualización en la medida de rPow
+	MeteringAnalyzerPowerFactor				= (1 << 27),	//!< Evento al recibir actualización en la medida de pf
+	MeteringAnalyzerFrequency				= (1 << 28),	//!< Evento al recibir actualización en la medida de freq
+	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency),
+
+
 	/* elemento inválido */
 	MeteringAnalyzerInvalidEvt				= (1 << 31)
 };
@@ -78,8 +87,8 @@ typedef metering_analyzer_cfg_evtFlags metering_analyzer_stat_flags;
 
 
 /** Rango mínimo y valor por defecto de la variable ppl:energy:cfg/measPeriod */
-static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 15;
-static const uint32_t MeteringManagerCfgMeasPeriodDefault = 900;
+static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
+static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** Máximo número de analizadores permitidos */
 static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 6;

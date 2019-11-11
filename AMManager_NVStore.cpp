@@ -81,7 +81,8 @@ void AMManager::setDefaultConfig(){
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
 	_amdata._numAnalyzers = 0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
-		AMDriver* amd = (*d);
+		DriverObj* dobj = (*d);
+		AMDriver* amd = dobj->drv;
 		_amdata._numAnalyzers += amd->getNumAnalyzers();
 	}
 	_amdata.cfg.updFlags 	= MeteringManagerCfgUpdNotif;
@@ -91,7 +92,8 @@ void AMManager::setDefaultConfig(){
 	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
 	int i=0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
-		AMDriver* amd = (*d);
+		DriverObj* dobj = (*d);
+		AMDriver* amd = dobj->drv;
 		for(int a=0; a<amd->getNumAnalyzers(); a++){
 			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
@@ -150,7 +152,8 @@ void AMManager::restoreConfig(){
 	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
 	_amdata._numAnalyzers = 0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
-		AMDriver* amd = (*d);
+		DriverObj* dobj = (*d);
+		AMDriver* amd = dobj->drv;
 		_amdata._numAnalyzers += amd->getNumAnalyzers();
 	}
 
@@ -158,7 +161,8 @@ void AMManager::restoreConfig(){
 	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
 	int i=0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
-		AMDriver* amd = (*d);
+		DriverObj* dobj = (*d);
+		AMDriver* amd = dobj->drv;
 		for(int a=0; a<amd->getNumAnalyzers(); a++){
 			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
@@ -283,8 +287,9 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 	// evalúo analizadores
 	int i = 0;
 	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
-		AMDriver* am_driver = (*drv);
-		int analyz = am_driver->getNumAnalyzers();
+		DriverObj* dobj = (*drv);
+		AMDriver* amd = dobj->drv;
+		int analyz = amd->getNumAnalyzers();
 		for(int a = 0; a < analyz; a++){
 			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
