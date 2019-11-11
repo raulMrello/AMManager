@@ -37,14 +37,19 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     }
 
 	// referencia al driver registrado
-    _driver_list.push_back(driver);
+    DriverObj* dobj = new DriverObj();
+    MBED_ASSERT(dobj);
+    dobj->drv = driver;
+    dobj->cycle_ms = 0;
+    dobj->measures = NULL;
+    dobj->readings = NULL;
+    _driver_list.push_back(dobj);
 
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
 
     // crea el timer para el worker de medida
 	_meas_tmr = NULL;
-
 }
 
 
@@ -65,7 +70,16 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
     }
 
 	// copia la lista de drivers
-    _driver_list = driver_list;
+    for(auto i=driver_list.begin(); i!=driver_list.end();++i){
+    	AMDriver* driver = (*i);
+        DriverObj* dobj = new DriverObj();
+        MBED_ASSERT(dobj);
+        dobj->drv = driver;
+        dobj->cycle_ms = 0;
+        dobj->measures = NULL;
+        dobj->readings = NULL;
+        _driver_list.push_back(dobj);
+    }
 
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -77,12 +91,79 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork() {
+
 	if(_meas_tmr != NULL){
 		_meas_tmr->stop();
 		delete(_meas_tmr);
 		_meas_tmr = NULL;
 	}
+	// este arranque aplica para todos los drivers instalados
+	// a parte de planificar las lecturas, es posible que dependiendo del tipo de driver, haya que
+	// configurar los parámetros que se desean leer.
+	for(auto i= _driver_list.begin(); i!=_driver_list.end(); ++i){
+		DriverObj* dobj = (*i);
+		AMDriver* drv = (dobj->drv);
 
+		// si es un driver AMUniConnectors planifica una medida periódica cada segundo de los parámetros
+		// de tensión y corriente de sus 4 analizadores
+		if(strcmp(drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_UNI_CONNECTORS_MEASCYCLE;
+
+			// crea los objetos de medida de cada analizador
+			AMDriver::AutoMeasureObj* amo_mono = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),0);
+			MBED_ASSERT(amo_mono);
+			AMDriver::AutoMeasureObj* amo_r = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),1);
+			MBED_ASSERT(amo_r);
+			AMDriver::AutoMeasureObj* amo_s = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),2);
+			MBED_ASSERT(amo_s);
+			AMDriver::AutoMeasureObj* amo_t = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),3);
+			MBED_ASSERT(amo_t);
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+
+			// forma la lista de medida con los objetos anteriores
+			dobj->measures->push_back(amo_mono);
+			dobj->measures->push_back(amo_r);
+			dobj->measures->push_back(amo_s);
+			dobj->measures->push_back(amo_t);
+
+			// idem con los objetos de lectura
+			AMDriver::AutoMeasureReading* amr_m = new AMDriver::AutoMeasureReading();
+			MBED_ASSERT(amr_m);
+			amr_m->analyzer=0;
+			AMDriver::AutoMeasureReading* amr_r = new AMDriver::AutoMeasureReading();
+			MBED_ASSERT(amr_r);
+			amr_r->analyzer=1;
+			AMDriver::AutoMeasureReading* amr_s = new AMDriver::AutoMeasureReading();
+			MBED_ASSERT(amr_s);
+			amr_s->analyzer=2;
+			AMDriver::AutoMeasureReading* amr_t = new AMDriver::AutoMeasureReading();
+			MBED_ASSERT(amr_t);
+			amr_t->analyzer=3;
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+			dobj->readings->push_back(amr_m);
+			dobj->readings->push_back(amr_r);
+			dobj->readings->push_back(amr_s);
+			dobj->readings->push_back(amr_t);
+
+			// solicita el inicio de medidas periódicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver AMUniConnectors");
+			}
+		}
+	}
+
+	// arranca el timer de lectura
 	_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
 	// crea el timer para el worker de medida
 	_meas_tmr = new RtosTimer(callback(this, &AMManager::eventMeasureWorkCb), osTimerPeriodic, "AMMeasWork");
@@ -96,6 +177,25 @@ void AMManager::stopMeasureWork() {
 	if(_meas_tmr != NULL){
 		delete(_meas_tmr);
 		_meas_tmr = NULL;
+	}
+	// este arranque aplica para todos los drivers instalados
+	// a parte de planificar las lecturas, es posible que dependiendo del tipo de driver, haya que
+	// configurar los parámetros que se desean leer.
+	for(auto i= _driver_list.begin(); i!=_driver_list.end(); ++i){
+		DriverObj* dobj = (*i);
+		AMDriver* drv = (dobj->drv);
+
+		// si es un driver AMUniConnectors planifica una medida periódica cada segundo de los parámetros
+		// de tensión y corriente de sus 4 analizadores
+		if(strcmp(drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+			cpp_utils::list_delete_items(*dobj->readings);
+			delete(dobj->readings);
+			dobj->readings = NULL;
+			cpp_utils::list_delete_items(*dobj->measures);
+			delete(dobj->measures);
+			dobj->measures = NULL;
+			dobj->cycle_ms = 0;
+		}
 	}
 }
 
@@ -149,162 +249,337 @@ void AMManager::_measure(bool enable_notif) {
 	// lee todos los parámetros eléctricos de cada analizador
 	int i = 0;
 	bool any_update = false;
-	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
-		AMDriver* am_driver = (*drv);
-		int analyz = am_driver->getNumAnalyzers();
-		for(int a = 0; a < analyz; a++){
-			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
-			if(i >= _amdata._numAnalyzers){
-				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
-				goto __exit_measure_loop;
-			}
-			AMDriver::ElectricParams eparam;
-			uint32_t keys;
-			if(am_driver->getElectricParams(eparam, keys, i) == AMDriver::Success){
-				// visualiza los parámetros leídos
-				if(keys & AMDriver::ElecKey_Voltage){
-					_amdata.analyzers[i].stat.measureValues.voltage = eparam.voltage;
-				}
-				if(keys & AMDriver::ElecKey_Current){
-					_amdata.analyzers[i].stat.measureValues.current = eparam.current;
-				}
-				if(keys & AMDriver::ElecKey_ActivePow){
-					_amdata.analyzers[i].stat.measureValues.aPow = eparam.aPow;
-				}
-				if(keys & AMDriver::ElecKey_ReactivePow){
-					_amdata.analyzers[i].stat.measureValues.rPow = eparam.rPow;
-				}
-				if(keys & AMDriver::ElecKey_ApparentPow){
-					_amdata.analyzers[i].stat.measureValues.msPow = eparam.mPow;
-				}
-				if(keys & AMDriver::ElecKey_PowFactor){
-					_amdata.analyzers[i].stat.measureValues.pfactor = eparam.pFactor;
-				}
-				if(keys & AMDriver::ElecKey_THDAmpere){
-					_amdata.analyzers[i].stat.measureValues.thdA = eparam.thdAmp;
-				}
-				if(keys & AMDriver::ElecKey_THDVoltage){
-					_amdata.analyzers[i].stat.measureValues.thdV = eparam.thdVolt;
-				}
-				if(keys & AMDriver::ElecKey_Frequency){
-					_amdata.analyzers[i].stat.measureValues.freq = eparam.freq;
-				}
-				if(keys & AMDriver::ElecKey_ActiveEnergy){
-					_amdata.analyzers[i].stat.energyValues.active = eparam.aEnergy;
-				}
-				if(keys & AMDriver::ElecKey_ReactiveEnergy){
-					_amdata.analyzers[i].stat.energyValues.reactive = eparam.rEnergy;
-				}
-			}
-			// chequeo cada una de las alarmas:
-			alarm_notif[i] = false;
+	for(auto d = _driver_list.begin(); d != _driver_list.end(); ++d){
+		DriverObj* dobj = (*d);
+		AMDriver* am_driver = dobj->drv;
 
-			// en primer lugar si hay carga activa
-			if(_amdata.stat.loadPercent[i] > 0){
-				// chequeo tensión
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.voltage, _amdata.analyzers[i].cfg.minmaxData.voltage,
-								MeteringAnalyzerVoltageOverLimitEvt,
-								MeteringAnalyzerVoltageBelowLimitEvt,
-								0);
-				// chequeo corriente
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.current, _amdata.analyzers[i].cfg.minmaxData.current,
-								MeteringAnalyzerCurrentOverLimitEvt,
-								MeteringAnalyzerCurrentBelowLimitEvt,
-								0);
-				// chequeo phase
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.phase, _amdata.analyzers[i].cfg.minmaxData.phase,
-								MeteringAnalyzerPhaseOverLimitEvt,
-								MeteringAnalyzerPhaseBelowLimitEvt,
-								0);
-				// chequeo factor de potencia
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.pfactor, _amdata.analyzers[i].cfg.minmaxData.pfactor,
-								MeteringAnalyzerPFactorOverLimitEvt,
-								MeteringAnalyzerPFactorBelowLimitEvt,
-								0);
-				// chequeo potencia activa
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.aPow, _amdata.analyzers[i].cfg.minmaxData.aPow,
-								MeteringAnalyzerActPowOverLimitEvt,
-								MeteringAnalyzerActPowBelowLimitEvt,
-								0);
-				// chequeo potencia reactiva
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.rPow, _amdata.analyzers[i].cfg.minmaxData.rPow,
-								MeteringAnalyzerReactPowOverLimitEvt,
-								MeteringAnalyzerReactPowBelowLimitEvt,
-								0);
-				// chequeo frecuencia
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.freq, _amdata.analyzers[i].cfg.minmaxData.freq,
-								MeteringAnalyzerFrequencyOverLimitEvt,
-								MeteringAnalyzerFrequencyBelowLimitEvt,
-								0);
-				// chequeo THD-A
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.thdA, _amdata.analyzers[i].cfg.minmaxData.thdA,
-								MeteringAnalyzerThdAOverLimitEvt,
-								MeteringAnalyzerThdABelowLimitEvt,
-								0);
-				// chequeo THD-V
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.thdV, _amdata.analyzers[i].cfg.minmaxData.thdV,
-								MeteringAnalyzerThdVOverLimitEvt,
-								MeteringAnalyzerThdVBelowLimitEvt,
-								0);
-				// chequeo energía activa
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.energyValues.active, _amdata.analyzers[i].cfg.minmaxData.active,
-								MeteringAnalyzerActEnergyOverLimitEvt,
-								0,
-								0);
-				// chequeo energía activa
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.energyValues.reactive, _amdata.analyzers[i].cfg.minmaxData.reactive,
-								MeteringAnalyzerReactEnergyOverLimitEvt,
-								0,
-								0);
+		// si el driver tiene habilitado las medidas automáticas, las ejecuta
+		if(dobj->cycle_ms > 0 && dobj->measures && dobj->readings){
+			// realiza la lectura
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Leyendo lecturas");
+
+			if(dobj->drv->getAnalyzerReadings(*dobj->readings)==0){
+				// evalúa las nuevas medidas
+				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
+					AMDriver::AutoMeasureReading* amr = (*r);
+					uint32_t keys = amr->params.measureId;
+					alarm_notif[amr->analyzer] = false;
+
+					// visualiza los parámetros leídos
+					if(keys != 0){
+						if(keys & AMDriver::ElecKey_Voltage){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.voltage = amr->params.voltage;
+							_amdata.analyzers[amr->analyzer].stat.flags |= MeteringAnalyzerVoltage;
+						}
+						if(keys & AMDriver::ElecKey_Current){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.current = amr->params.current;
+							_amdata.analyzers[amr->analyzer].stat.flags |= MeteringAnalyzerCurrent;
+						}
+						if(keys & AMDriver::ElecKey_ActivePow){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.aPow = amr->params.aPow;
+							_amdata.analyzers[amr->analyzer].stat.flags |= MeteringAnalyzerActivePower;
+						}
+						if(keys & AMDriver::ElecKey_ReactivePow){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.rPow = amr->params.rPow;
+							_amdata.analyzers[amr->analyzer].stat.flags |= MeteringAnalyzerReactivePower;
+						}
+						if(keys & AMDriver::ElecKey_ApparentPow){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.msPow = amr->params.mPow;
+						}
+						if(keys & AMDriver::ElecKey_PowFactor){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.pfactor = amr->params.pFactor;
+							_amdata.analyzers[amr->analyzer].stat.flags |= MeteringAnalyzerPowerFactor;
+						}
+						if(keys & AMDriver::ElecKey_THDAmpere){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.thdA = amr->params.thdAmp;
+						}
+						if(keys & AMDriver::ElecKey_THDVoltage){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.thdV = amr->params.thdVolt;
+						}
+						if(keys & AMDriver::ElecKey_Frequency){
+							_amdata.analyzers[amr->analyzer].stat.measureValues.freq = amr->params.freq;
+							_amdata.analyzers[amr->analyzer].stat.flags |= MeteringAnalyzerFrequency;
+						}
+						if(keys & AMDriver::ElecKey_ActiveEnergy){
+							_amdata.analyzers[amr->analyzer].stat.energyValues.active = amr->params.aEnergy;
+						}
+						if(keys & AMDriver::ElecKey_ReactiveEnergy){
+							_amdata.analyzers[amr->analyzer].stat.energyValues.reactive = amr->params.rEnergy;
+						}
+						// chequeo cada una de las alarmas:
+						// en primer lugar si hay carga activa
+						if(_amdata.stat.loadPercent[amr->analyzer] > 0){
+							// chequeo tensión
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.voltage, _amdata.analyzers[amr->analyzer].cfg.minmaxData.voltage,
+											MeteringAnalyzerVoltageOverLimitEvt,
+											MeteringAnalyzerVoltageBelowLimitEvt,
+											0);
+							// chequeo corriente
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.current, _amdata.analyzers[amr->analyzer].cfg.minmaxData.current,
+											MeteringAnalyzerCurrentOverLimitEvt,
+											MeteringAnalyzerCurrentBelowLimitEvt,
+											0);
+							// chequeo phase
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.phase, _amdata.analyzers[amr->analyzer].cfg.minmaxData.phase,
+											MeteringAnalyzerPhaseOverLimitEvt,
+											MeteringAnalyzerPhaseBelowLimitEvt,
+											0);
+							// chequeo factor de potencia
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.pfactor, _amdata.analyzers[amr->analyzer].cfg.minmaxData.pfactor,
+											MeteringAnalyzerPFactorOverLimitEvt,
+											MeteringAnalyzerPFactorBelowLimitEvt,
+											0);
+							// chequeo potencia activa
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.aPow, _amdata.analyzers[amr->analyzer].cfg.minmaxData.aPow,
+											MeteringAnalyzerActPowOverLimitEvt,
+											MeteringAnalyzerActPowBelowLimitEvt,
+											0);
+							// chequeo potencia reactiva
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.rPow, _amdata.analyzers[amr->analyzer].cfg.minmaxData.rPow,
+											MeteringAnalyzerReactPowOverLimitEvt,
+											MeteringAnalyzerReactPowBelowLimitEvt,
+											0);
+							// chequeo frecuencia
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.freq, _amdata.analyzers[amr->analyzer].cfg.minmaxData.freq,
+											MeteringAnalyzerFrequencyOverLimitEvt,
+											MeteringAnalyzerFrequencyBelowLimitEvt,
+											0);
+							// chequeo THD-A
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.thdA, _amdata.analyzers[amr->analyzer].cfg.minmaxData.thdA,
+											MeteringAnalyzerThdAOverLimitEvt,
+											MeteringAnalyzerThdABelowLimitEvt,
+											0);
+							// chequeo THD-V
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.thdV, _amdata.analyzers[amr->analyzer].cfg.minmaxData.thdV,
+											MeteringAnalyzerThdVOverLimitEvt,
+											MeteringAnalyzerThdVBelowLimitEvt,
+											0);
+							// chequeo energía activa
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.energyValues.active, _amdata.analyzers[amr->analyzer].cfg.minmaxData.active,
+											MeteringAnalyzerActEnergyOverLimitEvt,
+											0,
+											0);
+							// chequeo energía activa
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.energyValues.reactive, _amdata.analyzers[amr->analyzer].cfg.minmaxData.reactive,
+											MeteringAnalyzerReactEnergyOverLimitEvt,
+											0,
+											0);
+						}
+						//o si no hay carga activa
+						else{
+							// chequeo corriente
+							common_range_minmaxthres_double minmax = {0, _amdata.analyzers[amr->analyzer].cfg.minmaxData.current.min, _amdata.analyzers[amr->analyzer].cfg.minmaxData.current.thres};
+							alarmChecking(	alarm_notif[amr->analyzer],
+											_amdata.analyzers[amr->analyzer].stat.flags,
+											_amdata.analyzers[amr->analyzer].cfg.evtFlags,
+											_amdata.analyzers[amr->analyzer].stat.measureValues.current, minmax,
+											MeteringAnalyzerCurrentOverLimitEvt,
+											MeteringAnalyzerCurrentBelowLimitEvt,
+											0);
+						}
+					}
+					any_update = (alarm_notif[amr->analyzer])? true : any_update;
+				}
 			}
-			//o si no hay carga activa
-			else{
-				// chequeo corriente
-				common_range_minmaxthres_double minmax = {0, _amdata.analyzers[i].cfg.minmaxData.current.min, _amdata.analyzers[i].cfg.minmaxData.current.thres};
-				alarmChecking(	alarm_notif[i],
-								_amdata.analyzers[i].stat.flags,
-								_amdata.analyzers[i].cfg.evtFlags,
-								_amdata.analyzers[i].stat.measureValues.current, minmax,
-								MeteringAnalyzerCurrentOverLimitEvt,
-								MeteringAnalyzerCurrentBelowLimitEvt,
-								0);
+
+		}
+		// en caso contrario ejecuta la lectura de todos los parámetros manualmente analizador por analizador
+		else{
+			// en otro caso, las lee de forma manual analizador por analizador
+			int analyz = am_driver->getNumAnalyzers();
+
+			for(int a = 0; a < analyz; a++){
+				alarm_notif[i] = false;
+				// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+				if(i >= _amdata._numAnalyzers){
+					DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+					goto __exit_measure_loop;
+				}
+				AMDriver::ElectricParams eparam;
+				uint32_t keys;
+				if(am_driver->getElectricParams(eparam, keys, i) == AMDriver::Success){
+					// visualiza los parámetros leídos
+					if(keys & AMDriver::ElecKey_Voltage){
+						_amdata.analyzers[i].stat.measureValues.voltage = eparam.voltage;
+						_amdata.analyzers[i].stat.flags |= MeteringAnalyzerVoltage;
+					}
+					if(keys & AMDriver::ElecKey_Current){
+						_amdata.analyzers[i].stat.measureValues.current = eparam.current;
+						_amdata.analyzers[i].stat.flags |= MeteringAnalyzerCurrent;
+					}
+					if(keys & AMDriver::ElecKey_ActivePow){
+						_amdata.analyzers[i].stat.measureValues.aPow = eparam.aPow;
+						_amdata.analyzers[i].stat.flags |= MeteringAnalyzerActivePower;
+					}
+					if(keys & AMDriver::ElecKey_ReactivePow){
+						_amdata.analyzers[i].stat.measureValues.rPow = eparam.rPow;
+						_amdata.analyzers[i].stat.flags |= MeteringAnalyzerReactivePower;
+					}
+					if(keys & AMDriver::ElecKey_ApparentPow){
+						_amdata.analyzers[i].stat.measureValues.msPow = eparam.mPow;
+					}
+					if(keys & AMDriver::ElecKey_PowFactor){
+						_amdata.analyzers[i].stat.measureValues.pfactor = eparam.pFactor;
+						_amdata.analyzers[i].stat.flags |= MeteringAnalyzerPowerFactor;
+					}
+					if(keys & AMDriver::ElecKey_THDAmpere){
+						_amdata.analyzers[i].stat.measureValues.thdA = eparam.thdAmp;
+					}
+					if(keys & AMDriver::ElecKey_THDVoltage){
+						_amdata.analyzers[i].stat.measureValues.thdV = eparam.thdVolt;
+					}
+					if(keys & AMDriver::ElecKey_Frequency){
+						_amdata.analyzers[i].stat.measureValues.freq = eparam.freq;
+						_amdata.analyzers[i].stat.flags |= MeteringAnalyzerFrequency;
+					}
+					if(keys & AMDriver::ElecKey_ActiveEnergy){
+						_amdata.analyzers[i].stat.energyValues.active = eparam.aEnergy;
+					}
+					if(keys & AMDriver::ElecKey_ReactiveEnergy){
+						_amdata.analyzers[i].stat.energyValues.reactive = eparam.rEnergy;
+					}
+				}
+				// chequeo cada una de las alarmas:
+				// en primer lugar si hay carga activa
+				if(_amdata.stat.loadPercent[i] > 0){
+					// chequeo tensión
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.voltage, _amdata.analyzers[i].cfg.minmaxData.voltage,
+									MeteringAnalyzerVoltageOverLimitEvt,
+									MeteringAnalyzerVoltageBelowLimitEvt,
+									0);
+					// chequeo corriente
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.current, _amdata.analyzers[i].cfg.minmaxData.current,
+									MeteringAnalyzerCurrentOverLimitEvt,
+									MeteringAnalyzerCurrentBelowLimitEvt,
+									0);
+					// chequeo phase
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.phase, _amdata.analyzers[i].cfg.minmaxData.phase,
+									MeteringAnalyzerPhaseOverLimitEvt,
+									MeteringAnalyzerPhaseBelowLimitEvt,
+									0);
+					// chequeo factor de potencia
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.pfactor, _amdata.analyzers[i].cfg.minmaxData.pfactor,
+									MeteringAnalyzerPFactorOverLimitEvt,
+									MeteringAnalyzerPFactorBelowLimitEvt,
+									0);
+					// chequeo potencia activa
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.aPow, _amdata.analyzers[i].cfg.minmaxData.aPow,
+									MeteringAnalyzerActPowOverLimitEvt,
+									MeteringAnalyzerActPowBelowLimitEvt,
+									0);
+					// chequeo potencia reactiva
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.rPow, _amdata.analyzers[i].cfg.minmaxData.rPow,
+									MeteringAnalyzerReactPowOverLimitEvt,
+									MeteringAnalyzerReactPowBelowLimitEvt,
+									0);
+					// chequeo frecuencia
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.freq, _amdata.analyzers[i].cfg.minmaxData.freq,
+									MeteringAnalyzerFrequencyOverLimitEvt,
+									MeteringAnalyzerFrequencyBelowLimitEvt,
+									0);
+					// chequeo THD-A
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.thdA, _amdata.analyzers[i].cfg.minmaxData.thdA,
+									MeteringAnalyzerThdAOverLimitEvt,
+									MeteringAnalyzerThdABelowLimitEvt,
+									0);
+					// chequeo THD-V
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.thdV, _amdata.analyzers[i].cfg.minmaxData.thdV,
+									MeteringAnalyzerThdVOverLimitEvt,
+									MeteringAnalyzerThdVBelowLimitEvt,
+									0);
+					// chequeo energía activa
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.energyValues.active, _amdata.analyzers[i].cfg.minmaxData.active,
+									MeteringAnalyzerActEnergyOverLimitEvt,
+									0,
+									0);
+					// chequeo energía activa
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.energyValues.reactive, _amdata.analyzers[i].cfg.minmaxData.reactive,
+									MeteringAnalyzerReactEnergyOverLimitEvt,
+									0,
+									0);
+				}
+				//o si no hay carga activa
+				else{
+					// chequeo corriente
+					common_range_minmaxthres_double minmax = {0, _amdata.analyzers[i].cfg.minmaxData.current.min, _amdata.analyzers[i].cfg.minmaxData.current.thres};
+					alarmChecking(	alarm_notif[i],
+									_amdata.analyzers[i].stat.flags,
+									_amdata.analyzers[i].cfg.evtFlags,
+									_amdata.analyzers[i].stat.measureValues.current, minmax,
+									MeteringAnalyzerCurrentOverLimitEvt,
+									MeteringAnalyzerCurrentBelowLimitEvt,
+									0);
+				}
+				any_update = (alarm_notif[i])? true : any_update;
+				// incremento el identificador del analizador analizado
+				i++;
 			}
-			any_update = (alarm_notif[i])? true : any_update;
-			// incremento el identificador del analizador analizado
-			i++;
 		}
 	}
 __exit_measure_loop:
@@ -314,16 +589,20 @@ __exit_measure_loop:
 		any_update = true;
 		_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
 		for(int i=0; i<_amdata._numAnalyzers; i++){
-			alarm_notif[i] = true;
-			_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
+			if(_amdata.analyzers[i].stat.flags & MeteringAnalyzerElectricParam){
+				alarm_notif[i] = true;
+				_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
+			}
 		}
 	}
 	else if(_forced_notification){
 		_forced_notification = false;
 		any_update = true;
 		for(int i=0; i<_amdata._numAnalyzers; i++){
-			alarm_notif[i] = true;
-			_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
+			if(_amdata.analyzers[i].stat.flags & MeteringAnalyzerElectricParam){
+				alarm_notif[i] = true;
+				_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
+			}
 		}
 	}
 	else{

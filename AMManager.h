@@ -17,6 +17,7 @@
 #include "AMDriver.h"
 #include "JsonParserBlob.h"
 #include "metering_objects.h"
+#include "cpp_utils.h"
 #include <list>
 
 /** Flag para habilitar el soporte de objetos JSON en las suscripciones a MQLib
@@ -136,9 +137,6 @@ class AMManager : public ActiveModule {
     /** Contador de medidas pendientes para notificar una medida instantánea */
     int32_t _instant_meas_counter;
 
-    /** Controladores de los chip de medida */
-    std::list<AMDriver*> _driver_list;
-
     /** Gestor de la carga activa en el medidor */
     uint8_t _load_data;
 
@@ -152,6 +150,17 @@ class AMManager : public ActiveModule {
     /** Flag para forzar la notificación en la siguiente medida o la medida */
     bool _forced_notification;
     bool _forced_measure;
+
+    /** Objetos para la lectura de parámetros automáticos de forma periódica */
+    struct DriverObj{
+    	AMDriver* drv;
+    	uint32_t cycle_ms;
+    	std::list<AMDriver::AutoMeasureObj*>* measures;
+    	std::list<AMDriver::AutoMeasureReading*>* readings;
+    };
+    /** Controladores de los chip de medida */
+    std::list<DriverObj*> _driver_list;
+
 
 
     /** Interfaz para obtener un evento osEvent de la clase heredera
