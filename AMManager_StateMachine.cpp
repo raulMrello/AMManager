@@ -50,57 +50,58 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
         		DriverObj* dobj = (*drv);
         		AMDriver* am_driver = dobj->drv;
+        		am_driver->initEnergyIC();
 				while(!am_driver->ready()){
 					Thread::wait(100);
 				}
             }
             DEBUG_TRACE_I(_EXPR_, _MODULE_, "Drivers OK!");
 
-        	// inicializa el estado de las medidas realizando una medida inicial pero sin notificarla
-        	_measure(false);
-
-			// obtiene los parámetros de calibración de cada analizador en caso del M90E26
-        	int i = 0;
-        	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
-        		DriverObj* dobj = (*drv);
-        		AMDriver* am_driver = dobj->drv;
-        		int analyz = am_driver->getNumAnalyzers();
-        		for(int a = 0; a < analyz; a++){
-					// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
-					if(i >= _amdata._numAnalyzers){
-						DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
-						goto __exit_init_loop;
-					}
-					#if defined(VERS_METERING_M90E26_NAME)
-					if(strcmp(am_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
-						for(int i=0; i<am_driver->getNumAnalyzers(); i++){
-							if(am_driver->getMeterCalib(_amdata.analyzers[i].cfg.calibData.meterRegs, MeteringAnalyzerCfgCalibRegCount, i) != 0){
-								DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeterCalib AN=%d", i);
-							}
-							if(am_driver->getMeasureCalib(_amdata.analyzers[i].cfg.calibData.measRegs, MeteringAnalyzerCfgCalibRegCount, i) != 0){
-								DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeasureCalib AN=%d", i);
-							}
-						}
-					}
-					#endif
-					// chequea el estado del driver para ver si está en estado de error
-					uint16_t sys_stat;
-					if(am_driver->getSysStatus(&sys_stat) != 0){
-						DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo SystemStatus");
-					}
-					else{
-						if(sys_stat & (uint16_t)am_driver->ErrMeasCalib){
-							DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error SYS_MEAS_CALIB");
-						}
-						if(sys_stat & (uint16_t)am_driver->ErrMeterCalib){
-							DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error SYS_METER_CALIB");
-						}
-					}
-					// incremento el identificador del analizador analizado
-					i++;
-        		}
-            }
-__exit_init_loop:
+//        	// inicializa el estado de las medidas realizando una medida inicial pero sin notificarla
+//        	_measure(false);
+//
+//			// obtiene los parámetros de calibración de cada analizador en caso del M90E26
+//        	int i = 0;
+//        	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
+//        		DriverObj* dobj = (*drv);
+//        		AMDriver* am_driver = dobj->drv;
+//        		int analyz = am_driver->getNumAnalyzers();
+//        		for(int a = 0; a < analyz; a++){
+//					// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+//					if(i >= _amdata._numAnalyzers){
+//						DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+//						goto __exit_init_loop;
+//					}
+//					#if defined(VERS_METERING_M90E26_NAME)
+//					if(strcmp(am_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
+//						for(int i=0; i<am_driver->getNumAnalyzers(); i++){
+//							if(am_driver->getMeterCalib(_amdata.analyzers[i].cfg.calibData.meterRegs, MeteringAnalyzerCfgCalibRegCount, i) != 0){
+//								DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeterCalib AN=%d", i);
+//							}
+//							if(am_driver->getMeasureCalib(_amdata.analyzers[i].cfg.calibData.measRegs, MeteringAnalyzerCfgCalibRegCount, i) != 0){
+//								DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo MeasureCalib AN=%d", i);
+//							}
+//						}
+//					}
+//					#endif
+//					// chequea el estado del driver para ver si está en estado de error
+//					uint16_t sys_stat;
+//					if(am_driver->getSysStatus(&sys_stat) != 0){
+//						DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error leyendo SystemStatus");
+//					}
+//					else{
+//						if(sys_stat & (uint16_t)am_driver->ErrMeasCalib){
+//							DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error SYS_MEAS_CALIB");
+//						}
+//						if(sys_stat & (uint16_t)am_driver->ErrMeterCalib){
+//							DEBUG_TRACE_W(_EXPR_, _MODULE_, "Error SYS_METER_CALIB");
+//						}
+//					}
+//					// incremento el identificador del analizador analizado
+//					i++;
+//        		}
+//            }
+//__exit_init_loop:
 
         	// marca como componente iniciado
         	_ready = true;
