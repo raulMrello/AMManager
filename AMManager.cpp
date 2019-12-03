@@ -201,15 +201,6 @@ void AMManager::stopMeasureWork() {
 
 
 //------------------------------------------------------------------------------------
-osStatus AMManager::putMessage(State::Msg *msg){
-    osStatus ost = _queue.put(msg, ActiveModule::DefaultPutTimeout);
-    if(ost != osOK){
-        DEBUG_TRACE_E(_EXPR_, _MODULE_, "QUEUE_PUT_ERROR %d", ost);
-    }
-    return ost;
-}
-
-//------------------------------------------------------------------------------------
 void AMManager::setLoggingLevel(esp_log_level_t level){
 	esp_log_level_set(_MODULE_, level);
 }
@@ -219,12 +210,6 @@ void AMManager::setLoggingLevel(esp_log_level_t level){
 //------------------------------------------------------------------------------------
 //-- PROTECTED METHODS IMPLEMENTATION ------------------------------------------------
 //------------------------------------------------------------------------------------
-
-
-//------------------------------------------------------------------------------------
-osEvent AMManager:: getOsEvent(){
-	return _queue.get();
-}
 
 
 

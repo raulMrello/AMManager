@@ -62,13 +62,6 @@ class AMManager : public ActiveModule {
      */
     void stopMeasureWork();
 
-
-    /** Interfaz para postear un mensaje de la máquina de estados en el Mailbox de la clase heredera
-     *  @param msg Mensaje a postear
-     *  @return Resultado
-     */
-    virtual osStatus putMessage(State::Msg *msg);
-
     /** Getters */
     void getLoadData(uint8_t& ld) { ld = _load_data; }
     void getBootData(metering_manager& bd) { bd = _amdata; }
@@ -122,9 +115,6 @@ class AMManager : public ActiveModule {
     };
 
 
-    /** Cola de mensajes de la máquina de estados */
-    Queue<State::Msg, MaxQueueMessages> _queue;
-
     /** Nombre del objeto creado */
     const char* _name;
 
@@ -160,13 +150,6 @@ class AMManager : public ActiveModule {
     };
     /** Controladores de los chip de medida */
     std::list<DriverObj*> _driver_list;
-
-
-
-    /** Interfaz para obtener un evento osEvent de la clase heredera
-     *  @param msg Mensaje a postear
-     */
-    virtual osEvent getOsEvent();
 
 
  	/** Interfaz para manejar los eventos en la máquina de estados por defecto
