@@ -105,28 +105,22 @@ void AMManager::startMeasureWork() {
 		AMDriver* drv = (dobj->drv);
 
 		// si es un driver AMUniConnectors planifica una medida periódica cada segundo de los parámetros
-		// de tensión y corriente de sus 4 analizadores
+		// en bloque
 		if(strcmp(drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_UNI_CONNECTORS_MEASCYCLE;
 
 			// crea los objetos de medida de cada analizador
-			AMDriver::AutoMeasureObj* amo_mono = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),0);
-			MBED_ASSERT(amo_mono);
-			AMDriver::AutoMeasureObj* amo_r = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),1);
-			MBED_ASSERT(amo_r);
-			AMDriver::AutoMeasureObj* amo_s = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),2);
-			MBED_ASSERT(amo_s);
-			AMDriver::AutoMeasureObj* amo_t = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage),3);
-			MBED_ASSERT(amo_t);
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qué es lo que quiero leer. Lo que sí es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock),AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
 			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
 			MBED_ASSERT(dobj->measures);
 
 			// forma la lista de medida con los objetos anteriores
-			dobj->measures->push_back(amo_mono);
-			dobj->measures->push_back(amo_r);
-			dobj->measures->push_back(amo_s);
-			dobj->measures->push_back(amo_t);
+			dobj->measures->push_back(amo_block);
 
 			// idem con los objetos de lectura
 			AMDriver::AutoMeasureReading* amr_m = new AMDriver::AutoMeasureReading();
@@ -169,11 +163,13 @@ void AMManager::startMeasureWork() {
 	_meas_tmr = new RtosTimer(callback(this, &AMManager::eventMeasureWorkCb), osTimerPeriodic, "AMMeasWork");
 	// realiza una medida con una cadencia dada
 	_meas_tmr->start(DefaultMeasurePeriod);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando medidas automaticas cada %d ms", DefaultMeasurePeriod);
 }
 
 
 //------------------------------------------------------------------------------------
 void AMManager::stopMeasureWork() {
+	DEBUG_TRACE_W(_EXPR_, _MODULE_, "Finalizando medidas automaticas");
 	if(_meas_tmr != NULL){
 		delete(_meas_tmr);
 		_meas_tmr = NULL;
