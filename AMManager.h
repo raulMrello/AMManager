@@ -151,7 +151,6 @@ class AMManager : public ActiveModule {
     /** Controladores de los chip de medida */
     std::list<DriverObj*> _driver_list;
 
-
  	/** Interfaz para manejar los eventos en la máquina de estados por defecto
       *  @param se Evento a manejar
       *  @return State::StateResult Resultado del manejo del evento
