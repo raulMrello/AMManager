@@ -19,6 +19,7 @@
 #include "metering_objects.h"
 #include "cpp_utils.h"
 #include <list>
+#include "SafetyOp.h"
 
 /** Flag para habilitar el soporte de objetos JSON en las suscripciones a MQLib
  *  Por defecto DESACTIVADO

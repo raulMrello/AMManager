@@ -223,6 +223,9 @@ void AMManager::eventMeasureWorkCb() {
 
 //------------------------------------------------------------------------------------
 void AMManager::_measure(bool enable_notif) {
+	SafetyOp* op = new SafetyOp(__FUNCTION__, 2000, callback(&esp_restart));
+	MBED_ASSERT(op);
+
 	double value;
 	uint32_t multiplier = 1000;
 	bool alarm_notif[MeteringManagerCfgMaxNumAnalyzers];
@@ -598,7 +601,7 @@ __exit_measure_loop:
 		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando evento");
 		_notifyState();
 	}
-
+	delete(op);
 }
 
 
