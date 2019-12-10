@@ -223,9 +223,6 @@ void AMManager::eventMeasureWorkCb() {
 
 //------------------------------------------------------------------------------------
 void AMManager::_measure(bool enable_notif) {
-	SafetyOp* op = new SafetyOp(__FUNCTION__, 2000, callback(&esp_restart));
-	MBED_ASSERT(op);
-
 	double value;
 	uint32_t multiplier = 1000;
 	bool alarm_notif[MeteringManagerCfgMaxNumAnalyzers];
@@ -242,7 +239,12 @@ void AMManager::_measure(bool enable_notif) {
 			// realiza la lectura
 			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Leyendo lecturas");
 
-			if(dobj->drv->getAnalyzerReadings(*dobj->readings)==0){
+			SafetyOp* op = new SafetyOp(__FUNCTION__, 5000, callback(&esp_restart));
+			MBED_ASSERT(op);
+			int32_t gar_res = dobj->drv->getAnalyzerReadings(*dobj->readings);
+			delete(op);
+
+			if(gar_res==0){
 				// evalúa las nuevas medidas
 				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
 					AMDriver::AutoMeasureReading* amr = (*r);
@@ -601,7 +603,6 @@ __exit_measure_loop:
 		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando evento");
 		_notifyState();
 	}
-	delete(op);
 }
 
 
