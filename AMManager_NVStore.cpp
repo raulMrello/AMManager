@@ -69,16 +69,16 @@ bool AMManager::checkIntegrity(){
 void AMManager::setDefaultConfig(){
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "~~~~ TODO ~~~~ AMManager::setDefaultConfig");
 
-	// borro la configuración y el estado
+	// borro la configuraciï¿½n y el estado
 	_amdata = {0};
 
-	// lee la versión del driver integrado para formar el uid
+	// lee la versiï¿½n del driver integrado para formar el uid
 	_amdata.uid = UID_METERING_MANAGER;
 	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
 		_amdata.analyzers[i].uid = UID_METERING_ANALYZER;
 	}
 
-	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
+	// cargo los datos por defecto: num analizadores, candencia de envï¿½o de medidas, verbosidad, eventos...
 	_amdata._numAnalyzers = 0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
 		DriverObj* dobj = (*d);
@@ -87,7 +87,7 @@ void AMManager::setDefaultConfig(){
 	}
 	_amdata.cfg.updFlags 	= MeteringManagerCfgUpdNotif;
 	_amdata.cfg.measPeriod 	= MeteringManagerCfgMeasPeriodDefault;
-	_amdata.cfg.verbosity 	= ESP_LOG_DEBUG;
+	_amdata.cfg.verbosity 	= APP_AMMANAGER_LOG_LEVEL;
 	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
 	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
 	int i=0;
@@ -95,7 +95,7 @@ void AMManager::setDefaultConfig(){
 		DriverObj* dobj = (*d);
 		AMDriver* amd = dobj->drv;
 		for(int a=0; a<amd->getNumAnalyzers(); a++){
-			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+			// en caso de tener mï¿½s analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
 				goto __exit_sdefcfg_loop;
@@ -133,7 +133,7 @@ void AMManager::setDefaultConfig(){
 	}
 __exit_sdefcfg_loop:
 
-	// guarda la configuración
+	// guarda la configuraciï¿½n
 	saveConfig();
 }
 
@@ -143,13 +143,13 @@ void AMManager::restoreConfig(){
 	// inicio el estado por defecto
 	_amdata = {0};
 
-	// lee la versión del driver integrado para formar el uid
+	// lee la versiï¿½n del driver integrado para formar el uid
 	_amdata.uid = UID_METERING_MANAGER;
 	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
 		_amdata.analyzers[i].uid = UID_METERING_ANALYZER;
 	}
 
-	// cargo los datos por defecto: num analizadores, candencia de envío de medidas, verbosidad, eventos...
+	// cargo los datos por defecto: num analizadores, candencia de envï¿½o de medidas, verbosidad, eventos...
 	_amdata._numAnalyzers = 0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
 		DriverObj* dobj = (*d);
@@ -164,7 +164,7 @@ void AMManager::restoreConfig(){
 		DriverObj* dobj = (*d);
 		AMDriver* amd = dobj->drv;
 		for(int a=0; a<amd->getNumAnalyzers(); a++){
-			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+			// en caso de tener mï¿½s analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
 				goto __exit_rstcfg_loop;
@@ -186,7 +186,7 @@ __exit_rstcfg_loop:
 		success = false;
 	}
 
-	// recupera la configuración de los analizadores metering:analyzer:cfg
+	// recupera la configuraciï¿½n de los analizadores metering:analyzer:cfg
 	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
 		snprintf(nvs_key, 16, "%s_an%dcfg", _name, i);
 		if(!restoreParameter(nvs_key, &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg), NVSInterface::TypeBlob)){
@@ -227,7 +227,7 @@ __exit_rstcfg_loop:
     		return;
     	}
 	}
-	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_FS. Error en la recuperación de datos. Establece configuración por defecto");
+	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_FS. Error en la recuperaciï¿½n de datos. Establece configuraciï¿½n por defecto");
 	setDefaultConfig();
 }
 
@@ -243,7 +243,7 @@ void AMManager::saveConfig(){
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando %s", _name);
 	}
 
-	// graba la configuración de los analizadores metering:analyzer:cfg
+	// graba la configuraciï¿½n de los analizadores metering:analyzer:cfg
 	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
 		snprintf(nvs_key, 16, "%s_an%dcfg", _name, i);
 		if(!saveParameter(nvs_key, &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg), NVSInterface::TypeBlob)){
@@ -284,26 +284,26 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 	if((data.cfg._keys & (1 << 3))){
 		_amdata.cfg.verbosity = data.cfg.verbosity;
 	}
-	// evalúo analizadores
+	// evalï¿½o analizadores
 	int i = 0;
 	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
 		DriverObj* dobj = (*drv);
 		AMDriver* amd = dobj->drv;
 		int analyz = amd->getNumAnalyzers();
 		for(int a = 0; a < analyz; a++){
-			// en caso de tener más analizadores que los registrados, marca error y sale de los bucles
+			// en caso de tener mï¿½s analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
 				goto __exit_updcfg;
 			}
-			// evalúo metering:manager:analyzer[]:cfg
+			// evalï¿½o metering:manager:analyzer[]:cfg
 			if((data.analyzers[i].cfg._keys & (1 << 1))){
 				_amdata.analyzers[i].cfg.updFlags = data.analyzers[i].cfg.updFlags;
 			}
 			if((data.analyzers[i].cfg._keys & (1 << 2))){
 				_amdata.analyzers[i].cfg.evtFlags = data.analyzers[i].cfg.evtFlags;
 			}
-			// evalúo metering:manager:analyzer[]:minmax:cfg
+			// evalï¿½o metering:manager:analyzer[]:minmax:cfg
 			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 1))){
 				_amdata.analyzers[i].cfg.minmaxData.voltage = data.analyzers[i].cfg.minmaxData.voltage;
 			}
@@ -345,7 +345,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 				_amdata.analyzers[i].cfg.minmaxData.reactive = data.analyzers[i].cfg.minmaxData.reactive;
 			}
 
-			// evalúo metering:manager:analyzer[]:calib:cfg
+			// evalï¿½o metering:manager:analyzer[]:calib:cfg
 			#if defined(VERS_METERING_M90E26_NAME)
 			if(strcmp(am_driver->getVersion(), VERS_METERING_M90E26_NAME) == 0){
 				if((data.analyzers[i].cfg.calibData._keys & (1 << 1))){
