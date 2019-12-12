@@ -46,7 +46,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	Heap::memFree(sub_topic_local);
 
         	// inicializa el driver con los datos de calibración
-            DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando drivers!");
+            DEBUG_TRACE_D(_EXPR_, _MODULE_, "Iniciando drivers!");
             for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
         		DriverObj* dobj = (*drv);
         		AMDriver* am_driver = dobj->drv;
@@ -94,7 +94,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// si está habilitada la notificación de actualización, lo notifica
         	if((_amdata.cfg.updFlags & MeteringManagerCfgUpdNotif) != 0){
-        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Notificando actualización");
+        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualización");
         		_responseWithConfig(req->idTrans, req->_error);
         	}
             return State::HANDLED;
@@ -169,7 +169,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         // Procesa datos recibidos de la publicación en set/load/$
         case RecvForcedMeasure:{
-        	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Realiza medida solicitada y notifica");
+        	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Realiza medida solicitada y notifica");
         	_measure(false);
         	_notifyState();
             return State::HANDLED;
