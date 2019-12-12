@@ -663,7 +663,7 @@ void AMManager::_responseWithState(uint32_t idTrans, Blob::ErrorData_t& err){
 	}
 	delete(resp);
 	Heap::memFree(pub_topic);
-	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
 }
 
 
@@ -688,7 +688,7 @@ void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err){
 	}
 	delete(resp);
 	Heap::memFree(pub_topic);
-	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada respuesta con configuracion solicitada");
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada respuesta con configuracion solicitada");
 }
 
 
@@ -710,7 +710,7 @@ void AMManager::_notifyState(){
 	}
 	delete(notif);
 	Heap::memFree(pub_topic);
-	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Enviada notificacion de cambio de estado");
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion de cambio de estado");
 }
 
 
