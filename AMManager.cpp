@@ -48,8 +48,6 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
 
-    // crea el timer para el worker de medida
-	_meas_tmr = NULL;
 }
 
 
@@ -83,20 +81,11 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
-
-    // crea el timer para el worker de medida
-	_meas_tmr = NULL;
-
 }
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork() {
 
-	if(_meas_tmr != NULL){
-		_meas_tmr->stop();
-		delete(_meas_tmr);
-		_meas_tmr = NULL;
-	}
 	// este arranque aplica para todos los drivers instalados
 	// a parte de planificar las lecturas, es posible que dependiendo del tipo de driver, haya que
 	// configurar los parámetros que se desean leer.
@@ -160,9 +149,7 @@ void AMManager::startMeasureWork() {
 	// arranca el timer de lectura
 	_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
 	// crea el timer para el worker de medida
-	_meas_tmr = new RtosTimer(callback(this, &AMManager::eventMeasureWorkCb), osTimerPeriodic, "AMMeasWork");
-	// realiza una medida con una cadencia dada
-	_meas_tmr->start(DefaultMeasurePeriod);
+	_meas_tmr.attach_us(callback(this, &AMManager::eventMeasureWorkCb), 1000*DefaultMeasurePeriod);
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando medidas automaticas cada %d ms", DefaultMeasurePeriod);
 }
 
@@ -170,10 +157,7 @@ void AMManager::startMeasureWork() {
 //------------------------------------------------------------------------------------
 void AMManager::stopMeasureWork() {
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "Finalizando medidas automaticas");
-	if(_meas_tmr != NULL){
-		delete(_meas_tmr);
-		_meas_tmr = NULL;
-	}
+	_meas_tmr.detach();
 	// este arranque aplica para todos los drivers instalados
 	// a parte de planificar las lecturas, es posible que dependiendo del tipo de driver, haya que
 	// configurar los parámetros que se desean leer.
@@ -216,13 +200,8 @@ void AMManager::publicationCb(const char* topic, int32_t result){
 
 
 //------------------------------------------------------------------------------------
-void AMManager::eventMeasureWorkCb() {
-	_measure(true);
-}
-
-
-//------------------------------------------------------------------------------------
 void AMManager::_measure(bool enable_notif) {
+	Heap::printHeap();
 	double value;
 	uint32_t multiplier = 1000;
 	bool alarm_notif[MeteringManagerCfgMaxNumAnalyzers];
@@ -712,6 +691,27 @@ void AMManager::_notifyState(){
 	Heap::memFree(pub_topic);
 	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion de cambio de estado");
 }
+
+
+//------------------------------------------------------------------------------------
+void AMManager::eventMeasureWorkCb(){
+    // crea el mensaje para publicar en la máquina de estados
+     State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+     MBED_ASSERT(op);
+
+     op->sig = TimedMeasureEvt;
+	// apunta a los datos
+	op->msg = NULL;
+
+	// postea en la cola de la máquina de estados
+	if(putMessage(op) != osOK){
+		DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al insertar evento de medida");
+		if(op->msg){
+			Heap::memFree(op->msg);
+		}
+		Heap::memFree(op);
+	}
+ }
 
 
 

@@ -175,6 +175,12 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
+        // Procesa datos recibidos de la publicación en set/load/$
+        case TimedMeasureEvt:{
+        	_measure(true);
+            return State::HANDLED;
+        }
+
         case State::EV_EXIT:{
             nextState();
             return State::HANDLED;
