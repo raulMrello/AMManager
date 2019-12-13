@@ -112,6 +112,7 @@ class AMManager : public ActiveModule {
     	RecvStopSet	  		= (State::EV_RESERVED_USER << 5),  /// Flag activado al recibir mensaje en "set/stop"
     	RecvRestartSet	  	= (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
     	RecvForcedMeasure	= (State::EV_RESERVED_USER << 7),  /// Flag activado al recibir mensaje en "set/forced-meas"
+    	TimedMeasureEvt		= (State::EV_RESERVED_USER << 8),  /// Evento para realizar una medida
     };
 
 
@@ -122,7 +123,7 @@ class AMManager : public ActiveModule {
     metering_manager _amdata;
 
     /** Timer de realización de medidas */
-    RtosTimer* _meas_tmr;
+    Ticker _meas_tmr;
 
     /** Contador de medidas pendientes para notificar una medida instantánea */
     int32_t _instant_meas_counter;
