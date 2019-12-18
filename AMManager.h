@@ -142,6 +142,10 @@ class AMManager : public ActiveModule {
     bool _forced_notification;
     bool _forced_measure;
 
+    /** Errores acumulados durante las medidas */
+    uint8_t _acc_errors;
+    static const uint8_t MaxMeasureErrors = 3;
+
     /** Objetos para la lectura de parámetros automáticos de forma periódica */
     struct DriverObj{
     	AMDriver* drv;
