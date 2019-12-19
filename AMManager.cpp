@@ -383,10 +383,10 @@ void AMManager::_measure(bool enable_notif) {
 			}
 			else{
 				if(++_acc_errors < MaxMeasureErrors){
+					DEBUG_TRACE_W(_EXPR_, _MODULE_, "Numero de errores acumulados %d", _acc_errors);
 					delete(op);
 				}
 			}
-
 		}
 		// en caso contrario ejecuta la lectura de todos los parámetros manualmente analizador por analizador
 		else{
