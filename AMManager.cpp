@@ -223,8 +223,8 @@ void AMManager::_measure(bool enable_notif) {
 			SafetyOp* op = new SafetyOp(__FUNCTION__, 5000, callback(&esp_restart));
 			MBED_ASSERT(op);
 			int32_t gar_res = dobj->drv->getAnalyzerReadings(*dobj->readings);
+			delete(op);
 			if(gar_res==0){
-				delete(op);
 				_acc_errors = 0;
 				// evalúa las nuevas medidas
 				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
@@ -379,12 +379,6 @@ void AMManager::_measure(bool enable_notif) {
 						}
 					}
 					any_update = (alarm_notif[amr->analyzer])? true : any_update;
-				}
-			}
-			else{
-				if(++_acc_errors < MaxMeasureErrors){
-					DEBUG_TRACE_W(_EXPR_, _MODULE_, "Numero de errores acumulados %d", _acc_errors);
-					delete(op);
 				}
 			}
 		}
