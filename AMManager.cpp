@@ -231,6 +231,7 @@ void AMManager::_measure(bool enable_notif) {
 					AMDriver::AutoMeasureReading* amr = (*r);
 					uint32_t keys = amr->params.measureId;
 					alarm_notif[amr->analyzer] = false;
+					_amdata.analyzers[amr->analyzer].stat.flags = 0;
 
 					// visualiza los parámetros leídos
 					if(keys != 0){
@@ -272,6 +273,9 @@ void AMManager::_measure(bool enable_notif) {
 						}
 						if(keys & AMDriver::ElecKey_ReactiveEnergy){
 							_amdata.analyzers[amr->analyzer].stat.energyValues.reactive = amr->params.rEnergy;
+						}
+						if(keys & AMDriver::ElecKey_Status){
+							_amdata.analyzers[amr->analyzer].stat.flags |= MeteringAnalyzerPoweredUp;
 						}
 						// chequeo cada una de las alarmas:
 						// en primer lugar si hay carga activa
@@ -379,6 +383,7 @@ void AMManager::_measure(bool enable_notif) {
 						}
 					}
 					any_update = (alarm_notif[amr->analyzer])? true : any_update;
+					DEBUG_TRACE_D(_EXPR_, _MODULE_, "stat.flags[%d] = %x", amr->analyzer, _amdata.analyzers[amr->analyzer].stat.flags);
 				}
 			}
 		}
