@@ -75,7 +75,8 @@ enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerReactivePower			= (1 << 26),	//!< Evento al recibir actualización en la medida de rPow
 	MeteringAnalyzerPowerFactor				= (1 << 27),	//!< Evento al recibir actualización en la medida de pf
 	MeteringAnalyzerFrequency				= (1 << 28),	//!< Evento al recibir actualización en la medida de freq
-	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency),
+	MeteringAnalyzerPoweredUp				= (1 << 29),	//!< Evento al recibir actualización en la medida de freq
+	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp),
 
 
 	/* elemento inválido */
