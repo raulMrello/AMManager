@@ -44,6 +44,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     dobj->measures = NULL;
     dobj->readings = NULL;
     _driver_list.push_back(dobj);
+    _acc_errors = 0;
 
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -85,6 +86,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork() {
+	_acc_errors = 0;
 
 	// este arranque aplica para todos los drivers instalados
 	// a parte de planificar las lecturas, es posible que dependiendo del tipo de driver, haya que
@@ -222,8 +224,8 @@ void AMManager::_measure(bool enable_notif) {
 			MBED_ASSERT(op);
 			int32_t gar_res = dobj->drv->getAnalyzerReadings(*dobj->readings);
 			delete(op);
-
 			if(gar_res==0){
+				_acc_errors = 0;
 				// evalúa las nuevas medidas
 				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
 					AMDriver::AutoMeasureReading* amr = (*r);
@@ -379,7 +381,6 @@ void AMManager::_measure(bool enable_notif) {
 					any_update = (alarm_notif[amr->analyzer])? true : any_update;
 				}
 			}
-
 		}
 		// en caso contrario ejecuta la lectura de todos los parámetros manualmente analizador por analizador
 		else{
