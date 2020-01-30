@@ -79,6 +79,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
         dobj->readings = NULL;
         _driver_list.push_back(dobj);
     }
+    _acc_errors = 0;
 
 	// Carga callbacks estáticas de publicación/suscripción
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -144,6 +145,54 @@ void AMManager::startMeasureWork() {
 				dobj->measures = NULL;
 				dobj->cycle_ms = 0;
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver AMUniConnectors");
+			}
+		}
+
+		// si es un driver TMC100 planifica una medida periódica cada segundo de los parámetros
+		// en bloque
+		if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_MBUS_MEASCYCLE;
+
+			// crea los objetos de medida de cada analizador
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qué es lo que quiero leer. Lo que sí es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current),AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+
+			// forma la lista de medida con los objetos anteriores
+			dobj->measures->push_back(amo_block);
+
+			// idem con los objetos de lectura
+			AMDriver::AutoMeasureReading* amr_r = new AMDriver::AutoMeasureReading();
+			MBED_ASSERT(amr_r);
+			amr_r->analyzer=0;
+			AMDriver::AutoMeasureReading* amr_s = new AMDriver::AutoMeasureReading();
+			MBED_ASSERT(amr_s);
+			amr_s->analyzer=1;
+			AMDriver::AutoMeasureReading* amr_t = new AMDriver::AutoMeasureReading();
+			MBED_ASSERT(amr_t);
+			amr_t->analyzer=2;
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+			dobj->readings->push_back(amr_r);
+			dobj->readings->push_back(amr_s);
+			dobj->readings->push_back(amr_t);
+
+			// solicita el inicio de medidas periódicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver TMC100");
 			}
 		}
 	}
