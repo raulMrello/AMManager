@@ -164,7 +164,7 @@ void AMManager::restoreConfig(){
 		DriverObj* dobj = (*d);
 		AMDriver* amd = dobj->drv;
 		for(int a=0; a<amd->getNumAnalyzers(); a++){
-			// en caso de tener m�s analizadores que los registrados, marca error y sale de los bucles
+			// en caso de tener mas analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
 				goto __exit_rstcfg_loop;
@@ -195,30 +195,10 @@ __exit_rstcfg_loop:
 		}
 	}
 
-	uint32_t crc = 0;
-	snprintf(nvs_key, 16, "%s_crc", _name);
-	if(!restoreParameter(nvs_key, &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo Checksum!");
-		success = false;
-	}
-
 	if(success){
 		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Datos recuperados. Chequeando integridad...");
 
-		// chequea el crc
-		uint8_t* crc_buf = (char*)Heap::memAlloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
-		MBED_ASSERT(crc_buf);
-		memcpy(crc_buf, &_amdata.cfg, sizeof(metering_manager_cfg));
-		for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
-			memcpy(&crc_buf[sizeof(metering_manager_cfg) + (i*sizeof(metering_analyzer_cfg))], &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg));
-		}
-		uint32_t calc_crc = Blob::getCRC32(crc_buf, sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
-		free(crc_buf);
-
-		if(calc_crc != crc){
-			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_CFG. Ha fallado el checksum");
-		}
-    	else if(!checkIntegrity()){
+    	if(!checkIntegrity()){
     		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_CFG. Ha fallado el check de integridad.");
     	}
     	else{
@@ -251,22 +231,6 @@ void AMManager::saveConfig(){
 		}
 	}
 
-	// genera el crc
-	uint8_t* crc_buf = (char*)Heap::memAlloc(sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
-	MBED_ASSERT(crc_buf);
-	memcpy(crc_buf, &_amdata.cfg, sizeof(metering_manager_cfg));
-	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
-		memcpy(&crc_buf[sizeof(metering_manager_cfg) + (i*sizeof(metering_analyzer_cfg))], &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg));
-	}
-	uint32_t crc = Blob::getCRC32(crc_buf, sizeof(metering_manager_cfg) + (MeteringManagerCfgMaxNumAnalyzers*sizeof(metering_analyzer_cfg)));
-	free(crc_buf);
-
-	// graba el crc
-	snprintf(nvs_key, 16, "%s_crc", _name);
-	if(!saveParameter(nvs_key, &crc, sizeof(uint32_t), NVSInterface::TypeUint32)){
-		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando Checksum!");
-	}
-
 	// aplica el nivel de verbosidad configurado
 	esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
 }
@@ -291,7 +255,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		AMDriver* amd = dobj->drv;
 		int analyz = amd->getNumAnalyzers();
 		for(int a = 0; a < analyz; a++){
-			// en caso de tener m�s analizadores que los registrados, marca error y sale de los bucles
+			// en caso de tener mas analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
 				goto __exit_updcfg;

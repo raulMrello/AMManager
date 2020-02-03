@@ -50,9 +50,10 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
         		DriverObj* dobj = (*drv);
         		AMDriver* am_driver = dobj->drv;
+        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando Driver <%s>...", am_driver->getVersion());
         		am_driver->initEnergyIC();
 				while(!am_driver->ready()){
-					Thread::wait(100);
+					Thread::wait(1000);
 				}
 				DEBUG_TRACE_I(_EXPR_, _MODULE_, "Driver <%s> OK!", am_driver->getVersion());
             }

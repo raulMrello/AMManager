@@ -158,29 +158,22 @@ void AMManager::startMeasureWork() {
 			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
 			// para que se entienda qué es lo que quiero leer. Lo que sí es importante es especificar que se quieren
 			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
-			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current),AMDriver::AllAnalyzers);
-			MBED_ASSERT(amo_block);
 			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
 			MBED_ASSERT(dobj->measures);
-
-			// forma la lista de medida con los objetos anteriores
-			dobj->measures->push_back(amo_block);
-
-			// idem con los objetos de lectura
-			AMDriver::AutoMeasureReading* amr_r = new AMDriver::AutoMeasureReading();
-			MBED_ASSERT(amr_r);
-			amr_r->analyzer=0;
-			AMDriver::AutoMeasureReading* amr_s = new AMDriver::AutoMeasureReading();
-			MBED_ASSERT(amr_s);
-			amr_s->analyzer=1;
-			AMDriver::AutoMeasureReading* amr_t = new AMDriver::AutoMeasureReading();
-			MBED_ASSERT(amr_t);
-			amr_t->analyzer=2;
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
-			dobj->readings->push_back(amr_r);
-			dobj->readings->push_back(amr_s);
-			dobj->readings->push_back(amr_t);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_MBUS_ANALYZERS; i++){
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current), i);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
 
 			// solicita el inicio de medidas periódicas
 			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
