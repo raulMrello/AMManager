@@ -49,8 +49,6 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
 
-    _num_phases = 1;
-
 }
 
 
@@ -88,9 +86,8 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 }
 
 //------------------------------------------------------------------------------------
-void AMManager::startMeasureWork(uint8_t numOfPhases) {
+void AMManager::startMeasureWork() {
 	_acc_errors = 0;
-	_num_phases = numOfPhases;
 
 	// este arranque aplica para todos los drivers instalados
 	// a parte de planificar las lecturas, es posible que dependiendo del tipo de driver, haya que
@@ -289,16 +286,9 @@ void AMManager::_measure(bool enable_notif) {
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV", (base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage);
 						}
 						if(keys & AMDriver::ElecKey_Current){
-							if(_num_phases == 1){
-								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current*1000;
-								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
-								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
-							}
-							else{
-								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
-								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
-								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
-							}
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;

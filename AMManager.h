@@ -53,9 +53,8 @@ class AMManager : public ActiveModule {
 
 
     /** Arranca el worker de medida con una cadencia por defecto (ver DefaultMeasurePeriod)
-     * 	@param numOfPhases Número de fases
      */
-    void startMeasureWork(uint8_t numOfPhases=1);
+    void startMeasureWork();
 
 
     /** Detiene el worker de medida
@@ -119,9 +118,6 @@ class AMManager : public ActiveModule {
 
     /** Nombre del objeto creado */
     const char* _name;
-
-    /** Número de fases */
-    uint8_t _num_phases;
 
     /** Objetos metering */
     metering_manager _amdata;
