@@ -52,10 +52,9 @@ const uint16_t AMManager::_meas_cal_values[]  = {
 
 //------------------------------------------------------------------------------------
 bool AMManager::checkIntegrity(){
-	#warning TODO
-	DEBUG_TRACE_W(_EXPR_, _MODULE_, "~~~~ TODO ~~~~ AMManager::checkIntegrity");
-	// Hacer lo que corresponda
-	// ...
+	if(_amdata.cfg.nvs_id != APP_AMMANAGER_NVS_ID){
+		return false;
+	}
 	if(_amdata.cfg.measPeriod < MeteringManagerCfgMeasPeriodMin)
 		return false;
 	if(_amdata._numAnalyzers > MeteringManagerCfgMaxNumAnalyzers)
@@ -134,6 +133,7 @@ void AMManager::setDefaultConfig(){
 __exit_sdefcfg_loop:
 
 	// guarda la configuraci�n
+	_moduleData.cfg.nvs_id = APP_AMMANAGER_NVS_ID;
 	saveConfig();
 }
 
