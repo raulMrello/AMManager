@@ -283,12 +283,12 @@ void AMManager::_measure(bool enable_notif) {
 						if(keys & AMDriver::ElecKey_Voltage){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage = amr->params.voltage;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerVoltage;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=%s[%d], Voltage=%d", am_driver->getFirmwareRelease(),(base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage);
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV", (base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage);
 						}
 						if(keys & AMDriver::ElecKey_Current){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=%s[%d], Current=%d", am_driver->getFirmwareRelease(),(base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current);
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
