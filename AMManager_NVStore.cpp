@@ -133,7 +133,7 @@ void AMManager::setDefaultConfig(){
 __exit_sdefcfg_loop:
 
 	// guarda la configuraci�n
-	_moduleData.cfg.nvs_id = APP_AMMANAGER_NVS_ID;
+	_amdata.cfg.nvs_id = APP_AMMANAGER_NVS_ID;
 	saveConfig();
 }
 
