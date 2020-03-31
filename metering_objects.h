@@ -188,6 +188,7 @@ struct metering_manager_cfg{
 	uint32_t updFlags;
 	uint16_t measPeriod;
 	uint8_t  verbosity;
+	uint32_t nvs_id;
 	uint8_t _keys;
 };
 
