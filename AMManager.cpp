@@ -289,6 +289,10 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
+							if(amr->params.current == 0 && amr->params.aPow != 0 && amr->params.voltage > 0 && amr->params.pFactor > 0){
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.aPow/(amr->params.voltage * amr->params.pFactor);
+								DEBUG_TRACE_W(_EXPR_, _MODULE_, "Analizador=[%d], RECALC_Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
+							}
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
