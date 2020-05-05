@@ -247,6 +247,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 	}
 	if((data.cfg._keys & (1 << 3))){
 		_amdata.cfg.verbosity = data.cfg.verbosity;
+		setLoggingLevel(_amdata.cfg.verbosity);
 	}
 	// eval�o analizadores
 	int i = 0;
