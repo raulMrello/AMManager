@@ -89,10 +89,6 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Config actualizada");
 
-        	// al cambiar la configuración, cambia la cadencia de envío de medidas
-        	stopMeasureWork();
-        	startMeasureWork();
-
         	// si está habilitada la notificación de actualización, lo notifica
         	if((_amdata.cfg.updFlags & MeteringManagerCfgUpdNotif) != 0){
         		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualización");
