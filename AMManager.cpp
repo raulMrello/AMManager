@@ -200,11 +200,15 @@ void AMManager::startMeasureWork() {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
+			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage | AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo);
+			dobj->measures->push_back(amo);
+
 			// forma la lista de medida con los objetos anteriores
 			for(uint8_t i=0; i<VERS_METERING_AM_SPL_ANALYZERS; i++){
-				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage | AMDriver::ElecKey_PowFactor), i);
-				MBED_ASSERT(amo);
-				dobj->measures->push_back(amo);
+//				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage | AMDriver::ElecKey_PowFactor), i);
+//				MBED_ASSERT(amo);
+//				dobj->measures->push_back(amo);
 
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
