@@ -150,7 +150,7 @@ void AMManager::startMeasureWork() {
 
 		// si es un driver TMC100 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
-		if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS_NAME)==0){
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS_NAME)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_MBUS_MEASCYCLE;
 
@@ -191,7 +191,7 @@ void AMManager::startMeasureWork() {
 
 		// si es un driver Driver_Ctx0643 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
-		if(strcmp(drv->getVersion(), VERS_METERING_AM_SPL_NAME)==0){
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SPL_NAME)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_SPL_MEASCYCLE;
 
@@ -206,9 +206,6 @@ void AMManager::startMeasureWork() {
 
 			// forma la lista de medida con los objetos anteriores
 			for(uint8_t i=0; i<VERS_METERING_AM_SPL_ANALYZERS; i++){
-//				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage | AMDriver::ElecKey_PowFactor), i);
-//				MBED_ASSERT(amo);
-//				dobj->measures->push_back(amo);
 
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
