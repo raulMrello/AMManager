@@ -233,6 +233,7 @@ void AMManager::saveConfig(){
 
 	// aplica el nivel de verbosidad configurado
 	esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %d", _amdata.cfg.verbosity);
 }
 
 
@@ -247,6 +248,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 	}
 	if((data.cfg._keys & (1 << 3))){
 		_amdata.cfg.verbosity = data.cfg.verbosity;
+		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Nivel de depuracion de %d -> %d", data.cfg.verbosity, _amdata.cfg.verbosity);
 	}
 	// eval�o analizadores
 	int i = 0;
