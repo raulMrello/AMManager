@@ -287,6 +287,7 @@ void AMManager::_measure(bool enable_notif) {
 	double value;
 	uint32_t multiplier = 1000;
 	bool alarm_notif[MeteringManagerCfgMaxNumAnalyzers];
+	bool reading_hw_error = false;
 
 	// lee todos los par�metros el�ctricos de cada analizador
 	int i = 0;
@@ -319,14 +320,26 @@ void AMManager::_measure(bool enable_notif) {
 					// visualiza los par�metros le�dos
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage = amr->params.voltage;
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerVoltage;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV", (base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage);
+							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage){
+								reading_hw_error = true;
+								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV ERROR (descartado)", (base_analyzer + amr->analyzer),(int)amr->params.voltage);
+							}
+							else{
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage = amr->params.voltage;
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerVoltage;
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV", (base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage);
+							}
 						}
 						if(keys & AMDriver::ElecKey_Current){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
+							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent){
+								reading_hw_error = true;
+								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA ERROR (descartado)", (base_analyzer + amr->analyzer),(int)(1000*amr->params.current));
+							}
+							else{
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
+							}
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
@@ -672,7 +685,7 @@ __exit_measure_loop:
 	}
 
 	// notifica un �nico mensaje que engloba a todos los analizadores
-	if(any_update && enable_notif){
+	if(any_update && enable_notif && !reading_hw_error){
 		// env�a mensaje con los flags que se han activado y que est�n operativos
 		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando evento");
 		_notifyState();
