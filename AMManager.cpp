@@ -45,6 +45,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     dobj->readings = NULL;
     _driver_list.push_back(dobj);
     _acc_errors = 0;
+    _meas_started = false;
 
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -80,6 +81,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
         _driver_list.push_back(dobj);
     }
     _acc_errors = 0;
+    _meas_started = false;
 
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -87,6 +89,9 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork() {
+	if(_meas_started)
+		return;
+
 	_acc_errors = 0;
 
 	// este arranque aplica para todos los drivers instalados
@@ -229,15 +234,19 @@ void AMManager::startMeasureWork() {
 	}
 
 	// arranca el timer de lectura
-	_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
+	_instant_meas_counter = _amdata.cfg.measPeriod;
 	// crea el timer para el worker de medida
 	_meas_tmr.attach_us(callback(this, &AMManager::eventMeasureWorkCb), 1000*DefaultMeasurePeriod);
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando medidas automaticas cada %d ms", DefaultMeasurePeriod);
+	_meas_started = true;
 }
 
 
 //------------------------------------------------------------------------------------
 void AMManager::stopMeasureWork() {
+	if(!_meas_started)
+		return;
+
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "Finalizando medidas automaticas");
 	_meas_tmr.detach();
 	// este arranque aplica para todos los drivers instalados
@@ -259,6 +268,7 @@ void AMManager::stopMeasureWork() {
 			dobj->cycle_ms = 0;
 		}
 	}
+	_meas_started = false;
 }
 
 
@@ -660,7 +670,7 @@ __exit_measure_loop:
 	// cada N medidas, env�a un evento de medida para no saturar las comunicaciones
 	if(--_instant_meas_counter <= 0){
 		any_update = true;
-		_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
+		_instant_meas_counter = _amdata.cfg.measPeriod;
 		for(int i=0; i<_amdata._numAnalyzers; i++){
 			if(_amdata.analyzers[i].stat.flags & MeteringAnalyzerElectricParam){
 				alarm_notif[i] = true;
