@@ -43,6 +43,14 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	else{
         		DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_SUBSC en la suscripción LOCAL a %s", sub_topic_local);
         	}
+        	// suscripciï¿½n para recibir actualizaciï¿½n del timestamp cada segundo
+        	sprintf(sub_topic_local, "stat/value/%s", METERING_TOPIC_TIME);
+        	if(MQ::MQClient::subscribe(sub_topic_local, new MQ::SubscribeCallback(this, &AMManager::subscriptionCb)) == MQ::SUCCESS){
+        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Sucripcion LOCAL hecha a %s", sub_topic_local);
+        	}
+        	else{
+        		DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_SUBSC en la suscripcion LOCAL a %s", sub_topic_local);
+        	}
         	Heap::memFree(sub_topic_local);
 
         	// inicializa el driver con los datos de calibración
@@ -177,7 +185,12 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         // Procesa datos recibidos de la publicación en set/load/$
         case TimedMeasureEvt:{
-        	_measure(true);
+        	if(_meas_started){
+        		if(++_meas_seconds > (DefaultMeasurePeriod/1000)){
+        			_meas_seconds = 0;
+        			_measure(true);
+        		}
+        	}
             return State::HANDLED;
         }
 

@@ -122,11 +122,10 @@ class AMManager : public ActiveModule {
     /** Objetos metering */
     metering_manager _amdata;
 
-    /** Timer de realización de medidas */
-    Ticker _meas_tmr;
-
     /** Contador de medidas pendientes para notificar una medida instantánea */
+    bool _meas_started;
     int32_t _instant_meas_counter;
+    uint8_t _meas_seconds;
 
     /** Gestor de la carga activa en el medidor */
     uint8_t _load_data;

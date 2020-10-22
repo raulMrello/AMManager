@@ -87,6 +87,8 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork() {
+	if(_meas_started)
+		return;
 	_acc_errors = 0;
 
 	// este arranque aplica para todos los drivers instalados
@@ -229,17 +231,21 @@ void AMManager::startMeasureWork() {
 	}
 
 	// arranca el timer de lectura
-	_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
-	// crea el timer para el worker de medida
-	_meas_tmr.attach_us(callback(this, &AMManager::eventMeasureWorkCb), 1000*DefaultMeasurePeriod);
+	_instant_meas_counter = _amdata.cfg.measPeriod;
+	_meas_seconds = 0;
+
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando medidas automaticas cada %d ms", DefaultMeasurePeriod);
+	_meas_started = true;
 }
 
 
 //------------------------------------------------------------------------------------
 void AMManager::stopMeasureWork() {
+	if(!_meas_started)
+		return;
+
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "Finalizando medidas automaticas");
-	_meas_tmr.detach();
+	_meas_started = false;
 	// este arranque aplica para todos los drivers instalados
 	// a parte de planificar las lecturas, es posible que dependiendo del tipo de driver, haya que
 	// configurar los par�metros que se desean leer.
@@ -660,7 +666,7 @@ __exit_measure_loop:
 	// cada N medidas, env�a un evento de medida para no saturar las comunicaciones
 	if(--_instant_meas_counter <= 0){
 		any_update = true;
-		_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
+		_instant_meas_counter = _amdata.cfg.measPeriod;
 		for(int i=0; i<_amdata._numAnalyzers; i++){
 			if(_amdata.analyzers[i].stat.flags & MeteringAnalyzerElectricParam){
 				alarm_notif[i] = true;

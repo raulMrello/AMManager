@@ -299,6 +299,42 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         return;
     }
 
+
+    // si es una notificaciï¿½n de cambio de estado en los analizadores
+    if( MQ::MQClient::isTokenRoot(topic, "stat/value") && MQ::MQClient::isTopicToken(topic, METERING_TOPIC_TIME)){
+
+    	Blob::NotificationData_t<calendar_manager>* notif = NULL;
+        bool json_decoded = false;
+		if(_json_supported){
+			notif = (Blob::NotificationData_t<calendar_manager>*)Heap::memAlloc(sizeof(Blob::NotificationData_t<calendar_manager>));
+			MBED_ASSERT(notif);
+			if(!(json_decoded = JsonParser::getNotificationFromJson(*notif, *(cJSON**)msg))){
+				Heap::memFree(notif);
+				DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_JSON. Decodificando el mensaje");
+			}
+		}
+
+        // en primer lugar asegura que los datos tienen el tamaï¿½o correcto
+        if(!json_decoded && msg_len != sizeof(Blob::NotificationData_t<calendar_manager>)){
+        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nï¿½ de datos del mensaje, topic [%s]", topic);
+			return;
+        }
+
+        if(!json_decoded){
+			// el mensaje es un blob tipo metering_manager
+			notif = (Blob::NotificationData_t<calendar_manager>*)Heap::memAlloc(sizeof(Blob::NotificationData_t<calendar_manager>));
+			MBED_ASSERT(notif);
+			*notif = *((Blob::NotificationData_t<calendar_manager>*)msg);
+        }
+
+        // si es una notificación de cambio de segundo, notifica evento para la realización de medidas
+        if(notif->data.clock.stat.flags & CalendarClockSecEvt){
+        	eventMeasureWorkCb();
+        }
+        Heap::memFree(notif);
+		return;
+    }
+
     DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_TOPIC. No se puede procesar el topic [%s]", topic);
 }
 
