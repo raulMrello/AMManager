@@ -45,6 +45,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     dobj->readings = NULL;
     _driver_list.push_back(dobj);
     _acc_errors = 0;
+    _meas_started = false;
 
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -80,6 +81,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
         _driver_list.push_back(dobj);
     }
     _acc_errors = 0;
+    _meas_started = false;
 
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -87,6 +89,9 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork() {
+	if(_meas_started)
+		return;
+
 	_acc_errors = 0;
 
 	// este arranque aplica para todos los drivers instalados
@@ -150,7 +155,7 @@ void AMManager::startMeasureWork() {
 
 		// si es un driver TMC100 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
-		if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS_NAME)==0){
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS_NAME)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_MBUS_MEASCYCLE;
 
@@ -188,18 +193,60 @@ void AMManager::startMeasureWork() {
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver TMC100");
 			}
 		}
+
+		// si es un driver Driver_Ctx0643 planifica una medida peri�dica cada segundo de los par�metros
+		// en bloque
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SPL_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_SPL_MEASCYCLE;
+
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage | AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo);
+			dobj->measures->push_back(amo);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_SPL_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Ctx0643");
+			}
+		}
 	}
 
 	// arranca el timer de lectura
-	_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
+	_instant_meas_counter = _amdata.cfg.measPeriod;
 	// crea el timer para el worker de medida
 	_meas_tmr.attach_us(callback(this, &AMManager::eventMeasureWorkCb), 1000*DefaultMeasurePeriod);
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando medidas automaticas cada %d ms", DefaultMeasurePeriod);
+	_meas_started = true;
 }
 
 
 //------------------------------------------------------------------------------------
 void AMManager::stopMeasureWork() {
+	if(!_meas_started)
+		return;
+
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "Finalizando medidas automaticas");
 	_meas_tmr.detach();
 	// este arranque aplica para todos los drivers instalados
@@ -221,6 +268,7 @@ void AMManager::stopMeasureWork() {
 			dobj->cycle_ms = 0;
 		}
 	}
+	_meas_started = false;
 }
 
 
@@ -249,6 +297,7 @@ void AMManager::_measure(bool enable_notif) {
 	double value;
 	uint32_t multiplier = 1000;
 	bool alarm_notif[MeteringManagerCfgMaxNumAnalyzers];
+	bool reading_hw_error = false;
 
 	// lee todos los par�metros el�ctricos de cada analizador
 	int i = 0;
@@ -281,14 +330,26 @@ void AMManager::_measure(bool enable_notif) {
 					// visualiza los par�metros le�dos
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage = amr->params.voltage;
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerVoltage;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV", (base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage);
+							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage){
+								reading_hw_error = true;
+								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV ERROR (descartado)", (base_analyzer + amr->analyzer),(int)amr->params.voltage);
+							}
+							else{
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage = amr->params.voltage;
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerVoltage;
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV", (base_analyzer + amr->analyzer),(int)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage);
+							}
 						}
 						if(keys & AMDriver::ElecKey_Current){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
+							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent){
+								reading_hw_error = true;
+								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA ERROR (descartado)", (base_analyzer + amr->analyzer),(int)(1000*amr->params.current));
+							}
+							else{
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current));
+							}
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
@@ -609,7 +670,7 @@ __exit_measure_loop:
 	// cada N medidas, env�a un evento de medida para no saturar las comunicaciones
 	if(--_instant_meas_counter <= 0){
 		any_update = true;
-		_instant_meas_counter = _amdata.cfg.measPeriod / (DefaultMeasurePeriod/1000);
+		_instant_meas_counter = _amdata.cfg.measPeriod;
 		for(int i=0; i<_amdata._numAnalyzers; i++){
 			if(_amdata.analyzers[i].stat.flags & MeteringAnalyzerElectricParam){
 				alarm_notif[i] = true;
@@ -634,7 +695,7 @@ __exit_measure_loop:
 	}
 
 	// notifica un �nico mensaje que engloba a todos los analizadores
-	if(any_update && enable_notif){
+	if(any_update && enable_notif && !reading_hw_error){
 		// env�a mensaje con los flags que se han activado y que est�n operativos
 		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando evento");
 		_notifyState();

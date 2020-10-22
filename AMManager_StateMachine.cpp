@@ -52,10 +52,13 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         		AMDriver* am_driver = dobj->drv;
         		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando Driver <%s>...", am_driver->getVersion());
         		am_driver->initEnergyIC();
-				while(!am_driver->ready()){
-					Thread::wait(1000);
+				bool result = am_driver->ready();
+				if(result){
+					DEBUG_TRACE_I(_EXPR_, _MODULE_, "Driver <%s> OK!", am_driver->getVersion());
 				}
-				DEBUG_TRACE_I(_EXPR_, _MODULE_, "Driver <%s> OK!", am_driver->getVersion());
+				else{
+					DEBUG_TRACE_W(_EXPR_, _MODULE_, "Driver <%s> ERR_INIT", am_driver->getVersion());
+				}
             }
 
         	// marca como componente iniciado

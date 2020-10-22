@@ -153,7 +153,7 @@ struct metering_analyzer_cfg_minmax{
 	common_range_minmaxthres_double thdV;
 	common_range_minmaxthres_double active;
 	common_range_minmaxthres_double reactive;
-	uint8_t _keys;
+	uint32_t _keys;
 };
 
 

@@ -141,6 +141,7 @@ class AMManager : public ActiveModule {
     /** Flag para forzar la notificación en la siguiente medida o la medida */
     bool _forced_notification;
     bool _forced_measure;
+    bool _meas_started;
 
     /** Errores acumulados durante las medidas */
     uint8_t _acc_errors;
