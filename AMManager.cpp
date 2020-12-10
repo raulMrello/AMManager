@@ -155,9 +155,9 @@ void AMManager::startMeasureWork() {
 
 		// si es un driver TMC100 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
-		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS_NAME)==0){
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS012_NAME)==0){
 			// establece el ciclo de lectura
-			dobj->cycle_ms = VERS_METERING_AM_MBUS_MEASCYCLE;
+			dobj->cycle_ms = VERS_METERING_AM_MBUS012_MEASCYCLE;
 
 			// crea los objetos de medida de cada analizador
 			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
@@ -169,7 +169,87 @@ void AMManager::startMeasureWork() {
 			MBED_ASSERT(dobj->readings);
 
 			// forma la lista de medida con los objetos anteriores
-			for(uint8_t i=0; i<VERS_METERING_AM_MBUS_ANALYZERS; i++){
+			for(uint8_t i=0; i<VERS_METERING_AM_MBUS012_ANALYZERS; i++){
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current), i);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver TMC100");
+			}
+		}
+		// si es un driver TMC100 planifica una medida peri�dica cada segundo de los par�metros
+		// en bloque
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS0_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_MBUS0_MEASCYCLE;
+
+			// crea los objetos de medida de cada analizador
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_MBUS0_ANALYZERS; i++){
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current), i);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver TMC100");
+			}
+		}
+		// si es un driver TMC100 planifica una medida peri�dica cada segundo de los par�metros
+		// en bloque
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS03_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_MBUS03_MEASCYCLE;
+
+			// crea los objetos de medida de cada analizador
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_MBUS03_ANALYZERS; i++){
 				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current), i);
 				MBED_ASSERT(amo);
 				dobj->measures->push_back(amo);
@@ -196,9 +276,9 @@ void AMManager::startMeasureWork() {
 
 		// si es un driver Driver_Ctx0643 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
-		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SPL_NAME)==0){
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CTX1_NAME)==0){
 			// establece el ciclo de lectura
-			dobj->cycle_ms = VERS_METERING_AM_SPL_MEASCYCLE;
+			dobj->cycle_ms = VERS_METERING_AM_CTX1_MEASCYCLE;
 
 			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
 			MBED_ASSERT(dobj->measures);
@@ -210,7 +290,42 @@ void AMManager::startMeasureWork() {
 			dobj->measures->push_back(amo);
 
 			// forma la lista de medida con los objetos anteriores
-			for(uint8_t i=0; i<VERS_METERING_AM_SPL_ANALYZERS; i++){
+			for(uint8_t i=0; i<VERS_METERING_AM_CTX1_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Ctx0643");
+			}
+		}
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CTX3_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_CTX3_MEASCYCLE;
+
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage | AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo);
+			dobj->measures->push_back(amo);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_CTX3_ANALYZERS; i++){
 
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
@@ -793,21 +908,149 @@ void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err){
 void AMManager::_notifyState(){
 	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 	MBED_ASSERT(pub_topic);
-	sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
-	Blob::NotificationData_t<metering_manager> *notif = new Blob::NotificationData_t<metering_manager>(_amdata);
-	MBED_ASSERT(notif);
-	if(_json_supported){
-		cJSON* jstat = JsonParser::getJsonFromNotification(*notif, ObjSelectState);
-		MBED_ASSERT(jstat);
-		MQ::MQClient::publish(pub_topic, &jstat, sizeof(cJSON**), &_publicationCb);
-		cJSON_Delete(jstat);
+
+	switch((uint8_t)_amdata.stat.plantModel){
+		case (uint8_t)MeteringPlantModel::Contax:{
+			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
+			ThreePhaseAnalyzerStat tphas;
+			uint8_t count=0;
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_CTX_COMMON_NAME) != NULL){
+					tphas.stat[count] = _amdata.analyzers[i].stat;
+					if(++count >= 3){
+						break;
+					}
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+			break;
+		}
+		case (uint8_t)MeteringPlantModel::Mbus:{
+			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
+			ThreePhaseAnalyzerStat tphas;
+			uint8_t count=0;
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL){
+					tphas.stat[count] = _amdata.analyzers[i].stat;
+					if(++count >= 3){
+						break;
+					}
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+			break;
+		}
+		case (uint8_t)MeteringPlantModel::SolarM0:{
+			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
+			metering_analyzer_stat mas = {0};
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL && strstr(_amdata.analyzers[i].serial, "_0") != NULL){
+					mas = _amdata.analyzers[i].stat;
+					break;
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &mas, sizeof(metering_analyzer_stat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+
+			sprintf(pub_topic, "stat/fvpower/%s", _pub_topic_base);
+			metering_analyzer_stat mas2 = {0};
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL && strstr(_amdata.analyzers[i].serial, "_3") != NULL){
+					mas2 = _amdata.analyzers[i].stat;
+					break;
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &mas2, sizeof(metering_analyzer_stat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+
+			break;
+		}
+		case (uint8_t)MeteringPlantModel::SolarM1:{
+			sprintf(pub_topic, "stat/instpower/%s", _pub_topic_base);
+			metering_analyzer_stat mas;
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_CTX_COMMON_NAME) != NULL){
+					mas = _amdata.analyzers[i].stat;
+					break;
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &mas, sizeof(metering_analyzer_stat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+
+			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
+			metering_analyzer_stat mas2;
+			uint8_t count=0;
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL){
+					mas2 = _amdata.analyzers[i].stat;
+					break;
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &mas2, sizeof(metering_analyzer_stat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+
+			break;
+		}
+		case (uint8_t)MeteringPlantModel::SolarM2:{
+			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
+			metering_analyzer_stat mas = {0};
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL && strstr(_amdata.analyzers[i].serial, "_0") != NULL){
+					mas = _amdata.analyzers[i].stat;
+					break;
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &mas, sizeof(metering_analyzer_stat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+
+			sprintf(pub_topic, "stat/instpower/%s", _pub_topic_base);
+			metering_analyzer_stat mas2 = {0};
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL && strstr(_amdata.analyzers[i].serial, "_3") != NULL){
+					mas2 = _amdata.analyzers[i].stat;
+					break;
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &mas2, sizeof(metering_analyzer_stat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+			break;
+		}
+		case (uint8_t)MeteringPlantModel::SolarT0:{
+			sprintf(pub_topic, "stat/instpower/%s", _pub_topic_base);
+			ThreePhaseAnalyzerStat tphas;
+			uint8_t count=0;
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_CTX_COMMON_NAME) != NULL){
+					tphas.stat[count] = _amdata.analyzers[i].stat;
+					if(++count >= 3){
+						break;
+					}
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+
+			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
+			ThreePhaseAnalyzerStat tphas2;
+			count=0;
+			for(int i=0; i< _amdata._numAnalyzers; i++){
+				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL){
+					tphas2.stat[count] = _amdata.analyzers[i].stat;
+					if(++count >= 3){
+						break;
+					}
+				}
+			}
+			MQ::MQClient::publish(pub_topic, &tphas2, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
+			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
+
+			break;
+		}
 	}
-	else {
-		MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<metering_manager>), &_publicationCb);
-	}
-	delete(notif);
+
 	Heap::memFree(pub_topic);
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion de cambio de estado");
 }
 
 
@@ -831,5 +1074,31 @@ void AMManager::eventMeasureWorkCb(){
 	}
  }
 
+
+//------------------------------------------------------------------------------------
+void AMManager::setPlantModel(uint8_t meter, uint8_t solar_type){
+	switch(solar_type){
+		case 10:{
+			_amdata.stat.plantModel = MeteringPlantModel::SolarM0;
+			break;
+		}
+		case 11:{
+			_amdata.stat.plantModel = MeteringPlantModel::SolarM1;
+			break;
+		}
+		case 12:{
+			_amdata.stat.plantModel = MeteringPlantModel::SolarM2;
+			break;
+		}
+		case 30:{
+			_amdata.stat.plantModel = MeteringPlantModel::SolarT0;
+			break;
+		}
+		default:{
+			_amdata.stat.plantModel = (MeteringPlantModel)meter;
+			break;
+		}
+	}
+}
 
 
