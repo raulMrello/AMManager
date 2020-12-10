@@ -129,6 +129,8 @@ class AMManager : public ActiveModule {
 
     /** Objetos metering */
     metering_manager _amdata;
+	MeteringPlantModel _plantModel;
+
 
     /** Timer de realización de medidas */
     Ticker _meas_tmr;

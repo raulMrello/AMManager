@@ -132,7 +132,16 @@ struct metering_analyzer_stat{
 
 struct ThreePhaseAnalyzerStat {
 	metering_analyzer_stat stat[3];
+	ThreePhaseAnalyzerStat(){
+		reset();
+	}
+	void reset(){
+		for(int i=0;i<3;i++){
+			stat[i] = {0};
+		}
+	}
 };
+
 
 
 /**Objeto ppl:energy:analyzer:cfg:calib */
@@ -192,7 +201,6 @@ enum MeteringPlantModel : uint8_t {
 struct metering_manager_stat{
 	uint8_t loadPercent[MeteringManagerCfgMaxNumAnalyzers];
 	uint8_t _numAnalyzers;
-	MeteringPlantModel plantModel;
 };
 
 
