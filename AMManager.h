@@ -51,14 +51,6 @@ class AMManager : public ActiveModule {
      */
     virtual ~AMManager(){}
 
-    /**
-     * Configura la instalación para la publicación de topics
-     * @param meter Tipo de medida de consumo total (0=Contax, 1=MBUS)
-     * @param solar Flag que indica si el modo solar está habilitado
-     * @param solar_type Tipo de instalación solar (0 = desactivado modo solar)
-     */
-    void setPlantModel(uint8_t meter, uint8_t solar_type);
-
 
     /** Arranca el worker de medida con una cadencia por defecto (ver DefaultMeasurePeriod)
      */
@@ -129,8 +121,6 @@ class AMManager : public ActiveModule {
 
     /** Objetos metering */
     metering_manager _amdata;
-	MeteringPlantModel _plantModel;
-
 
     /** Timer de realización de medidas */
     Ticker _meas_tmr;

@@ -36,8 +36,6 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     	esp_log_level_set(_MODULE_, ESP_LOG_WARN);
     }
 
-    _plantModel = MeteringPlantModel::NoMeter;
-
 	// referencia al driver registrado
     DriverObj* dobj = new DriverObj();
     MBED_ASSERT(dobj);
@@ -904,9 +902,6 @@ void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err){
 
 //------------------------------------------------------------------------------------
 void AMManager::_notifyState(){
-	ThreePhaseAnalyzerStat* tphas = new ThreePhaseAnalyzerStat();
-	MBED_ASSERT(tphas);
-
 	// Notifica el cambio de estado general del componente
 	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 	MBED_ASSERT(pub_topic);
@@ -923,206 +918,7 @@ void AMManager::_notifyState(){
 		MQ::MQClient::publish(pub_topic, notif, sizeof(Blob::NotificationData_t<metering_manager>), &_publicationCb);
 	}
 	delete(notif);
-
-	// notifica cambios en los analizadores dependiendo del modelo de la planta/instalación
-	switch((uint8_t)_plantModel){
-		case (uint8_t)MeteringPlantModel::Contax:{
-			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
-			uint8_t count=0;
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_CTX_COMMON_NAME) != NULL && _amdata.analyzers[i].stat.flags != 0){
-					DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[%d] = %s", count, _amdata.analyzers[i].serial);
-					tphas->stat[count++] = _amdata.analyzers[i].stat;
-					if(count >= 3){
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-			break;
-		}
-		case (uint8_t)MeteringPlantModel::Mbus:{
-			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
-			uint8_t count=0;
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL && _amdata.analyzers[i].stat.flags != 0){
-					DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[%d] = %s", count, _amdata.analyzers[i].serial);
-					tphas->stat[count++] = _amdata.analyzers[i].stat;
-					if(count >= 3){
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-			break;
-		}
-		case (uint8_t)MeteringPlantModel::SolarM0:{
-			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
-			int8_t mbus_an_idx = -1;
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL){
-					// almacena el índice de los analizadores mbus
-					if(mbus_an_idx < 0){
-						mbus_an_idx = i;
-					}
-					// si es el analizador mbus id:0
-					if(i == mbus_an_idx && _amdata.analyzers[i].stat.flags != 0){
-						DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[0] = %s", _amdata.analyzers[i].serial);
-						tphas->stat[0] = _amdata.analyzers[i].stat;
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-
-			tphas->reset();
-			 mbus_an_idx = -1;
-			sprintf(pub_topic, "stat/fvpower/%s", _pub_topic_base);
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL){
-					// almacena el índice de los analizadores mbus
-					if(mbus_an_idx < 0){
-						mbus_an_idx = i;
-					}
-					// si es el 2º analizador mbus id:3
-					if(i == (mbus_an_idx+1) && _amdata.analyzers[i].stat.flags != 0){
-						DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[0] = %s", _amdata.analyzers[i].serial);
-						tphas->stat[0] = _amdata.analyzers[i].stat;
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-
-			break;
-		}
-		case (uint8_t)MeteringPlantModel::SolarM1:{
-			sprintf(pub_topic, "stat/instpower/%s", _pub_topic_base);
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_CTX_COMMON_NAME) != NULL && _amdata.analyzers[i].stat.flags != 0){
-					DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[0] = %s", _amdata.analyzers[i].serial);
-					tphas->stat[0] = _amdata.analyzers[i].stat;
-					break;
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-
-			tphas->reset();
-			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL && _amdata.analyzers[i].stat.flags != 0){
-					DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[0] = %s", _amdata.analyzers[i].serial);
-					tphas->stat[0] = _amdata.analyzers[i].stat;
-					break;
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-
-			break;
-		}
-		case (uint8_t)MeteringPlantModel::SolarM2:{
-			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
-			int8_t mbus_an_idx = -1;
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL){
-					// almacena el índice de los analizadores mbus
-					if(mbus_an_idx < 0){
-						mbus_an_idx = i;
-					}
-					// si es el analizador mbus id:0
-					if(i == mbus_an_idx && _amdata.analyzers[i].stat.flags != 0){
-						DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[0] = %s", _amdata.analyzers[i].serial);
-						tphas->stat[0] = _amdata.analyzers[i].stat;
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-
-			mbus_an_idx = -1;
-			tphas->reset();
-			sprintf(pub_topic, "stat/instpower/%s", _pub_topic_base);
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL){
-					// almacena el índice de los analizadores mbus
-					if(mbus_an_idx < 0){
-						mbus_an_idx = i;
-					}
-					// si es el 2º analizador mbus id:3
-					if(i == (mbus_an_idx+1) && _amdata.analyzers[i].stat.flags != 0){
-						DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[0] = %s", _amdata.analyzers[i].serial);
-						tphas->stat[0] = _amdata.analyzers[i].stat;
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-			break;
-		}
-		case (uint8_t)MeteringPlantModel::SolarT0:{
-			sprintf(pub_topic, "stat/instpower/%s", _pub_topic_base);
-			uint8_t count=0;
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_CTX_COMMON_NAME) != NULL && _amdata.analyzers[i].stat.flags != 0){
-					DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[%d] = %s", count, _amdata.analyzers[i].serial);
-					tphas->stat[count++] = _amdata.analyzers[i].stat;
-					if(count >= 3){
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-
-			tphas->reset();
-			sprintf(pub_topic, "stat/totalpower/%s", _pub_topic_base);
-			count=0;
-			for(int i=0; i< _amdata._numAnalyzers; i++){
-				if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_MBUS_COMMON_NAME) != NULL && _amdata.analyzers[i].stat.flags != 0){
-					DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[%d] = %s", count, _amdata.analyzers[i].serial);
-					tphas->stat[count++] = _amdata.analyzers[i].stat;
-					if(count >= 3){
-						break;
-					}
-				}
-			}
-			MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-			break;
-		}
-		default:{
-			DEBUG_TRACE_E(_EXPR_, _MODULE_, "Caso %d no contemplado", (uint8_t)_plantModel);
-		}
-	}
-
-	tphas->reset();
-	sprintf(pub_topic, "stat/evsepower/%s", _pub_topic_base);
-	uint8_t count=0;
-	for(int i=0; i< _amdata._numAnalyzers; i++){
-		if(strstr(_amdata.analyzers[i].serial, VERS_METERING_AM_UNI_CONNECTORS_NAME) != NULL && _amdata.analyzers[i].stat.flags != 0){
-			DEBUG_TRACE_D(_EXPR_, _MODULE_, "tphas[%d] = %s", count, _amdata.analyzers[i].serial);
-			tphas->stat[count++] = _amdata.analyzers[i].stat;
-			if(count >= 3){
-				break;
-			}
-		}
-	}
-	MQ::MQClient::publish(pub_topic, tphas, sizeof(ThreePhaseAnalyzerStat), &_publicationCb);
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada notificacion al topic %s", pub_topic);
-
-
 	Heap::memFree(pub_topic);
-	delete(tphas);
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Fin de la publicacion");
-
 }
 
 
@@ -1146,36 +942,5 @@ void AMManager::eventMeasureWorkCb(){
 	}
  }
 
-
-//------------------------------------------------------------------------------------
-void AMManager::setPlantModel(uint8_t meter, uint8_t solar_type){
-	switch(solar_type){
-		case 10:{
-			_plantModel = MeteringPlantModel::SolarM0;
-			DEBUG_TRACE_I(_EXPR_, _MODULE_, "MeteringPlantModel::SolarM0");
-			break;
-		}
-		case 11:{
-			_plantModel = MeteringPlantModel::SolarM1;
-			DEBUG_TRACE_I(_EXPR_, _MODULE_, "MeteringPlantModel::SolarM1");
-			break;
-		}
-		case 12:{
-			_plantModel = MeteringPlantModel::SolarM2;
-			DEBUG_TRACE_I(_EXPR_, _MODULE_, "MeteringPlantModel::SolarM2");
-			break;
-		}
-		case 30:{
-			_plantModel = MeteringPlantModel::SolarT0;
-			DEBUG_TRACE_I(_EXPR_, _MODULE_, "MeteringPlantModel::SolarT0");
-			break;
-		}
-		default:{
-			_plantModel = (MeteringPlantModel)meter;
-			DEBUG_TRACE_I(_EXPR_, _MODULE_, "MeteringPlantModel::%d", meter);
-			break;
-		}
-	}
-}
 
 

@@ -188,15 +188,7 @@ struct metering_analyzer{
 	metering_analyzer_stat stat;
 };
 
-enum MeteringPlantModel : uint8_t {
-	NoMeter,	// Sin medidores (ej. esclavos spl)
-	Contax,		// Contax como medida de consumo total
-	Mbus,		// TMC100 como medida de consumo total
-	SolarM0,	// TMC100 como medida de consumo total y generación FV
-	SolarM1,	// TMC100 como medida de consumo total y Contax como medida de consumo de red
-	SolarM2,	// TMC100 como medida de consumo total y de red
-	SolarT0		// TMC100 como medida de consumo total y Contax como medida de consumo de red
-};
+
 /**Objeto ppl:energy:stat */
 struct metering_manager_stat{
 	uint8_t loadPercent[MeteringManagerCfgMaxNumAnalyzers];
