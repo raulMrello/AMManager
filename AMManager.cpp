@@ -903,6 +903,7 @@ void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err){
 //------------------------------------------------------------------------------------
 void AMManager::_notifyState(){
 	// Notifica el cambio de estado general del componente
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviando nueva medida en stat/value/energy");
 	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 	MBED_ASSERT(pub_topic);
 	sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
