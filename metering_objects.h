@@ -140,6 +140,28 @@ struct ThreePhaseAnalyzerStat {
 			stat[i] = {0};
 		}
 	}
+	double getCurrent(){
+		return (stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current);
+	}
+	int32_t getMilliamps(){
+		return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
+	}
+	int32_t getMilliamps(uint8_t i){
+		return (int32_t)round(1000 * stat[i].measureValues.current);
+	}
+	double getPower(){
+		return (stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
+	}
+	void updatePower(uint8_t i){
+		stat[i].measureValues.aPow = stat[i].measureValues.current * stat[i].measureValues.voltage * stat[i].measureValues.pfactor;
+		stat[i].measureValues.rPow = stat[i].measureValues.current * stat[i].measureValues.voltage * (1 - stat[i].measureValues.pfactor);
+	}
+	int32_t getPowerAsInt(uint8_t i){
+		return (int32_t)round(stat[i].measureValues.aPow);
+	}
+	int32_t getPowerAsInt(){
+		return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
+	}
 };
 
 

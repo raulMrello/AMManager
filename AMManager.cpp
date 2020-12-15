@@ -477,7 +477,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.msPow = amr->params.mPow;
 						}
 						if(keys & AMDriver::ElecKey_PowFactor){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = amr->params.pFactor;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = abs(amr->params.pFactor);
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPowerFactor;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%d(x1000)", (base_analyzer + amr->analyzer),(int)(1000*_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor));
 						}
