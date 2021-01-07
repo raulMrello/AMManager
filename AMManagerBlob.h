@@ -19,7 +19,7 @@ namespace Blob {
 
 // límites para descartar fallos en la lectura de los analizadores con interferencias
 static const uint32_t AMMaxAllowedVoltage = 300;
-static const uint32_t AMMaxAllowedCurrent = UINT_MAX;
+static const uint32_t AMMaxAllowedCurrent = 40;
 
 /** Estructura de datos para actualizar los porcentajes de activación de las cargas relativos
  *  a los diferentes analizadores
