@@ -341,7 +341,7 @@ void AMManager::_measure(bool enable_notif) {
 							}
 						}
 						if(keys & AMDriver::ElecKey_Current){
-							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent &&  && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
 								reading_hw_error = true;
 								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA ERROR (descartado)", (base_analyzer + amr->analyzer),(int)(1000*amr->params.current));
 							}
