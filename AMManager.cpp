@@ -368,7 +368,11 @@ void AMManager::_measure(bool enable_notif) {
 					// visualiza los par�metros le�dos
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
+#ifdef COMBI_PLUS
+							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+#else
 							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+#endif
 								reading_hw_error = true;
 								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%dV ERROR (descartado)", (base_analyzer + amr->analyzer),(int)amr->params.voltage);
 							}
@@ -379,7 +383,11 @@ void AMManager::_measure(bool enable_notif) {
 							}
 						}
 						if(keys & AMDriver::ElecKey_Current){
+#ifdef COMBI_PLUS
+							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+#else
 							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+#endif
 								reading_hw_error = true;
 								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Current=%dmA ERROR (descartado)", (base_analyzer + amr->analyzer),(int)(1000*amr->params.current));
 							}
