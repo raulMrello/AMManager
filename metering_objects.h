@@ -146,12 +146,15 @@ struct ThreePhaseAnalyzerStat {
 		else
 			return (stat[i].measureValues.current);
 	}
-	int32_t getMilliamps(uint8_t i){
+	int32_t getMilliamps(uint8_t i=0xff){
 		if(i==0xff)
 			return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
 		else
 			return (int32_t)round(1000 * stat[i].measureValues.current);
 
+	}
+	void setMilliamps(uint8_t i, int32_t curr){
+		stat[i].measureValues.current = (double)curr/1000.0;
 	}
 	double getActivePower(uint8_t i=0xff){
 		if(i==0xff)
@@ -185,7 +188,7 @@ struct ThreePhaseAnalyzerStat {
 		else
 			return (int32_t)round(stat[i].energyValues.active);
 	}
-	int32_t getRectiveEnergyAsInt(uint8_t i=0xff){
+	int32_t getReactiveEnergyAsInt(uint8_t i=0xff){
 		if(i==0xff)
 			return (int32_t)round(stat[0].energyValues.reactive+stat[1].energyValues.reactive+stat[2].energyValues.reactive);
 		else
