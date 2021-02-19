@@ -140,28 +140,65 @@ struct ThreePhaseAnalyzerStat {
 			stat[i] = {0};
 		}
 	}
-	double getCurrent(){
-		return (stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current);
-	}
-	int32_t getMilliamps(){
-		return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
+	double getCurrent(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current);
+		else
+			return (stat[i].measureValues.current);
 	}
 	int32_t getMilliamps(uint8_t i){
-		return (int32_t)round(1000 * stat[i].measureValues.current);
+		if(i==0xff)
+			return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
+		else
+			return (int32_t)round(1000 * stat[i].measureValues.current);
+
 	}
-	double getPower(){
-		return (stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
+	double getActivePower(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
+		else
+			return (stat[i].measureValues.aPow);
+	}
+	int32_t getActivePowerAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
+		else
+			return (int32_t)round(stat[i].measureValues.aPow);
+
+	}
+	double getReactivePower(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].measureValues.rPow+stat[1].measureValues.rPow+stat[2].measureValues.rPow);
+		else
+			return (stat[i].measureValues.rPow);
+	}
+	int32_t getReactivePowerAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].measureValues.rPow+stat[1].measureValues.rPow+stat[2].measureValues.rPow);
+		else
+			return (int32_t)round(stat[i].measureValues.rPow);
+
+	}
+	int32_t getActiveEnergyAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].energyValues.active+stat[1].energyValues.active+stat[2].energyValues.active);
+		else
+			return (int32_t)round(stat[i].energyValues.active);
+	}
+	int32_t getRectiveEnergyAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].energyValues.reactive+stat[1].energyValues.reactive+stat[2].energyValues.reactive);
+		else
+			return (int32_t)round(stat[i].energyValues.reactive);
 	}
 	void updatePower(uint8_t i){
 		stat[i].measureValues.aPow = stat[i].measureValues.current * stat[i].measureValues.voltage * stat[i].measureValues.pfactor;
 		stat[i].measureValues.rPow = stat[i].measureValues.current * stat[i].measureValues.voltage * (1 - stat[i].measureValues.pfactor);
 	}
-	int32_t getPowerAsInt(uint8_t i){
-		return (int32_t)round(stat[i].measureValues.aPow);
+	double getPFactor(uint8_t i){
+		return stat[i].measureValues.pfactor;
 	}
-	int32_t getPowerAsInt(){
-		return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
-	}
+
 };
 
 
