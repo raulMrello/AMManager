@@ -146,6 +146,9 @@ struct ThreePhaseAnalyzerStat {
 		else
 			return (stat[i].measureValues.current);
 	}
+	void setCurrent(uint8_t i, double curr){
+		stat[i].measureValues.current = curr;
+	}
 	int32_t getMilliamps(uint8_t i=0xff){
 		if(i==0xff)
 			return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
