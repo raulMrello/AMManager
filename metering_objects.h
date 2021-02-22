@@ -140,6 +140,15 @@ struct ThreePhaseAnalyzerStat {
 			stat[i] = {0};
 		}
 	}
+	double getVoltage(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].measureValues.voltage+stat[1].measureValues.voltage+stat[2].measureValues.voltage);
+		else
+			return (stat[i].measureValues.voltage);
+	}
+	void setVoltage(uint8_t i, double voltage){
+		stat[i].measureValues.voltage = voltage;
+	}
 	double getCurrent(uint8_t i=0xff){
 		if(i==0xff)
 			return (stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current);
@@ -165,6 +174,9 @@ struct ThreePhaseAnalyzerStat {
 		else
 			return (stat[i].measureValues.aPow);
 	}
+	void setActivePower(uint8_t i, double aPow){
+		stat[i].measureValues.aPow = aPow;
+	}
 	int32_t getActivePowerAsInt(uint8_t i=0xff){
 		if(i==0xff)
 			return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
@@ -177,6 +189,9 @@ struct ThreePhaseAnalyzerStat {
 			return (stat[0].measureValues.rPow+stat[1].measureValues.rPow+stat[2].measureValues.rPow);
 		else
 			return (stat[i].measureValues.rPow);
+	}
+	void setReactivePower(uint8_t i, double rPow){
+		stat[i].measureValues.rPow = rPow;
 	}
 	int32_t getReactivePowerAsInt(uint8_t i=0xff){
 		if(i==0xff)
@@ -203,6 +218,15 @@ struct ThreePhaseAnalyzerStat {
 	}
 	double getPFactor(uint8_t i){
 		return stat[i].measureValues.pfactor;
+	}
+	void setPFactor(uint8_t i, double pfactor){
+		stat[i].measureValues.pfactor = pfactor;
+	}
+	double getFreq(uint8_t i){
+		return (stat[i].measureValues.freq);
+	}
+	void setFreq(uint8_t i, double freq){
+		stat[i].measureValues.freq = freq;
 	}
 
 };
