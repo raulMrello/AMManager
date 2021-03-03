@@ -140,6 +140,14 @@ struct ThreePhaseAnalyzerStat {
 			stat[i] = {0};
 		}
 	}
+	void copyMeasures(const ThreePhaseAnalyzerStat& tphas){
+		for(int i=0;i<3;i++){
+			// sólo copia analizadores con medidas
+			if(tphas.stat[i].flags != 0){
+				stat[i] = tphas.stat[i];
+			}
+		}
+	}
 	double getVoltage(uint8_t i=0xff){
 		if(i==0xff)
 			return (stat[0].measureValues.voltage+stat[1].measureValues.voltage+stat[2].measureValues.voltage);
