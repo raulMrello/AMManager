@@ -140,11 +140,17 @@ struct ThreePhaseAnalyzerStat {
 			stat[i] = {0};
 		}
 	}
-	void copyMeasures(const ThreePhaseAnalyzerStat& tphas){
+	void copyMeasures(const ThreePhaseAnalyzerStat& tphas, bool discard_energy = false){
 		for(int i=0;i<3;i++){
 			// sólo copia analizadores con medidas
 			if(tphas.stat[i].flags != 0){
-				stat[i] = tphas.stat[i];
+				if(!discard_energy){
+					stat[i] = tphas.stat[i];
+				}
+				else{
+					stat[i].flags = tphas.stat[i].flags;
+					stat[i].measureValues = tphas.stat[i].measureValues;
+				}
 			}
 		}
 	}
@@ -207,6 +213,27 @@ struct ThreePhaseAnalyzerStat {
 		else
 			return (int32_t)round(stat[i].measureValues.rPow);
 
+	}
+	double getActiveEnergy(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].energyValues.active+stat[1].energyValues.active+stat[2].energyValues.active);
+		else
+			return (stat[i].energyValues.active);
+	}
+	void setActiveEnergy(uint8_t i, double active){
+		stat[i].energyValues.active = active;
+	}
+	void addActiveEnergy(uint8_t i, double active){
+		stat[i].energyValues.active += active;
+	}
+	double getReactiveEnergy(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].energyValues.reactive+stat[1].energyValues.reactive+stat[2].energyValues.reactive);
+		else
+			return (stat[i].energyValues.reactive);
+	}
+	void setReactiveEnergy(uint8_t i, double reactive){
+		stat[i].energyValues.reactive = reactive;
 	}
 	int32_t getActiveEnergyAsInt(uint8_t i=0xff){
 		if(i==0xff)
