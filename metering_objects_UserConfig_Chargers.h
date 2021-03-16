@@ -31,11 +31,13 @@
 #define VERS_METERING_AM_CTX1_NAME							(const char*)"am-ctx1"
 #define VERS_METERING_AM_CTX1_ANALYZERS						1
 #define VERS_METERING_AM_CTX1_MEASCYCLE						2000
+#define VERS_METERING_AM_CTX1_ADDR							1
 
 #define VERS_METERING_AM_CTX3								3
 #define VERS_METERING_AM_CTX3_NAME							(const char*)"am-ctx3"
 #define VERS_METERING_AM_CTX3_ANALYZERS						3
 #define VERS_METERING_AM_CTX3_MEASCYCLE						2000
+#define VERS_METERING_AM_CTX3_ADDR							151
 
 // ANALIZADORES MBUS TMC100
 #define VERS_METERING_AM_MBUS_COMMON_NAME					(const char*)"am-mbus"
@@ -95,11 +97,13 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_CTX1_NAME							(const char*)"am-ctx1"
 #define VERS_METERING_AM_CTX1_ANALYZERS						1
 #define VERS_METERING_AM_CTX1_MEASCYCLE						2000
+#define VERS_METERING_AM_CTX1_ADDR							1
 
 #define VERS_METERING_AM_CTX3								3
 #define VERS_METERING_AM_CTX3_NAME							(const char*)"am-ctx3"
 #define VERS_METERING_AM_CTX3_ANALYZERS						3
 #define VERS_METERING_AM_CTX3_MEASCYCLE						2000
+#define VERS_METERING_AM_CTX3_ADDR							151
 
 // ANALIZADORES MBUS TMC100
 #define VERS_METERING_AM_MBUS_COMMON_NAME					(const char*)"am-mbus"
