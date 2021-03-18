@@ -354,9 +354,18 @@ void AMManager::startMeasureWork() {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
-			MBED_ASSERT(amo);
-			dobj->measures->push_back(amo);
+			if(dobj->drv->getModel() == VERS_METERING_AM_CTX3_MODEL_DTS353){
+				for(uint8_t i=0; i<VERS_METERING_AM_CTX3_ANALYZERS; i++){
+					AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
+					MBED_ASSERT(amo);
+					dobj->measures->push_back(amo);
+				}
+			}
+			else{
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+			}
 
 			// forma la lista de medida con los objetos anteriores
 			for(uint8_t i=0; i<VERS_METERING_AM_CTX3_ANALYZERS; i++){
