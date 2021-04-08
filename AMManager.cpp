@@ -465,10 +465,11 @@ void AMManager::_measure(bool enable_notif) {
 	int i = 0;
 	int acc_analyzers = 0;
 	bool any_update = false;
+	int base_analyzer = 0;
 	for(auto d = _driver_list.begin(); d != _driver_list.end(); ++d){
 		DriverObj* dobj = (*d);
 		AMDriver* am_driver = dobj->drv;
-		int base_analyzer = acc_analyzers;
+		base_analyzer += acc_analyzers;
 		acc_analyzers = am_driver->getNumAnalyzers();
 
 		// si el driver tiene habilitado las medidas autom�ticas, las ejecuta
@@ -483,6 +484,7 @@ void AMManager::_measure(bool enable_notif) {
 				// eval�a las nuevas medidas
 				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
 					AMDriver::AutoMeasureReading* amr = (*r);
+					DEBUG_TRACE_D(_EXPR_, _MODULE_, "base_analyzer=%d, acc_analyzers=%d, amr->analyzer=%d", base_analyzer, acc_analyzers, amr->analyzer);
 					uint32_t keys = amr->params.measureId;
 					alarm_notif[(base_analyzer + amr->analyzer)] = false;
 					_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags = 0;
