@@ -181,6 +181,13 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
+        //Factury Reset
+        case RecvDefaultSet:{
+        	DEBUG_TRACE_E(_EXPR_,_MODULE_,"Factory Reset!!!!");
+        	setDefaultConfig();
+        	return State::HANDLED;
+        }
+
         case State::EV_EXIT:{
             nextState();
             return State::HANDLED;

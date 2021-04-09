@@ -113,6 +113,7 @@ class AMManager : public ActiveModule {
     	RecvRestartSet	  	= (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
     	RecvForcedMeasure	= (State::EV_RESERVED_USER << 7),  /// Flag activado al recibir mensaje en "set/forced-meas"
     	TimedMeasureEvt		= (State::EV_RESERVED_USER << 8),  /// Evento para realizar una medida
+		RecvDefaultSet		= (State::EV_RESERVED_USER << 9)   ///
     };
 
 
