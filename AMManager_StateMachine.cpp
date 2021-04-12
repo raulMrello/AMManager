@@ -89,14 +89,11 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// si todo ha ido bien, almacena en el sistema de ficheros
         	saveConfig();
-
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Config actualizada");
 
         	// si está habilitada la notificación de actualización, lo notifica
-        	if((_amdata.cfg.updFlags & MeteringManagerCfgUpdNotif) != 0){
-        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualización");
-        		_responseWithConfig(req->idTrans, req->_error);
-        	}
+        	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualización");
+        	_responseWithConfig(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
