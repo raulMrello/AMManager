@@ -82,6 +82,8 @@ cJSON* getJsonFromMeteringManagerCfg(const metering_manager_cfg& obj){
 	cJSON_AddNumberToObject(json, JsonParser::p_measPeriod, obj.measPeriod);
 	// verbosity
 	cJSON_AddNumberToObject(json, JsonParser::p_verbosity, obj.verbosity);
+	// nvs_id
+	cJSON_AddNumberToObject(json, JsonParser::p_nvsId, obj.nvs_id);
 
 	return json;
 }
@@ -460,6 +462,12 @@ uint32_t getMeteringManagerCfgFromJson(metering_manager_cfg &obj, cJSON* json){
 		obj.verbosity = value->valueint;
 		keys |= (1 << 3);
 	}
+	// nvs_id
+	if((value = cJSON_GetObjectItem(json,JsonParser::p_nvsId)) != NULL){
+		obj.nvs_id = value->valueint;
+		keys |= (1 << 4);
+	}
+
 	obj._keys = keys;
 	return keys;
 }

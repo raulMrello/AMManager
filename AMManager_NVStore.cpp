@@ -250,6 +250,9 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		_amdata.cfg.verbosity = data.cfg.verbosity;
 		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Nivel de depuracion de %d -> %d", data.cfg.verbosity, _amdata.cfg.verbosity);
 	}
+	if((data.cfg._keys & (1 << 4))){
+		_amdata.cfg.nvs_id = data.cfg.nvs_id;
+	}
 	// eval�o analizadores
 	int i = 0;
 	for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
