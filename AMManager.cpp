@@ -88,10 +88,10 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 }
 
 //------------------------------------------------------------------------------------
-void AMManager::startMeasureWork() {
+void AMManager::startMeasureWork(bool discard_ext_anlz) {
 	if(_meas_started)
 		return;
-
+	_discard_ext_anlz = discard_ext_anlz;
 	_acc_errors = 0;
 
 	// este arranque aplica para todos los drivers instalados
@@ -190,6 +190,7 @@ void AMManager::startMeasureWork() {
 		// si es un driver TMC100 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MBUS012_NAME)==0){
+
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_MBUS012_MEASCYCLE;
 
@@ -311,6 +312,10 @@ void AMManager::startMeasureWork() {
 		// si es un driver Driver_Ctx0643 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CTX1_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_CTX1_MEASCYCLE;
 
@@ -346,6 +351,10 @@ void AMManager::startMeasureWork() {
 			}
 		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CTX3_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_CTX3_MEASCYCLE;
 
@@ -469,6 +478,7 @@ void AMManager::_measure(bool enable_notif) {
 	for(auto d = _driver_list.begin(); d != _driver_list.end(); ++d){
 		DriverObj* dobj = (*d);
 		AMDriver* am_driver = dobj->drv;
+
 		base_analyzer += acc_analyzers;
 		acc_analyzers = am_driver->getNumAnalyzers();
 

@@ -129,7 +129,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 			}
 			delete(notif);
 			Heap::memFree(pub_topic);
-			startMeasureWork();
+			startMeasureWork(_discard_ext_anlz);
             return State::HANDLED;
         }
 
@@ -160,7 +160,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         // Procesa datos recibidos de la publicación en get/boot
         case RecvRestartSet:{
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Reanudando medidas electricas");
-			startMeasureWork();
+			startMeasureWork(_discard_ext_anlz);
             return State::HANDLED;
         }
 
