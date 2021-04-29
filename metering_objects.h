@@ -165,18 +165,24 @@ struct ThreePhaseAnalyzerStat {
 	}
 	double getCurrent(uint8_t i=0xff){
 		if(i==0xff)
-			return (stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current);
+			return ((stat[0].measureValues.current * stat[0].measureValues.pfactor)+(stat[1].measureValues.current * stat[1].measureValues.pfactor)+(stat[2].measureValues.current * stat[2].measureValues.pfactor));
 		else
 			return (stat[i].measureValues.current);
+	}
+	double getCurrentPF(uint8_t i=0xff){
+		if(i==0xff)
+			return ((stat[0].measureValues.current * stat[0].measureValues.pfactor)+(stat[1].measureValues.current * stat[1].measureValues.pfactor)+(stat[2].measureValues.current * stat[2].measureValues.pfactor));
+		else
+			return (stat[i].measureValues.current * stat[i].measureValues.pfactor);
 	}
 	void setCurrent(uint8_t i, double curr){
 		stat[i].measureValues.current = curr;
 	}
 	int32_t getMilliamps(uint8_t i=0xff){
 		if(i==0xff)
-			return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
+			return (int32_t)round(1000*((stat[0].measureValues.current * stat[0].measureValues.pfactor)+(stat[1].measureValues.current * stat[1].measureValues.pfactor)+(stat[2].measureValues.current * stat[2].measureValues.pfactor)));
 		else
-			return (int32_t)round(1000 * stat[i].measureValues.current);
+			return (int32_t)round(1000 * stat[i].measureValues.current * stat[i].measureValues.pfactor);
 
 	}
 	void setMilliamps(uint8_t i, int32_t curr){
