@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <type_traits>
 #include "common_objects.h"
+#include "cpp_utils.h"
 #include "cJSON.h"
 
 
@@ -156,7 +157,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	double getVoltage(uint8_t i=0xff){
 		if(i==0xff)
-			return (stat[0].measureValues.voltage+stat[1].measureValues.voltage+stat[2].measureValues.voltage);
+			return cpp_utils::max3(stat[0].measureValues.voltage, stat[1].measureValues.voltage, stat[2].measureValues.voltage);
 		else
 			return (stat[i].measureValues.voltage);
 	}
