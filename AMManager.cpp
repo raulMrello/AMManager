@@ -587,6 +587,10 @@ void AMManager::_measure(bool enable_notif) {
 			if(_amdata.analyzers[i].stat.flags & MeteringAnalyzerElectricParam){
 				alarm_notif[i] = true;
 				_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
+				// corrige el sentido de la corriente si es positiva y potencia negativa
+				if(_amdata.analyzers[i].stat.measureValues.aPow < 0 && _amdata.analyzers[i].stat.measureValues.current > 0){
+					_amdata.analyzers[i].stat.measureValues.current = -_amdata.analyzers[i].stat.measureValues.current;
+				}
 			}
 		}
 	}
@@ -597,6 +601,10 @@ void AMManager::_measure(bool enable_notif) {
 			if(_amdata.analyzers[i].stat.flags & MeteringAnalyzerElectricParam){
 				alarm_notif[i] = true;
 				_amdata.analyzers[i].stat.flags |= MeteringAnalyzerInstantMeasureEvt;
+				// corrige el sentido de la corriente si es positiva y potencia negativa
+				if(_amdata.analyzers[i].stat.measureValues.aPow < 0 && _amdata.analyzers[i].stat.measureValues.current > 0){
+					_amdata.analyzers[i].stat.measureValues.current = -_amdata.analyzers[i].stat.measureValues.current;
+				}
 			}
 		}
 	}
