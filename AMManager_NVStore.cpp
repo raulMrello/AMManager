@@ -204,6 +204,7 @@ __exit_rstcfg_loop:
     	else{
     		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Check de integridad OK!");
     		esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
+    		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %d", _amdata.cfg.verbosity);
     		return;
     	}
 	}
