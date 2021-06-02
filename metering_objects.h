@@ -166,7 +166,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	double getCurrent(uint8_t i=0xff){
 		if(i==0xff)
-			return ((stat[0].measureValues.current * stat[0].measureValues.pfactor)+(stat[1].measureValues.current * stat[1].measureValues.pfactor)+(stat[2].measureValues.current * stat[2].measureValues.pfactor));
+			return (stat[0].measureValues.current + stat[1].measureValues.current + stat[2].measureValues.current);
 		else
 			return (stat[i].measureValues.current);
 	}
