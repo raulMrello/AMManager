@@ -159,6 +159,7 @@ static inline const char* VERS_METERING_NAME(){
 #define METERING_DEFAULT_PLANT_FREQ		(double) 50.0
 #define METERING_DEFAULT_PLANT_PFACTOR	(double)  0.9
 
+#define METERING_POW_TO_CURRENT(pow)	((double)pow/METERING_DEFAULT_PLANT_VOLTAGE)
 #define METERING_POW_TO_MILLIS(pow)		(int32_t)((pow * 1000)/METERING_DEFAULT_PLANT_VOLTAGE)
 #define METERING_MILLIS_TO_POW(millis)	(int32_t)round(((double)millis)*METERING_DEFAULT_PLANT_VOLTAGE/1000)
 
