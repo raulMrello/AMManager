@@ -100,18 +100,11 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 	for(auto i= _driver_list.begin(); i!=_driver_list.end(); ++i){
 		DriverObj* dobj = (*i);
 		AMDriver* drv = (dobj->drv);
-#ifndef COMBI_PLUS
 		// si es un driver AMUniConnectors planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		if(strcmp(drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_UNI_CONNECTORS_MEASCYCLE;
-#else
-		if(strcmp(drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
-			// establece el ciclo de lectura
-			dobj->cycle_ms = VERS_METERING_AM_COMBIPLUS_CONNECTORS_MEASCYCLE;
-#endif
-
 			// crea los objetos de medida de cada analizador
 			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
 			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
@@ -123,7 +116,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 
 			// forma la lista de medida con los objetos anteriores
 			dobj->measures->push_back(amo_block);
-#ifndef COMBI_PLUS
 			// idem con los objetos de lectura
 			AMDriver::AutoMeasureReading* amr_m = new AMDriver::AutoMeasureReading();
 			MBED_ASSERT(amr_m);
@@ -143,8 +135,33 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings->push_back(amr_r);
 			dobj->readings->push_back(amr_s);
 			dobj->readings->push_back(amr_t);
-#else
-			// idem con los objetos de lectura
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+			}
+		}else if(strcmp(drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+			// crea los objetos de medida de cada analizador
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock),AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+
+			// forma la lista de medida con los objetos anteriores
+			dobj->measures->push_back(amo_block);
+
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_COMBIPLUS_CONNECTORS_MEASCYCLE;
 			AMDriver::AutoMeasureReading* amr_r1 = new AMDriver::AutoMeasureReading();
 			MBED_ASSERT(amr_r1);
 			amr_r1->analyzer=0;
@@ -171,7 +188,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings->push_back(amr_r2);
 			dobj->readings->push_back(amr_s2);
 			dobj->readings->push_back(amr_t2);
-#endif
 
 			// solicita el inicio de medidas peri�dicas
 			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
@@ -502,10 +518,12 @@ void AMManager::_measure(bool enable_notif) {
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
 #ifdef COMBI_PLUS
-							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
-							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+							if((amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0) ||
+							   (amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0))
 #endif
+							{
 								reading_hw_error = true;
 								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%.01fV ERROR (descartado)", (base_analyzer + amr->analyzer),amr->params.voltage);
 							}
@@ -517,10 +535,12 @@ void AMManager::_measure(bool enable_notif) {
 						}
 						if(keys & AMDriver::ElecKey_Current){
 #ifdef COMBI_PLUS
-							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
-							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+							if((amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0) ||
+							   (amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0))
 #endif
+							{
 								reading_hw_error = true;
 								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Current=%.03fA ERROR (descartado)", (base_analyzer + amr->analyzer),amr->params.current);
 							}
