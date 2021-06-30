@@ -273,11 +273,13 @@ struct ThreePhaseAnalyzerStat {
 	void fixCurrent(uint8_t i=0xff){
 		if(i==0xff){
 			for(int j=0;j<3;j++){
-				stat[j].measureValues.current = stat[j].measureValues.aPow/(stat[j].measureValues.voltage * stat[j].measureValues.pfactor);
+				double divisor = (stat[j].measureValues.voltage * stat[j].measureValues.pfactor);
+				stat[j].measureValues.current = (divisor < 0.01)? 0 : stat[j].measureValues.aPow/divisor;
 			}
 		}
 		else{
-			stat[i].measureValues.current = stat[i].measureValues.aPow/(stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+			double divisor = (stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+			stat[i].measureValues.current = (divisor < 0.01)? 0 : stat[i].measureValues.aPow/divisor;
 		}
 	}
 };
