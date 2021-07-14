@@ -163,6 +163,7 @@ static inline const char* VERS_METERING_NAME(){
 #define METERING_POW_TO_MILLIS(pow)		(int32_t)((pow * 1000)/METERING_DEFAULT_PLANT_VOLTAGE)
 #define METERING_MILLIS_TO_POW(millis)	(int32_t)round(((double)millis)*METERING_DEFAULT_PLANT_VOLTAGE/1000)
 
+#define METERING_PFACTOR_MIN_ALLOWED	(double)0.5
 
 
 #endif
