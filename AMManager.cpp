@@ -548,7 +548,7 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPowerFactor;
 							if(pfactor < METERING_PFACTOR_MIN_ALLOWED){
-								DEBUG_TRACE_W(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%.02f corregido a %.02f", (base_analyzer + amr->analyzer),pfactor, METERING_PFACTOR_MIN_ALLOWED);
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%.02f corregido a %.02f", (base_analyzer + amr->analyzer),pfactor, METERING_PFACTOR_MIN_ALLOWED);
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = METERING_PFACTOR_MIN_ALLOWED;
 							}
 							else{
