@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <type_traits>
 #include "common_objects.h"
+#include "cpp_utils.h"
 #include "cJSON.h"
 
 
@@ -92,7 +93,7 @@ static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** Máximo número de analizadores permitidos */
-static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 10;
+static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 12;
 
 /** Tamaño máximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;
@@ -129,6 +130,167 @@ struct metering_analyzer_stat{
 	metering_analyzer_stat_totals energyValues;
 	metering_analyzer_stat_measure measureValues;
 };
+
+struct ThreePhaseAnalyzerStat {
+	metering_analyzer_stat stat[3];
+	ThreePhaseAnalyzerStat(){
+		reset();
+	}
+	void reset(){
+		for(int i=0;i<3;i++){
+			stat[i] = {0};
+		}
+	}
+	void copyMeasures(const ThreePhaseAnalyzerStat& tphas, bool discard_energy = false){
+		for(int i=0;i<3;i++){
+			// sólo copia analizadores con medidas
+			if(tphas.stat[i].flags != 0){
+				if(!discard_energy){
+					stat[i] = tphas.stat[i];
+				}
+				else{
+					stat[i].flags = tphas.stat[i].flags;
+					stat[i].measureValues = tphas.stat[i].measureValues;
+				}
+			}
+		}
+	}
+	double getVoltage(uint8_t i=0xff){
+		if(i==0xff)
+			return cpp_utils::max3(stat[0].measureValues.voltage, stat[1].measureValues.voltage, stat[2].measureValues.voltage);
+		else
+			return (stat[i].measureValues.voltage);
+	}
+	void setVoltage(uint8_t i, double voltage){
+		stat[i].measureValues.voltage = voltage;
+	}
+	double getCurrent(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].measureValues.current + stat[1].measureValues.current + stat[2].measureValues.current);
+		else
+			return (stat[i].measureValues.current);
+	}
+	double getCurrentPF(uint8_t i=0xff){
+		if(i==0xff)
+			return ((stat[0].measureValues.current * stat[0].measureValues.pfactor)+(stat[1].measureValues.current * stat[1].measureValues.pfactor)+(stat[2].measureValues.current * stat[2].measureValues.pfactor));
+		else
+			return (stat[i].measureValues.current * stat[i].measureValues.pfactor);
+	}
+	void setCurrent(uint8_t i, double curr){
+		stat[i].measureValues.current = curr;
+	}
+	int32_t getMilliamps(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
+		else
+			return (int32_t)round(1000 * stat[i].measureValues.current);
+
+	}
+	int32_t getMilliampsPF(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(1000*((stat[0].measureValues.current * stat[0].measureValues.pfactor)+(stat[1].measureValues.current * stat[1].measureValues.pfactor)+(stat[2].measureValues.current * stat[2].measureValues.pfactor)));
+		else
+			return (int32_t)round(1000 * stat[i].measureValues.current * stat[i].measureValues.pfactor);
+
+	}
+	void setMilliamps(uint8_t i, int32_t curr){
+		stat[i].measureValues.current = (double)curr/1000.0;
+	}
+	double getActivePower(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
+		else
+			return (stat[i].measureValues.aPow);
+	}
+	void setActivePower(uint8_t i, double aPow){
+		stat[i].measureValues.aPow = aPow;
+	}
+	int32_t getActivePowerAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
+		else
+			return (int32_t)round(stat[i].measureValues.aPow);
+
+	}
+	double getReactivePower(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].measureValues.rPow+stat[1].measureValues.rPow+stat[2].measureValues.rPow);
+		else
+			return (stat[i].measureValues.rPow);
+	}
+	void setReactivePower(uint8_t i, double rPow){
+		stat[i].measureValues.rPow = rPow;
+	}
+	int32_t getReactivePowerAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].measureValues.rPow+stat[1].measureValues.rPow+stat[2].measureValues.rPow);
+		else
+			return (int32_t)round(stat[i].measureValues.rPow);
+
+	}
+	double getActiveEnergy(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].energyValues.active+stat[1].energyValues.active+stat[2].energyValues.active);
+		else
+			return (stat[i].energyValues.active);
+	}
+	void setActiveEnergy(uint8_t i, double active){
+		stat[i].energyValues.active = active;
+	}
+	void addActiveEnergy(uint8_t i, double active){
+		stat[i].energyValues.active += active;
+	}
+	double getReactiveEnergy(uint8_t i=0xff){
+		if(i==0xff)
+			return (stat[0].energyValues.reactive+stat[1].energyValues.reactive+stat[2].energyValues.reactive);
+		else
+			return (stat[i].energyValues.reactive);
+	}
+	void setReactiveEnergy(uint8_t i, double reactive){
+		stat[i].energyValues.reactive = reactive;
+	}
+	int32_t getActiveEnergyAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].energyValues.active+stat[1].energyValues.active+stat[2].energyValues.active);
+		else
+			return (int32_t)round(stat[i].energyValues.active);
+	}
+	int32_t getReactiveEnergyAsInt(uint8_t i=0xff){
+		if(i==0xff)
+			return (int32_t)round(stat[0].energyValues.reactive+stat[1].energyValues.reactive+stat[2].energyValues.reactive);
+		else
+			return (int32_t)round(stat[i].energyValues.reactive);
+	}
+	void updatePower(uint8_t i){
+		stat[i].measureValues.aPow = stat[i].measureValues.current * stat[i].measureValues.voltage * stat[i].measureValues.pfactor;
+		stat[i].measureValues.rPow = stat[i].measureValues.current * stat[i].measureValues.voltage * (1 - stat[i].measureValues.pfactor);
+	}
+	double getPFactor(uint8_t i){
+		return stat[i].measureValues.pfactor;
+	}
+	void setPFactor(uint8_t i, double pfactor){
+		stat[i].measureValues.pfactor = pfactor;
+	}
+	double getFreq(uint8_t i){
+		return (stat[i].measureValues.freq);
+	}
+	void setFreq(uint8_t i, double freq){
+		stat[i].measureValues.freq = freq;
+	}
+	void fixCurrent(uint8_t i=0xff){
+		if(i==0xff){
+			for(int j=0;j<3;j++){
+				double divisor = (stat[j].measureValues.voltage * stat[j].measureValues.pfactor);
+				stat[j].measureValues.current = (divisor < 0.01)? 0 : stat[j].measureValues.aPow/divisor;
+			}
+		}
+		else{
+			double divisor = (stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+			stat[i].measureValues.current = (divisor < 0.01)? 0 : stat[i].measureValues.aPow/divisor;
+		}
+	}
+};
+
 
 
 /**Objeto ppl:energy:analyzer:cfg:calib */

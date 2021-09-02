@@ -53,8 +53,9 @@ class AMManager : public ActiveModule {
 
 
     /** Arranca el worker de medida con una cadencia por defecto (ver DefaultMeasurePeriod)
+     * 	@param discard_ext_analz Descarta todos los analizadores que no sean conectores locales
      */
-    void startMeasureWork();
+    void startMeasureWork(bool discard_ext_anlz=false);
 
 
     /** Detiene el worker de medida
@@ -142,6 +143,7 @@ class AMManager : public ActiveModule {
     bool _forced_notification;
     bool _forced_measure;
     bool _meas_started;
+    bool _discard_ext_anlz;
 
     /** Errores acumulados durante las medidas */
     uint8_t _acc_errors;
