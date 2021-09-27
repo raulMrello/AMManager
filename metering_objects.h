@@ -93,7 +93,7 @@ static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** Máximo número de analizadores permitidos */
-static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 12;
+static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 18;
 
 /** Tamaño máximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;

@@ -155,6 +155,7 @@ class AMManager : public ActiveModule {
     	uint32_t cycle_ms;
     	std::list<AMDriver::AutoMeasureObj*>* measures;
     	std::list<AMDriver::AutoMeasureReading*>* readings;
+    	uint8_t dev_count;
     };
     /** Controladores de los chip de medida */
     std::list<DriverObj*> _driver_list;
