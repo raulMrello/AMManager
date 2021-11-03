@@ -181,6 +181,13 @@ struct ThreePhaseAnalyzerStat {
 	}
 	int32_t getMilliamps(uint8_t i=0xff){
 		if(i==0xff)
+			return (int32_t)round(1000*(stat[0].measureValues.current+stat[1].measureValues.current+stat[2].measureValues.current));
+		else
+			return (int32_t)round(1000 * stat[i].measureValues.current);
+
+	}
+	int32_t getMilliampsPF(uint8_t i=0xff){
+		if(i==0xff)
 			return (int32_t)round(1000*((stat[0].measureValues.current * stat[0].measureValues.pfactor)+(stat[1].measureValues.current * stat[1].measureValues.pfactor)+(stat[2].measureValues.current * stat[2].measureValues.pfactor)));
 		else
 			return (int32_t)round(1000 * stat[i].measureValues.current * stat[i].measureValues.pfactor);
@@ -270,7 +277,18 @@ struct ThreePhaseAnalyzerStat {
 	void setFreq(uint8_t i, double freq){
 		stat[i].measureValues.freq = freq;
 	}
-
+	void fixCurrent(uint8_t i=0xff){
+		if(i==0xff){
+			for(int j=0;j<3;j++){
+				double divisor = (stat[j].measureValues.voltage * stat[j].measureValues.pfactor);
+				stat[j].measureValues.current = (divisor < 0.01)? 0 : stat[j].measureValues.aPow/divisor;
+			}
+		}
+		else{
+			double divisor = (stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+			stat[i].measureValues.current = (divisor < 0.01)? 0 : stat[i].measureValues.aPow/divisor;
+		}
+	}
 };
 
 
