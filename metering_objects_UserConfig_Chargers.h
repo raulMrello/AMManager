@@ -41,8 +41,6 @@
 #define VERS_METERING_AM_CTX3_ADDR_DTS353					1
 #define VERS_METERING_AM_CTX3_MODEL_0643					0 //Driver_Ctx0643RegData::DriverRegModel::CTX_0643
 #define VERS_METERING_AM_CTX3_MODEL_DTS353					2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2
-#define VERS_METERING_AM_CTX3_MODEL_0643					0 //Driver_Ctx0643RegData::DriverRegModel::CTX_0643
-#define VERS_METERING_AM_CTX3_MODEL_DTS353					2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2
 
 // ANALIZADORES MBUS TMC100
 #define VERS_METERING_AM_MBUS_COMMON_NAME					(const char*)"am-mbus"
