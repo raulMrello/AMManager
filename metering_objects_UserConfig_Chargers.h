@@ -152,7 +152,7 @@ static inline const char* VERS_METERING_NAME(){
 #endif
 
 
-
+#define VERS_METERING_AM_MID_NAME							(const char*)"am-mid"
 // ANALIZADORES CONTADOR MID MONOFASICO
 #define VERS_METERING_AM_MID1								7
 #define VERS_METERING_AM_MID1_NAME							(const char*)"am-mid1"
