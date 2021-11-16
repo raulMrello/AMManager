@@ -484,11 +484,7 @@ void AMManager::_measure(bool enable_notif) {
 
 		// si el driver tiene habilitado las medidas autom�ticas, las ejecuta
 		if(dobj->cycle_ms > 0 && dobj->measures && dobj->readings){
-
-			SafetyOp* op = new SafetyOp(__FUNCTION__, 5000, callback(&esp_restart));
-			MBED_ASSERT(op);
 			int32_t gar_res = dobj->drv->getAnalyzerReadings(*dobj->readings);
-			delete(op);
 			if(gar_res==0){
 				_acc_errors = 0;
 				// eval�a las nuevas medidas
