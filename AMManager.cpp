@@ -438,7 +438,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				delete(dobj->measures);
 				dobj->measures = NULL;
 				dobj->cycle_ms = 0;
-				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid1");
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid1x1");
 			}
 		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID3_NAME)==0){
@@ -486,7 +486,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				delete(dobj->measures);
 				dobj->measures = NULL;
 				dobj->cycle_ms = 0;
-				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Ctx0643");
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid3x1");
 			}
 		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID1x2_NAME)==0){
