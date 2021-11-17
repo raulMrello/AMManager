@@ -155,7 +155,7 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_MID_NAME							(const char*)"am-mid"
 // ANALIZADORES CONTADOR MID MONOFASICO
 #define VERS_METERING_AM_MID1								7
-#define VERS_METERING_AM_MID1_NAME							(const char*)"am-mid1"
+#define VERS_METERING_AM_MID1_NAME							(const char*)"am-mid1x1"
 #define VERS_METERING_AM_MID1_ANALYZERS						1
 #define VERS_METERING_AM_MID1_MEASCYCLE						2000
 #define VERS_METERING_AM_MID1_ADDR							1
@@ -171,7 +171,7 @@ static inline const char* VERS_METERING_NAME(){
 
 // ANALIZADORES CONTADOR MID TRIFASICO
 #define VERS_METERING_AM_MID3								8
-#define VERS_METERING_AM_MID3_NAME							(const char*)"am-mid3"
+#define VERS_METERING_AM_MID3_NAME							(const char*)"am-mid3x1"
 #define VERS_METERING_AM_MID3_ANALYZERS						3
 #define VERS_METERING_AM_MID3_MEASCYCLE						2000
 #define VERS_METERING_AM_MID3_ADDR							1
