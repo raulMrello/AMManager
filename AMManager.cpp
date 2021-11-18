@@ -46,7 +46,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     _driver_list.push_back(dobj);
     _acc_errors = 0;
     _meas_started = false;
-
+    _drv_errors = 0;
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
 
@@ -75,6 +75,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
         DriverObj* dobj = new DriverObj();
         MBED_ASSERT(dobj);
         dobj->drv = driver;
+        dobj->dev_count = 1;
         dobj->cycle_ms = 0;
         dobj->measures = NULL;
         dobj->readings = NULL;
@@ -82,6 +83,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
     }
     _acc_errors = 0;
     _meas_started = false;
+    _drv_errors = 0;
 
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
@@ -104,6 +106,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 		// si es un driver AMUniConnectors planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		if(strcmp(drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_UNI_CONNECTORS_MEASCYCLE;
 #else
@@ -398,6 +401,182 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Ctx0643");
 			}
 		}
+		// si es un driver Driver_Ctx0643 planifica una medida peri�dica cada segundo de los par�metros
+		// en bloque
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID1_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_MID1_MEASCYCLE;
+
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), 0);
+			MBED_ASSERT(amo);
+			dobj->measures->push_back(amo);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_MID1_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid1x1");
+			}
+		}
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID3_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_MID3_MEASCYCLE;
+
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			if(dobj->drv->getModel() == VERS_METERING_AM_MID3_MODEL){
+				for(uint8_t i=0; i<VERS_METERING_AM_MID3_ANALYZERS; i++){
+					AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
+					MBED_ASSERT(amo);
+					dobj->measures->push_back(amo);
+				}
+			}
+			else{
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+			}
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_MID3_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid3x1");
+			}
+		}
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID1x2_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
+			// establece el ciclo de lectura
+			dobj->dev_count = 2;
+			dobj->cycle_ms = VERS_METERING_AM_MID1x2_MEASCYCLE;
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), 0);
+			MBED_ASSERT(amo);
+			dobj->measures->push_back(amo);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_MID1x2_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid1x2");
+			}
+		}
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID3x2_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
+			// establece el ciclo de lectura
+			dobj->dev_count = 2;
+			dobj->cycle_ms = VERS_METERING_AM_MID3x2_MEASCYCLE;
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			if(dobj->drv->getModel() == VERS_METERING_AM_MID3x2_MODEL){
+				for(uint8_t i=0; i<VERS_METERING_AM_MID3x2_ANALYZERS; i++){
+					AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
+					MBED_ASSERT(amo);
+					dobj->measures->push_back(amo);
+				}
+			}
+			else{
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+			}
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_MID3x2_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid3x2");
+			}
+		}
 	}
 
 	// arranca el timer de lectura
@@ -484,11 +663,7 @@ void AMManager::_measure(bool enable_notif) {
 
 		// si el driver tiene habilitado las medidas autom�ticas, las ejecuta
 		if(dobj->cycle_ms > 0 && dobj->measures && dobj->readings){
-
-			SafetyOp* op = new SafetyOp(__FUNCTION__, 5000, callback(&esp_restart));
-			MBED_ASSERT(op);
 			int32_t gar_res = dobj->drv->getAnalyzerReadings(*dobj->readings);
-			delete(op);
 			if(gar_res==0){
 				_acc_errors = 0;
 				// eval�a las nuevas medidas

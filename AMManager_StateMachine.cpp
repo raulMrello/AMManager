@@ -57,6 +57,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 					DEBUG_TRACE_I(_EXPR_, _MODULE_, "Driver <%s> OK!", am_driver->getVersion());
 				}
 				else{
+					_drv_errors++;
 					DEBUG_TRACE_W(_EXPR_, _MODULE_, "Driver <%s> ERR_INIT", am_driver->getVersion());
 				}
             }
