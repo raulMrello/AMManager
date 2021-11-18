@@ -193,8 +193,8 @@ static inline const char* VERS_METERING_NAME(){
 #define METERING_DEFAULT_PLANT_PFACTOR		(double)  0.9
 
 #define METERING_POW_TO_CURRENT(pow)			((double)pow/METERING_DEFAULT_PLANT_VOLTAGE)
-#define METERING_POW_TO_MILLIS(pow)				(int32_t)((pow * 1000)/METERING_DEFAULT_PLANT_VOLTAGE)
-#define METERING_POW_TO_MILLIS_V(pow,volt)		(int32_t)((pow * 1000)/((volt > METERING_DEFAULT_PLANT_MINVOLTAGE)? volt : METERING_DEFAULT_PLANT_VOLTAGE))
+#define METERING_POW_TO_MILLIS(pow)				(int32_t)round((double)(pow * 1000)/METERING_DEFAULT_PLANT_VOLTAGE)
+#define METERING_POW_TO_MILLIS_V(pow,volt)		(int32_t)round((double)(pow * 1000)/((volt > METERING_DEFAULT_PLANT_MINVOLTAGE)? volt : METERING_DEFAULT_PLANT_VOLTAGE))
 #define METERING_MILLIS_TO_POW(millis)			(int32_t)round(((double)millis)*METERING_DEFAULT_PLANT_VOLTAGE/1000)
 #define METERING_MILLIS_TO_POW_V(millis,volt)	(int32_t)round(((double)millis)*((volt > METERING_DEFAULT_PLANT_MINVOLTAGE)? volt : METERING_DEFAULT_PLANT_VOLTAGE)/1000)
 
