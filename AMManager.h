@@ -87,6 +87,15 @@ class AMManager : public ActiveModule {
     }
 
 
+    /**
+     * Obtiene el número de errores totales de los drivers instalados
+     * @return
+     */
+    uint8_t getDriversErrors(){
+    	return _drv_errors;
+    }
+
+
     /**--------------------------------------------------------------------------------------
      * Actualiza el nivel de visualización de las tramas de depuración
      */
@@ -146,6 +155,7 @@ class AMManager : public ActiveModule {
     bool _discard_ext_anlz;
 
     /** Errores acumulados durante las medidas */
+    uint8_t _drv_errors;
     uint8_t _acc_errors;
     static const uint8_t MaxMeasureErrors = 3;
 

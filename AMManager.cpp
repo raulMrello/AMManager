@@ -46,7 +46,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     _driver_list.push_back(dobj);
     _acc_errors = 0;
     _meas_started = false;
-
+    _drv_errors = 0;
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
 
@@ -83,6 +83,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
     }
     _acc_errors = 0;
     _meas_started = false;
+    _drv_errors = 0;
 
 	// Carga callbacks est�ticas de publicaci�n/suscripci�n
     _publicationCb = callback(this, &AMManager::publicationCb);
