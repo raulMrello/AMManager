@@ -75,7 +75,6 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
         DriverObj* dobj = new DriverObj();
         MBED_ASSERT(dobj);
         dobj->drv = driver;
-        dobj->dev_count = 1;
         dobj->cycle_ms = 0;
         dobj->measures = NULL;
         dobj->readings = NULL;
@@ -496,19 +495,18 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				continue;
 			}
 			// establece el ciclo de lectura
-			dobj->dev_count = 2;
 			dobj->cycle_ms = VERS_METERING_AM_MID1x2_MEASCYCLE;
 			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
 			MBED_ASSERT(dobj->measures);
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), 0);
-			MBED_ASSERT(amo);
-			dobj->measures->push_back(amo);
 
 			// forma la lista de medida con los objetos anteriores
 			for(uint8_t i=0; i<VERS_METERING_AM_MID1x2_ANALYZERS; i++){
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
 
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
@@ -535,7 +533,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				continue;
 			}
 			// establece el ciclo de lectura
-			dobj->dev_count = 2;
 			dobj->cycle_ms = VERS_METERING_AM_MID3x2_MEASCYCLE;
 			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
 			MBED_ASSERT(dobj->measures);
