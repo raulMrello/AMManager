@@ -415,13 +415,12 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), 0);
-			MBED_ASSERT(amo);
-			dobj->measures->push_back(amo);
 
 			// forma la lista de medida con los objetos anteriores
 			for(uint8_t i=0; i<VERS_METERING_AM_MID1_ANALYZERS; i++){
-
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy), i);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
 				amr->analyzer=i;
@@ -454,22 +453,10 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			if(dobj->drv->getModel() == VERS_METERING_AM_MID3_MODEL){
-				for(uint8_t i=0; i<VERS_METERING_AM_MID3_ANALYZERS; i++){
-					AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
-					MBED_ASSERT(amo);
-					dobj->measures->push_back(amo);
-				}
-			}
-			else{
-				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+			for(uint8_t i=0; i<VERS_METERING_AM_MID3_ANALYZERS; i++){
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy), i);
 				MBED_ASSERT(amo);
 				dobj->measures->push_back(amo);
-			}
-
-			// forma la lista de medida con los objetos anteriores
-			for(uint8_t i=0; i<VERS_METERING_AM_MID3_ANALYZERS; i++){
-
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
 				amr->analyzer=i;
@@ -504,7 +491,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 
 			// forma la lista de medida con los objetos anteriores
 			for(uint8_t i=0; i<VERS_METERING_AM_MID1x2_ANALYZERS; i++){
-				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy), i);
 				MBED_ASSERT(amo);
 				dobj->measures->push_back(amo);
 
@@ -539,21 +526,10 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			if(dobj->drv->getModel() == VERS_METERING_AM_MID3x2_MODEL){
-				for(uint8_t i=0; i<VERS_METERING_AM_MID3x2_ANALYZERS; i++){
-					AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
-					MBED_ASSERT(amo);
-					dobj->measures->push_back(amo);
-				}
-			}
-			else{
-				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_PowFactor), AMDriver::AllAnalyzers);
+			for(uint8_t i=0; i<VERS_METERING_AM_MID3x2_ANALYZERS; i++){
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy), i);
 				MBED_ASSERT(amo);
 				dobj->measures->push_back(amo);
-			}
-
-			// forma la lista de medida con los objetos anteriores
-			for(uint8_t i=0; i<VERS_METERING_AM_MID3x2_ANALYZERS; i++){
 
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
@@ -740,10 +716,12 @@ void AMManager::_measure(bool enable_notif) {
 						}
 						if(keys & AMDriver::ElecKey_ActiveEnergy){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.energyValues.active = amr->params.aEnergy;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerEnergyActive;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Active=%.02fWh", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.energyValues.active);
 						}
 						if(keys & AMDriver::ElecKey_ReactiveEnergy){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.energyValues.reactive = amr->params.rEnergy;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerEnergyReactive;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reactive=%.02fWh", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.energyValues.reactive);
 						}
 						if(keys & AMDriver::ElecKey_Status){
