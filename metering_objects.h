@@ -47,37 +47,17 @@ enum metering_analyzer_cfg_updFlags {
 /** Flags para la variable ppl:energy:analyzer:cfg/evtFlags */
 enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerNoEvents				= 0,			//!< Flag para indicar que no hay eventos
-	MeteringAnalyzerVoltageOverLimitEvt		= (1 << 0),		//!< Evento al superar el límite superior (voltaje)
-	MeteringAnalyzerVoltageBelowLimitEvt	= (1 << 1),		//!< Evento al superar el límite inferior (voltaje)
-	MeteringAnalyzerCurrentOverLimitEvt		= (1 << 2),		//!< Evento al superar el límite superior (corriente)
-	MeteringAnalyzerCurrentBelowLimitEvt 	= (1 << 3),		//!< Evento al superar el límite inferior (corriente)
-	MeteringAnalyzerPhaseOverLimitEvt		= (1 << 4),		//!< Evento al superar el límite superior (fase)
-	MeteringAnalyzerPhaseBelowLimitEvt 		= (1 << 5),		//!< Evento al superar el límite inferior (fase)
-	MeteringAnalyzerPFactorOverLimitEvt		= (1 << 6),		//!< Evento al superar el límite superior (factor de potencia)
-	MeteringAnalyzerPFactorBelowLimitEvt 	= (1 << 7),		//!< Evento al superar el límite inferior (factor de potencia)
-	MeteringAnalyzerCosPhyOverLimitEvt		= (1 << 8),		//!< Evento al superar el límite superior (coseno phy)
-	MeteringAnalyzerCosPhyBelowLimitEvt 	= (1 << 9),		//!< Evento al superar el límite inferior (coseno phy)
-	MeteringAnalyzerActPowOverLimitEvt		= (1 << 10),	//!< Evento al superar el límite superior (potencia activa)
-	MeteringAnalyzerActPowBelowLimitEvt 	= (1 << 11),	//!< Evento al superar el límite inferior (potencia activa)
-	MeteringAnalyzerReactPowOverLimitEvt	= (1 << 12),	//!< Evento al superar el límite superior (potencia reactiva)
-	MeteringAnalyzerReactPowBelowLimitEvt	= (1 << 13),	//!< Evento al superar el límite inferior (potencia reactiva)
-	MeteringAnalyzerFrequencyOverLimitEvt	= (1 << 14),	//!< Evento al superar el límite superior (frecuencia)
-	MeteringAnalyzerFrequencyBelowLimitEvt	= (1 << 15),	//!< Evento al superar el límite inferior (frecuencia)
-	MeteringAnalyzerThdAOverLimitEvt		= (1 << 16),	//!< Evento al superar el límite superior (THD-A)
-	MeteringAnalyzerThdABelowLimitEvt		= (1 << 17),	//!< Evento al superar el límite inferior (THD-A)
-	MeteringAnalyzerThdVOverLimitEvt		= (1 << 18),	//!< Evento al superar el límite superior (THD-V)
-	MeteringAnalyzerThdVBelowLimitEvt		= (1 << 19),	//!< Evento al superar el límite inferior (THD-V)
-	MeteringAnalyzerActEnergyOverLimitEvt	= (1 << 20),	//!< Evento al superar el límite superior (energía activa)
-	MeteringAnalyzerReactEnergyOverLimitEvt = (1 << 21),	//!< Evento al superar el límite superior (energía reactiva)
-	MeteringAnalyzerInstantMeasureEvt 		= (1 << 22),	//!< Evento al realizar una medida
-	MeteringAnalyzerVoltage					= (1 << 23),	//!< Evento al recibir actualización en la medida de tensión
-	MeteringAnalyzerCurrent					= (1 << 24),	//!< Evento al recibir actualización en la medida de corriente
-	MeteringAnalyzerActivePower				= (1 << 25),	//!< Evento al recibir actualización en la medida de aPow
-	MeteringAnalyzerReactivePower			= (1 << 26),	//!< Evento al recibir actualización en la medida de rPow
-	MeteringAnalyzerPowerFactor				= (1 << 27),	//!< Evento al recibir actualización en la medida de pf
-	MeteringAnalyzerFrequency				= (1 << 28),	//!< Evento al recibir actualización en la medida de freq
-	MeteringAnalyzerPoweredUp				= (1 << 29),	//!< Evento al recibir actualización en la medida de freq
-	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp),
+	MeteringAnalyzerInstantMeasureEvt 		= (1 << 0),	//!< Evento al realizar una medida
+	MeteringAnalyzerVoltage					= (1 << 1),	//!< Evento al recibir actualización en la medida de tensión
+	MeteringAnalyzerCurrent					= (1 << 2),	//!< Evento al recibir actualización en la medida de corriente
+	MeteringAnalyzerActivePower				= (1 << 3),	//!< Evento al recibir actualización en la medida de aPow
+	MeteringAnalyzerReactivePower			= (1 << 4),	//!< Evento al recibir actualización en la medida de rPow
+	MeteringAnalyzerPowerFactor				= (1 << 5),	//!< Evento al recibir actualización en la medida de pf
+	MeteringAnalyzerFrequency				= (1 << 6),	//!< Evento al recibir actualización en la medida de freq
+	MeteringAnalyzerPoweredUp				= (1 << 7),	//!< Evento al recibir actualización en la medida de freq
+	MeteringAnalyzerEnergyActive			= (1 << 8),	//!< Evento al recibir actualización en la medida de energía activa
+	MeteringAnalyzerEnergyReactive			= (1 << 9),	//!< Evento al recibir actualización en la medida de energía reactiva
+	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive),
 
 
 	/* elemento inválido */
@@ -93,7 +73,7 @@ static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** Máximo número de analizadores permitidos */
-static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 12;
+static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 18;
 
 /** Tamaño máximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;
