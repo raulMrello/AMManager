@@ -131,7 +131,7 @@ cJSON* getJsonFromMeteringAnalyzer(const metering_analyzer& obj, ObjDataSelectio
 	cJSON_AddStringToObject(json, JsonParser::p_serial, obj.serial);
 
 	// cfg
-	if(type != ObjSelectState){
+	if(type != ObjSelectState && type != ObjSelectStateSub){
 		if((item = getJsonFromMeteringAnalyzerCfg(obj.cfg)) == NULL){
 			cJSON_Delete(json);
 			return NULL;
