@@ -861,6 +861,31 @@ void AMManager::_responseWithState(uint32_t idTrans, Blob::ErrorData_t& err){
 
 
 //------------------------------------------------------------------------------------
+void AMManager::_responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err){
+	// prepara el topic al que responder
+	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
+	MBED_ASSERT(pub_topic);
+	sprintf(pub_topic, "stat/analyzers/%s", _pub_topic_base);
+
+	// responde con los datos solicitados y con los errores (si hubiera) de la decodificaci�n de la solicitud
+	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
+	MBED_ASSERT(resp);
+	if(_json_supported){
+		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
+		MBED_ASSERT(jresp);
+		MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
+		cJSON_Delete(jresp);
+	}
+	else{
+		MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+	}
+	delete(resp);
+	Heap::memFree(pub_topic);
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
+}
+
+
+//------------------------------------------------------------------------------------
 void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err){
    	// prepara el topic al que responder
 	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
