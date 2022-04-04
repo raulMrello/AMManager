@@ -286,6 +286,12 @@ class AMManager : public ActiveModule {
 
 
 	/***
+	 * Responde con el estado actual de los analizadores
+	 */
+	void _responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err);
+
+
+	/***
 	 * Responde con la configuraci�n actual
 	 */
 	void _responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err);
