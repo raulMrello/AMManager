@@ -871,7 +871,7 @@ void AMManager::_responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err)
 	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
 	MBED_ASSERT(resp);
 	if(_json_supported){
-		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
+		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectStateSub);
 		MBED_ASSERT(jresp);
 		MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
 		cJSON_Delete(jresp);

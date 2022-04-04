@@ -1,7 +1,7 @@
 /*
  * ppl_energy_objects.cpp
  *
- * Implementación de los codecs JSON-OBJ
+ * Implementaciï¿½n de los codecs JSON-OBJ
  *
  *  Created on: Feb 2019
  *      Author: raulMrello
@@ -32,7 +32,7 @@ cJSON* getJsonFromMeteringManager(const metering_manager& obj, ObjDataSelection 
 	cJSON_AddNumberToObject(json, JsonParser::p_uid, obj.uid);
 
 	// cfg
-	if(type != ObjSelectState){
+	if(type != ObjSelectState && type != ObjSelectStateSub){
 		if((item = getJsonFromMeteringManagerCfg(obj.cfg)) == NULL){
 			cJSON_Delete(json);
 			return NULL;
@@ -41,7 +41,7 @@ cJSON* getJsonFromMeteringManager(const metering_manager& obj, ObjDataSelection 
 	}
 
 	// stat
-	if(type != ObjSelectCfg){
+	if(type != ObjSelectCfg && type != ObjSelectStateSub){
 		if((item = getJsonFromMeteringManagerStat(obj.stat)) == NULL){
 			cJSON_Delete(json);
 			return NULL;
@@ -236,7 +236,7 @@ cJSON* getJsonFromMeteringAnalyzerCfgMinMax(const metering_analyzer_cfg_minmax& 
 	}
 	cJSON_AddItemToObject(json, JsonParser::p_freq, item);
 
-	// thdA, thdV sólo para versión EMi10 YTL
+	// thdA, thdV sï¿½lo para versiï¿½n EMi10 YTL
 	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		if((item = JsonParser::getJsonFromObj(obj.thdA)) == NULL){
@@ -275,7 +275,7 @@ cJSON* getJsonFromMeteringAnalyzerCfgCalib(const metering_analyzer_cfg_calib& ob
 		return NULL;
 	}
 
-	// meterRegs, measRegs sólo en versión M90E26
+	// meterRegs, measRegs sï¿½lo en versiï¿½n M90E26
 	#if VERS_METERING_SELECTED == VERS_METERING_M90E26
 		cJSON* regs = NULL;
 		// key: calibData.meterRegs
@@ -380,7 +380,7 @@ cJSON* getJsonFromMeteringAnalyzerStatMeasure(const metering_analyzer_stat_measu
 	// freq
 	cJSON_AddNumberToObject(json, JsonParser::p_freq, obj.freq);
 
-	// thdA, thdV sólo para versión EMi10 YTL
+	// thdA, thdV sï¿½lo para versiï¿½n EMi10 YTL
 	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		cJSON_AddNumberToObject(json, JsonParser::p_thdA, obj.thdA);
@@ -614,7 +614,7 @@ uint32_t getMeteringAnalyzerCfgMinMaxFromJson(metering_analyzer_cfg_minmax &obj,
 		keys |= subkey;
 	}
 
-	// thdA, thdV sólo en versión EMi10 YTL
+	// thdA, thdV sï¿½lo en versiï¿½n EMi10 YTL
 	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		if((value = cJSON_GetObjectItem(json,JsonParser::p_thdA)) != NULL){
@@ -653,7 +653,7 @@ uint32_t getMeteringAnalyzerCfgCalibFromJson(metering_analyzer_cfg_calib &obj, c
 		return 0;
 	}
 
-	// meterRegs, measRegs sólo en versión M90E26
+	// meterRegs, measRegs sï¿½lo en versiï¿½n M90E26
 	#if VERS_METERING_SELECTED == VERS_METERING_M90E26
 		// meterRegs
 		cJSON* array = NULL;
@@ -789,7 +789,7 @@ uint32_t getMeteringAnalyzerStatMeasureFromJson(metering_analyzer_stat_measure &
 		keys |= (1 << 8);
 	}
 
-	// thdA, thdV sólo en versión EMi10 YTL
+	// thdA, thdV sï¿½lo en versiï¿½n EMi10 YTL
 	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
 		// thdA
 		if((value = cJSON_GetObjectItem(json,JsonParser::p_thdA)) != NULL){
