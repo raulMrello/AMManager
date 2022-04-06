@@ -4,7 +4,7 @@
  *  Created on: Mar 2019
  *      Author: raulMrello
  *
- *	Objetos JSON relativos al módulo metering
+ *	Objetos JSON relativos al mï¿½dulo metering
  */
  
 #ifndef METERING_OBJECTS_
@@ -18,29 +18,29 @@
 
 
 
-/** Selección de la versión utilizada 	*/
-/** DEFINIR SEGÚN APLICACIÓN 			*/
+/** Selecciï¿½n de la versiï¿½n utilizada 	*/
+/** DEFINIR SEGï¿½N APLICACIï¿½N 			*/
 #include "metering_objects_UserConfig.h"
 
 #ifndef VERS_METERING_SELECTED
 #error En metering_objects_UserConfig.h se require definir VERS_METERING_SELECTED
 #endif
 
-/** Macro de generación de UIDs*/
+/** Macro de generaciï¿½n de UIDs*/
 #define UID_METERING_MANAGER		(uint32_t)(0x00000001 | ((uint32_t)VERS_METERING_SELECTED << 20))
 #define UID_METERING_ANALYZER		(uint32_t)(0x00000002 | ((uint32_t)VERS_METERING_SELECTED << 20))
 
 
 /** Flags para la variable ppl:energy:cfg/updFlags */
 enum metering_manager_cfg_updFlags {
-	MeteringManagerCfgUpdNotif 		= (1 << 0),	/// Habilita notificación de cambios en cualquier parámetro de la configuración
+	MeteringManagerCfgUpdNotif 		= (1 << 0),	/// Habilita notificaciï¿½n de cambios en cualquier parï¿½metro de la configuraciï¿½n
 };
 
 /** Flags para la variable ppl:energy:analyzer:cfg/updFlags */
 enum metering_analyzer_cfg_updFlags {
-	MeteringAnalyzerCfgUpdNotif 		= (1 << 0),	/// Habilita notificación de cambios en cualquier parámetro de la configuración
-	MeteringAnalyzerCfgMinMaxUpdNotif 	= (1 << 1),	/// Habilita notificación de cambios en ppl:energy:analyzer:cfg:minmax
-	MeteringAnalyzerCfgCalibUpdNotif 	= (1 << 2),	/// Habilita notificación de cambios en ppl:energy:analyzer:cfg:calib
+	MeteringAnalyzerCfgUpdNotif 		= (1 << 0),	/// Habilita notificaciï¿½n de cambios en cualquier parï¿½metro de la configuraciï¿½n
+	MeteringAnalyzerCfgMinMaxUpdNotif 	= (1 << 1),	/// Habilita notificaciï¿½n de cambios en ppl:energy:analyzer:cfg:minmax
+	MeteringAnalyzerCfgCalibUpdNotif 	= (1 << 2),	/// Habilita notificaciï¿½n de cambios en ppl:energy:analyzer:cfg:calib
 };
 
 
@@ -48,19 +48,19 @@ enum metering_analyzer_cfg_updFlags {
 enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerNoEvents				= 0,			//!< Flag para indicar que no hay eventos
 	MeteringAnalyzerInstantMeasureEvt 		= (1 << 0),	//!< Evento al realizar una medida
-	MeteringAnalyzerVoltage					= (1 << 1),	//!< Evento al recibir actualización en la medida de tensión
-	MeteringAnalyzerCurrent					= (1 << 2),	//!< Evento al recibir actualización en la medida de corriente
-	MeteringAnalyzerActivePower				= (1 << 3),	//!< Evento al recibir actualización en la medida de aPow
-	MeteringAnalyzerReactivePower			= (1 << 4),	//!< Evento al recibir actualización en la medida de rPow
-	MeteringAnalyzerPowerFactor				= (1 << 5),	//!< Evento al recibir actualización en la medida de pf
-	MeteringAnalyzerFrequency				= (1 << 6),	//!< Evento al recibir actualización en la medida de freq
-	MeteringAnalyzerPoweredUp				= (1 << 7),	//!< Evento al recibir actualización en la medida de freq
-	MeteringAnalyzerEnergyActive			= (1 << 8),	//!< Evento al recibir actualización en la medida de energía activa
-	MeteringAnalyzerEnergyReactive			= (1 << 9),	//!< Evento al recibir actualización en la medida de energía reactiva
+	MeteringAnalyzerVoltage					= (1 << 1),	//!< Evento al recibir actualizaciï¿½n en la medida de tensiï¿½n
+	MeteringAnalyzerCurrent					= (1 << 2),	//!< Evento al recibir actualizaciï¿½n en la medida de corriente
+	MeteringAnalyzerActivePower				= (1 << 3),	//!< Evento al recibir actualizaciï¿½n en la medida de aPow
+	MeteringAnalyzerReactivePower			= (1 << 4),	//!< Evento al recibir actualizaciï¿½n en la medida de rPow
+	MeteringAnalyzerPowerFactor				= (1 << 5),	//!< Evento al recibir actualizaciï¿½n en la medida de pf
+	MeteringAnalyzerFrequency				= (1 << 6),	//!< Evento al recibir actualizaciï¿½n en la medida de freq
+	MeteringAnalyzerPoweredUp				= (1 << 7),	//!< Evento al recibir actualizaciï¿½n en la medida de freq
+	MeteringAnalyzerEnergyActive			= (1 << 8),	//!< Evento al recibir actualizaciï¿½n en la medida de energï¿½a activa
+	MeteringAnalyzerEnergyReactive			= (1 << 9),	//!< Evento al recibir actualizaciï¿½n en la medida de energï¿½a reactiva
 	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive),
 
 
-	/* elemento inválido */
+	/* elemento invï¿½lido */
 	MeteringAnalyzerInvalidEvt				= (1 << 31)
 };
 
@@ -68,17 +68,17 @@ enum metering_analyzer_cfg_evtFlags{
 typedef metering_analyzer_cfg_evtFlags metering_analyzer_stat_flags;
 
 
-/** Rango mínimo y valor por defecto de la variable ppl:energy:cfg/measPeriod */
+/** Rango mï¿½nimo y valor por defecto de la variable ppl:energy:cfg/measPeriod */
 static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
-/** Máximo número de analizadores permitidos */
+/** Mï¿½ximo nï¿½mero de analizadores permitidos */
 static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 18;
 
-/** Tamaño máximo del texto asociado a la variable ppl:energy:analyzer/serial */
+/** Tamaï¿½o mï¿½ximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;
 
-/** Número de registros de calibración del driver M90E26 en la variable ppl:energy:analyzer:cfg:calib/meterRegs */
+/** Nï¿½mero de registros de calibraciï¿½n del driver M90E26 en la variable ppl:energy:analyzer:cfg:calib/meterRegs */
 static const uint8_t MeteringAnalyzerCfgCalibRegCount = 16;
 
 
@@ -123,7 +123,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void copyMeasures(const ThreePhaseAnalyzerStat& tphas, bool discard_energy = false){
 		for(int i=0;i<3;i++){
-			// sólo copia analizadores con medidas
+			// sï¿½lo copia analizadores con medidas
 			if(tphas.stat[i].flags != 0){
 				if(!discard_energy){
 					stat[i] = tphas.stat[i];
@@ -428,7 +428,7 @@ cJSON* getJsonFromMetering(const T& obj, ObjDataSelection type){
 	if (std::is_same<T, metering_manager>::value){
 		return getJsonFromMeteringManager((const metering_manager&)obj, type);
 	}
-	if (std::is_same<T, metering_manager_cfg>::value && type != ObjSelectState){
+	if (std::is_same<T, metering_manager_cfg>::value && type != ObjSelectState && type != ObjSelectStateSub){
 		return getJsonFromMeteringManagerCfg((const metering_manager_cfg&)obj);
 	}
 	if (std::is_same<T, metering_manager_stat>::value && type != ObjSelectCfg){
@@ -437,13 +437,13 @@ cJSON* getJsonFromMetering(const T& obj, ObjDataSelection type){
 	if (std::is_same<T, metering_analyzer>::value){
 		return getJsonFromMeteringAnalyzer((const metering_analyzer&)obj, type);
 	}
-	if (std::is_same<T, metering_analyzer_cfg>::value && type != ObjSelectState){
+	if (std::is_same<T, metering_analyzer_cfg>::value && type != ObjSelectState && type != ObjSelectStateSub){
 		return getJsonFromMeteringAnalyzerCfg((const metering_analyzer_cfg&)obj);
 	}
-	if (std::is_same<T, metering_analyzer_cfg_minmax>::value && type != ObjSelectState){
+	if (std::is_same<T, metering_analyzer_cfg_minmax>::value && type != ObjSelectState && type != ObjSelectStateSub){
 		return getJsonFromMeteringAnalyzerCfgMinMax((const metering_analyzer_cfg_minmax&)obj);
 	}
-	if (std::is_same<T, metering_analyzer_cfg_calib>::value && type != ObjSelectState){
+	if (std::is_same<T, metering_analyzer_cfg_calib>::value && type != ObjSelectState && type != ObjSelectStateSub){
 		return getJsonFromMeteringAnalyzerCfgCalib((const metering_analyzer_cfg_calib&)obj);
 	}
 	if (std::is_same<T, metering_analyzer_stat>::value && type != ObjSelectCfg){
@@ -463,7 +463,7 @@ cJSON* getJsonFromMetering(const T& obj, ObjDataSelection type){
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringManagerFromJson(metering_manager &obj, cJSON* json);
 
@@ -471,7 +471,7 @@ uint32_t getMeteringManagerFromJson(metering_manager &obj, cJSON* json);
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringManagerCfgFromJson(metering_manager_cfg &obj, cJSON* json);
 
@@ -479,7 +479,7 @@ uint32_t getMeteringManagerCfgFromJson(metering_manager_cfg &obj, cJSON* json);
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringManagerStatFromJson(metering_manager_stat &obj, cJSON* json);
 
@@ -487,7 +487,7 @@ uint32_t getMeteringManagerStatFromJson(metering_manager_stat &obj, cJSON* json)
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringAnalyzerFromJson(metering_analyzer &obj, cJSON* json);
 
@@ -495,7 +495,7 @@ uint32_t getMeteringAnalyzerFromJson(metering_analyzer &obj, cJSON* json);
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringAnalyzerCfgFromJson(metering_analyzer_cfg &obj, cJSON* json);
 
@@ -503,7 +503,7 @@ uint32_t getMeteringAnalyzerCfgFromJson(metering_analyzer_cfg &obj, cJSON* json)
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringAnalyzerCfgMinMaxFromJson(metering_analyzer_cfg_minmax &obj, cJSON* json);
 
@@ -511,7 +511,7 @@ uint32_t getMeteringAnalyzerCfgMinMaxFromJson(metering_analyzer_cfg_minmax &obj,
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringAnalyzerCfgCalibFromJson(metering_analyzer_cfg_calib &obj, cJSON* json);
 
@@ -519,7 +519,7 @@ uint32_t getMeteringAnalyzerCfgCalibFromJson(metering_analyzer_cfg_calib &obj, c
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringAnalyzerStatFromJson(metering_analyzer_stat &obj, cJSON* json);
 
@@ -527,7 +527,7 @@ uint32_t getMeteringAnalyzerStatFromJson(metering_analyzer_stat &obj, cJSON* jso
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringAnalyzerStatTotalsFromJson(metering_analyzer_stat_totals &obj, cJSON* json);
 
@@ -535,7 +535,7 @@ uint32_t getMeteringAnalyzerStatTotalsFromJson(metering_analyzer_stat_totals &ob
  * Decodifica el mensaje JSON en un objeto
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getMeteringAnalyzerStatMeasureFromJson(metering_analyzer_stat_measure &obj, cJSON* json);
 
