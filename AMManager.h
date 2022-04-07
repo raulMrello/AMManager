@@ -4,7 +4,7 @@
  *  Created on: Ene 2018
  *      Author: raulMrello
  *
- *	AMManager es el módulo encargado de gestionar la medida de los parámetros eléctricos, así como la configuración
+ *	AMManager es el mï¿½dulo encargado de gestionar la medida de los parï¿½metros elï¿½ctricos, asï¿½ como la configuraciï¿½n
  *	del driver asociado.
  */
  
@@ -30,19 +30,19 @@
 class AMManager : public ActiveModule {
   public:
 
-    static const uint32_t MaxNumMessages = 16;		//!< Máximo número de mensajes procesables en el Mailbox del componente
+    static const uint32_t MaxNumMessages = 16;		//!< Mï¿½ximo nï¿½mero de mensajes procesables en el Mailbox del componente
               
     /** Constructor por defecto
      * 	@param driver Driver que implementa la interfaz AMDriver
      * 	@param fs Objeto FSManager para operaciones de backup
-     * 	@param defdbg Flag para habilitar depuración por defecto
+     * 	@param defdbg Flag para habilitar depuraciï¿½n por defecto
      */
     AMManager(AMDriver* driver, FSManager* fs, bool defdbg = false, const char* name = "AMM");
 
     /** Constructor por defecto
      * 	@param driver_list Lista de drivers gestionados por el componente
      * 	@param fs Objeto FSManager para operaciones de backup
-     * 	@param defdbg Flag para habilitar depuración por defecto
+     * 	@param defdbg Flag para habilitar depuraciï¿½n por defecto
      */
     AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdbg = false, const char* name = "AMM");
 
@@ -88,7 +88,7 @@ class AMManager : public ActiveModule {
 
 
     /**
-     * Obtiene el número de errores totales de los drivers instalados
+     * Obtiene el nï¿½mero de errores totales de los drivers instalados
      * @return
      */
     uint8_t getDriversErrors(){
@@ -97,19 +97,19 @@ class AMManager : public ActiveModule {
 
 
     /**--------------------------------------------------------------------------------------
-     * Actualiza el nivel de visualización de las tramas de depuración
+     * Actualiza el nivel de visualizaciï¿½n de las tramas de depuraciï¿½n
      */
     void setLoggingLevel(esp_log_level_t level);
 
   private:
 
-    /** Máximo número de mensajes alojables en la cola asociada a la máquina de estados */
+    /** Mï¿½ximo nï¿½mero de mensajes alojables en la cola asociada a la mï¿½quina de estados */
     static const uint32_t MaxQueueMessages = 16;
 
     /** Cadencia del polling de medidas por defecto (en milisegundos) */
     static const uint32_t DefaultMeasurePeriod = 2000;
 
-    /** Lapso de tiempo (segundos) para forzar una notificación de medidas tras un cambio en la carga */
+    /** Lapso de tiempo (segundos) para forzar una notificaciï¿½n de medidas tras un cambio en la carga */
     static const uint32_t SecondsToForcedNotifOnLoadChange = 3;
 
     /** Flags de operaciones a realizar por la tarea */
@@ -120,9 +120,10 @@ class AMManager : public ActiveModule {
     	RecvBootGet	  		= (State::EV_RESERVED_USER << 3),  /// Flag activado al recibir mensaje en "get/boot"
     	RecvLoadSet	  		= (State::EV_RESERVED_USER << 4),  /// Flag activado al recibir mensaje en "set/load"
     	RecvStopSet	  		= (State::EV_RESERVED_USER << 5),  /// Flag activado al recibir mensaje en "set/stop"
-    	RecvRestartSet	  	= (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
+    	RecvRestartSet	 	= (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
     	RecvForcedMeasure	= (State::EV_RESERVED_USER << 7),  /// Flag activado al recibir mensaje en "set/forced-meas"
     	TimedMeasureEvt		= (State::EV_RESERVED_USER << 8),  /// Evento para realizar una medida
+    	RecvAnalyzersGet	= (State::EV_RESERVED_USER << 9),  /// Evento para realizar una medida
     };
 
 
@@ -132,10 +133,10 @@ class AMManager : public ActiveModule {
     /** Objetos metering */
     metering_manager _amdata;
 
-    /** Timer de realización de medidas */
+    /** Timer de realizaciï¿½n de medidas */
     Ticker _meas_tmr;
 
-    /** Contador de medidas pendientes para notificar una medida instantánea */
+    /** Contador de medidas pendientes para notificar una medida instantï¿½nea */
     int32_t _instant_meas_counter;
 
     /** Gestor de la carga activa en el medidor */
@@ -144,11 +145,11 @@ class AMManager : public ActiveModule {
     /** Flag de control para el soporte de objetos json */
     bool _json_supported;
 
-    /** Parámetros de calibración */
+    /** Parï¿½metros de calibraciï¿½n */
     static const uint16_t _meter_cal_values[];
     static const uint16_t _meas_cal_values[];
 
-    /** Flag para forzar la notificación en la siguiente medida o la medida */
+    /** Flag para forzar la notificaciï¿½n en la siguiente medida o la medida */
     bool _forced_notification;
     bool _forced_measure;
     bool _meas_started;
@@ -159,7 +160,7 @@ class AMManager : public ActiveModule {
     uint8_t _acc_errors;
     static const uint8_t MaxMeasureErrors = 3;
 
-    /** Objetos para la lectura de parámetros automáticos de forma periódica */
+    /** Objetos para la lectura de parï¿½metros automï¿½ticos de forma periï¿½dica */
     struct DriverObj{
     	AMDriver* drv;
     	uint32_t cycle_ms;
@@ -169,68 +170,68 @@ class AMManager : public ActiveModule {
     /** Controladores de los chip de medida */
     std::list<DriverObj*> _driver_list;
 
- 	/** Interfaz para manejar los eventos en la máquina de estados por defecto
+ 	/** Interfaz para manejar los eventos en la mï¿½quina de estados por defecto
       *  @param se Evento a manejar
       *  @return State::StateResult Resultado del manejo del evento
       */
     virtual State::StateResult Init_EventHandler(State::StateEvent* se);
 
 
- 	/** Callback invocada al recibir una actualización de un topic local al que está suscrito
+ 	/** Callback invocada al recibir una actualizaciï¿½n de un topic local al que estï¿½ suscrito
       *  @param topic Identificador del topic
       *  @param msg Mensaje recibido
-      *  @param msg_len Tamaño del mensaje
+      *  @param msg_len Tamaï¿½o del mensaje
       */
     virtual void subscriptionCb(const char* topic, void* msg, uint16_t msg_len);
 
 
- 	/** Callback invocada al finalizar una publicación local
+ 	/** Callback invocada al finalizar una publicaciï¿½n local
       *  @param topic Identificador del topic
-      *  @param result Resultado de la publicación
+      *  @param result Resultado de la publicaciï¿½n
       */
     virtual void publicationCb(const char* topic, int32_t result);
 
 
-   	/** Chequea la integridad de los datos de configuración <_cfg>. En caso de que algo no sea
+   	/** Chequea la integridad de los datos de configuraciï¿½n <_cfg>. En caso de que algo no sea
    	 * 	coherente, restaura a los valores por defecto y graba en memoria NV.
    	 * 	@return True si la integridad es correcta, False si es incorrecta
 	 */
 	virtual bool checkIntegrity();
 
 
-   	/** Establece la configuración por defecto grabándola en memoria NV
+   	/** Establece la configuraciï¿½n por defecto grabï¿½ndola en memoria NV
 	 */
 	virtual void setDefaultConfig();
 
 
-   	/** Recupera la configuración de memoria NV
+   	/** Recupera la configuraciï¿½n de memoria NV
 	 */
 	virtual void restoreConfig();
 
 
-   	/** Graba la configuración en memoria NV
+   	/** Graba la configuraciï¿½n en memoria NV
 	 */
 	virtual void saveConfig();
 
 
-	/** Graba un parámetro en la memoria NV
-	 * 	@param param_id Identificador del parámetro
+	/** Graba un parï¿½metro en la memoria NV
+	 * 	@param param_id Identificador del parï¿½metro
 	 * 	@param data Datos asociados
-	 * 	@param size Tamaño de los datos
+	 * 	@param size Tamaï¿½o de los datos
 	 * 	@param type Tipo de los datos
-	 * 	@return True: éxito, False: no se pudo recuperar
+	 * 	@return True: ï¿½xito, False: no se pudo recuperar
 	 */
 	virtual bool saveParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
 		return ActiveModule::saveParameter(param_id, data, size, type);
 	}
 
 
-	/** Recupera un parámetro de la memoria NV
-	 * 	@param param_id Identificador del parámetro
+	/** Recupera un parï¿½metro de la memoria NV
+	 * 	@param param_id Identificador del parï¿½metro
 	 * 	@param data Receptor de los datos asociados
-	 * 	@param size Tamaño de los datos a recibir
+	 * 	@param size Tamaï¿½o de los datos a recibir
 	 * 	@param type Tipo de los datos
-	 * 	@return True: éxito, False: no se pudo recuperar
+	 * 	@return True: ï¿½xito, False: no se pudo recuperar
 	 */
 	virtual bool restoreParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
 		return ActiveModule::restoreParameter(param_id, data, size, type);
@@ -253,9 +254,9 @@ class AMManager : public ActiveModule {
 	 *
 	 * @param alarm_notif Recibe el flag 'True' si hay que notificar, en caso contrario no se actualiza
 	 * @param flags Recibe los flags actualizados
-	 * @param flagmask Máscara de flags activos para la generación de alarmas
-	 * @param measure Parámetro de medida
-	 * @param data_range Rando minmax del parámetro
+	 * @param flagmask Mï¿½scara de flags activos para la generaciï¿½n de alarmas
+	 * @param measure Parï¿½metro de medida
+	 * @param data_range Rando minmax del parï¿½metro
 	 * @param flag_over_limit Flag al salir de rango por arriba
 	 * @param flag_below_limit Flag al salir de rango por abajo
 	 * @param flag_in_range Flag al entrar en rango
@@ -270,10 +271,10 @@ class AMManager : public ActiveModule {
 						uint32_t flag_in_range);
 
 
-	/** Actualiza la configuración
+	/** Actualiza la configuraciï¿½n
 	 *
-	 * @param data Nueva configuración a aplicar
-	 * @param err Recibe los errores generados durante la actualización
+	 * @param data Nueva configuraciï¿½n a aplicar
+	 * @param err Recibe los errores generados durante la actualizaciï¿½n
 	 */
 	void _updateConfig(const metering_manager& data, Blob::ErrorData_t& err);
 
@@ -285,7 +286,13 @@ class AMManager : public ActiveModule {
 
 
 	/***
-	 * Responde con la configuración actual
+	 * Responde con el estado actual de los analizadores
+	 */
+	void _responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err);
+
+
+	/***
+	 * Responde con la configuraciï¿½n actual
 	 */
 	void _responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err);
 

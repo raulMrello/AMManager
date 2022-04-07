@@ -17,35 +17,35 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 	State::Msg* st_msg = (State::Msg*)se->oe->value.p;
     switch((int)se->evt){
         case State::EV_ENTRY:{
-        	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando recuperación de datos...");
+        	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando recuperaciï¿½n de datos...");
 
         	// recupera los datos de memoria NV
         	restoreConfig();
 
-        	// desactiva la notificación forzada
+        	// desactiva la notificaciï¿½n forzada
         	_forced_notification = false;
         	_forced_measure = false;
 
-        	// realiza la suscripción local ej: "[get|set]/[cfg|value]/energy"
+        	// realiza la suscripciï¿½n local ej: "[get|set]/[cfg|value]/energy"
         	char* sub_topic_local = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
         	MBED_ASSERT(sub_topic_local);
         	sprintf(sub_topic_local, "set/+/%s", _sub_topic_base);
         	if(MQ::MQClient::subscribe(sub_topic_local, new MQ::SubscribeCallback(this, &AMManager::subscriptionCb)) == MQ::SUCCESS){
-        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Sucripción LOCAL hecha a %s", sub_topic_local);
+        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Sucripciï¿½n LOCAL hecha a %s", sub_topic_local);
         	}
         	else{
-        		DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_SUBSC en la suscripción LOCAL a %s", sub_topic_local);
+        		DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_SUBSC en la suscripciï¿½n LOCAL a %s", sub_topic_local);
         	}
         	sprintf(sub_topic_local, "get/+/%s", _sub_topic_base);
         	if(MQ::MQClient::subscribe(sub_topic_local, new MQ::SubscribeCallback(this, &AMManager::subscriptionCb)) == MQ::SUCCESS){
-        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Sucripción LOCAL hecha a %s", sub_topic_local);
+        		DEBUG_TRACE_D(_EXPR_, _MODULE_, "Sucripciï¿½n LOCAL hecha a %s", sub_topic_local);
         	}
         	else{
-        		DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_SUBSC en la suscripción LOCAL a %s", sub_topic_local);
+        		DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_SUBSC en la suscripciï¿½n LOCAL a %s", sub_topic_local);
         	}
         	Heap::memFree(sub_topic_local);
 
-        	// inicializa el driver con los datos de calibración
+        	// inicializa el driver con los datos de calibraciï¿½n
             DEBUG_TRACE_D(_EXPR_, _MODULE_, "Iniciando drivers!");
             for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
         		DriverObj* dobj = (*drv);
@@ -71,17 +71,17 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en cmd/$BASE/cfg/set
+        // Procesa datos recibidos de la publicaciï¿½n en cmd/$BASE/cfg/set
         case RecvCfgSet:{
          	Blob::SetRequest_t<metering_manager>* req = (Blob::SetRequest_t<metering_manager>*)st_msg->msg;
         	MBED_ASSERT(req);
 
-        	// si no hay errores, actualiza la configuración
+        	// si no hay errores, actualiza la configuraciï¿½n
         	if(req->_error.code == Blob::ErrOK){
-        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando actualización");
+        		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando actualizaciï¿½n");
 				_updateConfig(req->data, req->_error);
         	}
-        	// si hay errores en el mensaje o en la actualización, devuelve resultado sin hacer nada
+        	// si hay errores en el mensaje o en la actualizaciï¿½n, devuelve resultado sin hacer nada
         	if(req->_error.code != Blob::ErrOK){
         		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Notificando error %s", req->_error.descr);
         		_responseWithConfig(req->idTrans, req->_error);
@@ -92,27 +92,27 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	saveConfig();
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Config actualizada");
 
-        	// si está habilitada la notificación de actualización, lo notifica
-        	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualización");
+        	// si estï¿½ habilitada la notificaciï¿½n de actualizaciï¿½n, lo notifica
+        	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualizaciï¿½n");
         	_responseWithConfig(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en cmd/$BASE/cfg/get
+        // Procesa datos recibidos de la publicaciï¿½n en cmd/$BASE/cfg/get
         case RecvCfgGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
         	_responseWithConfig(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en cmd/$BASE/value/get
+        // Procesa datos recibidos de la publicaciï¿½n en cmd/$BASE/value/get
         case RecvStatGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
         	_responseWithState(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en get/boot
+        // Procesa datos recibidos de la publicaciï¿½n en get/boot
         case RecvBootGet:{
         	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 			MBED_ASSERT(pub_topic);
@@ -134,7 +134,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en set/load/$
+        // Procesa datos recibidos de la publicaciï¿½n en set/load/$
         case RecvLoadSet:{
         	// actualiza el control de carga actual
         	Blob::AMLoadData_t ld = *(Blob::AMLoadData_t*)st_msg->msg;
@@ -143,7 +143,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         			if(_amdata.stat.loadPercent[ld.ids[i]] != ld.loads[i]){
         				_amdata.stat.loadPercent[ld.ids[i]] = ld.loads[i];
         				DEBUG_TRACE_I(_EXPR_, _MODULE_, "Carga del Analiz=%d actualizada al %d", ld.ids[i], ld.loads[i]);
-        				// planifica una nueva notificación de medida en 3 segundos
+        				// planifica una nueva notificaciï¿½n de medida en 3 segundos
         				_instant_meas_counter = SecondsToForcedNotifOnLoadChange;
         			}
         		}
@@ -151,21 +151,21 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en get/boot
+        // Procesa datos recibidos de la publicaciï¿½n en get/boot
         case RecvStopSet:{
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Deteniendo medidas electricas");
 			stopMeasureWork();
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en get/boot
+        // Procesa datos recibidos de la publicaciï¿½n en get/boot
         case RecvRestartSet:{
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Reanudando medidas electricas");
 			startMeasureWork(_discard_ext_anlz);
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en set/load/$
+        // Procesa datos recibidos de la publicaciï¿½n en set/load/$
         case RecvForcedMeasure:{
         	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Realiza medida solicitada y notifica");
         	_measure(false);
@@ -173,12 +173,19 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
-        // Procesa datos recibidos de la publicación en set/load/$
+        // Procesa datos recibidos de la publicaciï¿½n en set/load/$
         case TimedMeasureEvt:{
         	_measure(true);
             return State::HANDLED;
         }
+		// Procesa datos recibidos de la publicacion en get/analyzers/$
+        case RecvAnalyzersGet:{
+        	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
+        	_responseWithAnalyzers(req->idTrans, req->_error);
+            return State::HANDLED;
+        }
 
+        
         case State::EV_EXIT:{
             nextState();
             return State::HANDLED;
