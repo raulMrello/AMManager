@@ -101,19 +101,12 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 	for(auto i= _driver_list.begin(); i!=_driver_list.end(); ++i){
 		DriverObj* dobj = (*i);
 		AMDriver* drv = (dobj->drv);
-#ifndef COMBI_PLUS
 		// si es un driver AMUniConnectors planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		if(strcmp(drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
 
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_UNI_CONNECTORS_MEASCYCLE;
-#else
-		if(strcmp(drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
-			// establece el ciclo de lectura
-			dobj->cycle_ms = VERS_METERING_AM_COMBIPLUS_CONNECTORS_MEASCYCLE;
-#endif
-
 			// crea los objetos de medida de cada analizador
 			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
 			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
@@ -125,7 +118,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 
 			// forma la lista de medida con los objetos anteriores
 			dobj->measures->push_back(amo_block);
-#ifndef COMBI_PLUS
 			// idem con los objetos de lectura
 			AMDriver::AutoMeasureReading* amr_m = new AMDriver::AutoMeasureReading();
 			MBED_ASSERT(amr_m);
@@ -145,8 +137,33 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings->push_back(amr_r);
 			dobj->readings->push_back(amr_s);
 			dobj->readings->push_back(amr_t);
-#else
-			// idem con los objetos de lectura
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+			}
+		}else if(strcmp(drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+			// crea los objetos de medida de cada analizador
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock),AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+
+			// forma la lista de medida con los objetos anteriores
+			dobj->measures->push_back(amo_block);
+
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_COMBIPLUS_CONNECTORS_MEASCYCLE;
 			AMDriver::AutoMeasureReading* amr_r1 = new AMDriver::AutoMeasureReading();
 			MBED_ASSERT(amr_r1);
 			amr_r1->analyzer=0;
@@ -173,7 +190,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings->push_back(amr_r2);
 			dobj->readings->push_back(amr_s2);
 			dobj->readings->push_back(amr_t2);
-#endif
 
 			// solicita el inicio de medidas peri�dicas
 			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
@@ -367,9 +383,17 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 
 			if(dobj->drv->getModel() == VERS_METERING_AM_CTX3_MODEL_DTS353){
 				for(uint8_t i=0; i<VERS_METERING_AM_CTX3_ANALYZERS; i++){
-					AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
-					MBED_ASSERT(amo);
-					dobj->measures->push_back(amo);
+					// la fase R es la única que lee el agregado de energías activas y reactivas trifásicas
+					if(i==0){
+						AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), i);
+						MBED_ASSERT(amo);
+						dobj->measures->push_back(amo);
+					}
+					else{
+						AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_PowFactor), i);
+						MBED_ASSERT(amo);
+						dobj->measures->push_back(amo);
+					}
 				}
 			}
 			else{
@@ -650,10 +674,12 @@ void AMManager::_measure(bool enable_notif) {
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
 #ifdef COMBI_PLUS
-							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
-							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+							if((amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0) ||
+							   (amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0))
 #endif
+							{
 								reading_hw_error = true;
 								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Voltage=%.01fV ERROR (descartado)", (base_analyzer + amr->analyzer),amr->params.voltage);
 							}
@@ -665,10 +691,12 @@ void AMManager::_measure(bool enable_notif) {
 						}
 						if(keys & AMDriver::ElecKey_Current){
 #ifdef COMBI_PLUS
-							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0){
+							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
-							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
+							if((amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0) ||
+							   (amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0))
 #endif
+							{
 								reading_hw_error = true;
 								DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Current=%.03fA ERROR (descartado)", (base_analyzer + amr->analyzer),amr->params.current);
 							}
@@ -827,6 +855,31 @@ void AMManager::_responseWithState(uint32_t idTrans, Blob::ErrorData_t& err){
 	MBED_ASSERT(resp);
 	if(_json_supported){
 		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
+		MBED_ASSERT(jresp);
+		MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
+		cJSON_Delete(jresp);
+	}
+	else{
+		MQ::MQClient::publish(pub_topic, resp, sizeof(Blob::Response_t<metering_manager>), &_publicationCb);
+	}
+	delete(resp);
+	Heap::memFree(pub_topic);
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Enviada respuesta con estado solicitado");
+}
+
+
+//------------------------------------------------------------------------------------
+void AMManager::_responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err){
+	// prepara el topic al que responder
+	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
+	MBED_ASSERT(pub_topic);
+	sprintf(pub_topic, "stat/analyzers/%s", _pub_topic_base);
+
+	// responde con los datos solicitados y con los errores (si hubiera) de la decodificaci�n de la solicitud
+	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
+	MBED_ASSERT(resp);
+	if(_json_supported){
+		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectStateSub);
 		MBED_ASSERT(jresp);
 		MQ::MQClient::publish(pub_topic, &jresp, sizeof(cJSON**), &_publicationCb);
 		cJSON_Delete(jresp);

@@ -17,7 +17,7 @@ static const char* _MODULE_ = "[AMM]...........";
 //------------------------------------------------------------------------------------
 void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 
-    // si es un comando para actualizar los parámetros minmax...
+    // si es un comando para actualizar los parï¿½metros minmax...
     if(MQ::MQClient::isTokenRoot(topic, "set/cfg")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
@@ -32,13 +32,13 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 			}
 		}
 
-        // en primer lugar asegura que los datos tienen el tamaño correcto
+        // en primer lugar asegura que los datos tienen el tamaï¿½o correcto
         if(!json_decoded && msg_len != sizeof(Blob::SetRequest_t<metering_manager>)){
-        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nº de datos del mensaje, topic [%s]", topic);
+        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nï¿½ de datos del mensaje, topic [%s]", topic);
 			return;
         }
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 
@@ -52,7 +52,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		// apunta a los datos
 		op->msg = req;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
@@ -63,7 +63,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         return;
     }
 
-    // si es un comando para solicitar la configuración
+    // si es un comando para solicitar la configuraciï¿½n
     if(MQ::MQClient::isTokenRoot(topic, "get/cfg")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
@@ -77,13 +77,13 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 			}
         }
 
-        // Antes de nada, chequea que el tamaño de la zona horaria es correcto, en caso contrario, descarta el topic
+        // Antes de nada, chequea que el tamaï¿½o de la zona horaria es correcto, en caso contrario, descarta el topic
         if(!json_decoded && msg_len != sizeof(Blob::GetRequest_t)){
-        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nº de datos del mensaje, topic [%s]", topic);
+        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nï¿½ de datos del mensaje, topic [%s]", topic);
 			return;
         }
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 
@@ -97,7 +97,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		// apunta a los datos
 		op->msg = req;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
@@ -112,7 +112,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
     if(MQ::MQClient::isTokenRoot(topic, "get/boot")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 
@@ -120,7 +120,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		// apunta a los datos
 		op->msg = NULL;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
@@ -145,13 +145,13 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 			}
         }
 
-        // Antes de nada, chequea que el tamaño de la zona horaria es correcto, en caso contrario, descarta el topic
+        // Antes de nada, chequea que el tamaï¿½o de la zona horaria es correcto, en caso contrario, descarta el topic
         if(!json_decoded && msg_len != sizeof(Blob::GetRequest_t)){
-        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nº de datos del mensaje, topic [%s]", topic);
+        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nï¿½ de datos del mensaje, topic [%s]", topic);
 			return;
         }
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 
@@ -165,7 +165,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		// apunta a los datos
 		op->msg = req;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
@@ -176,7 +176,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         return;
     }
 
-    // si es un comando para ajustar el % de activación de la carga
+    // si es un comando para ajustar el % de activaciï¿½n de la carga
     if(MQ::MQClient::isTokenRoot(topic, "set/load")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
@@ -190,13 +190,13 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 			}
 		}
 
-        // en primer lugar asegura que los datos tienen el tamaño correcto
+        // en primer lugar asegura que los datos tienen el tamaï¿½o correcto
         if(!json_decoded && msg_len != sizeof(Blob::AMLoadData_t)){
-        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nº de datos del mensaje, topic [%s]", topic);
+        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nï¿½ de datos del mensaje, topic [%s]", topic);
 			return;
         }
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 
@@ -211,7 +211,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		// apunta a los datos
 		op->msg = load;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
@@ -226,7 +226,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
     if(MQ::MQClient::isTokenRoot(topic, "set/stop")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 
@@ -234,7 +234,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		// apunta a los datos
 		op->msg = NULL;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
@@ -249,7 +249,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
     if(MQ::MQClient::isTokenRoot(topic, "set/restart")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 
@@ -257,7 +257,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
 		// apunta a los datos
 		op->msg = NULL;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
@@ -272,7 +272,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
     if(MQ::MQClient::isTokenRoot(topic, "set/forced-notif")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
-        // activa flag de notificación forzada
+        // activa flag de notificaciï¿½n forzada
         _forced_notification = true;
         return;
     }
@@ -281,14 +281,58 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
     if(MQ::MQClient::isTokenRoot(topic, "set/forced-meas")){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
-        // crea el mensaje para publicar en la máquina de estados
+        // crea el mensaje para publicar en la mï¿½quina de estados
         State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
         MBED_ASSERT(op);
 		op->sig = RecvForcedMeasure;
 		// apunta a los datos
 		op->msg = NULL;
 
-		// postea en la cola de la máquina de estados
+		// postea en la cola de la mï¿½quina de estados
+		if(putMessage(op) != osOK){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
+			if(op->msg){
+				Heap::memFree(op->msg);
+			}
+			Heap::memFree(op);
+		}
+        return;
+    }
+// si es un comando para solicitar el estado
+    if(MQ::MQClient::isTokenRoot(topic, "get/analyzers")){
+        DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
+
+        Blob::GetRequest_t* req = NULL;
+        bool json_decoded = false;
+        if(_json_supported){
+			req = (Blob::GetRequest_t*)Heap::memAlloc(sizeof(Blob::GetRequest_t));
+			MBED_ASSERT(req);
+			if(!(json_decoded = JsonParser::getGetRequestFromJson(*req, *(cJSON**)msg))){
+				Heap::memFree(req);
+			}
+        }
+
+        // Antes de nada, chequea que el tamaï¿½o de la zona horaria es correcto, en caso contrario, descarta el topic
+        if(!json_decoded && msg_len != sizeof(Blob::GetRequest_t)){
+        	DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_MSG. Error en el nï¿½ de datos del mensaje, topic [%s]", topic);
+			return;
+        }
+
+        // crea el mensaje para publicar en la mï¿½quina de estados
+        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        MBED_ASSERT(op);
+
+        // el mensaje es un blob tipo Blob::GetRequest_t
+        if(!json_decoded){
+        	req = (Blob::GetRequest_t*)Heap::memAlloc(sizeof(Blob::GetRequest_t));
+        	MBED_ASSERT(req);
+        	*req = *((Blob::GetRequest_t*)msg);
+        }
+		op->sig = RecvAnalyzersGet;
+		// apunta a los datos
+		op->msg = req;
+
+		// postea en la cola de la mï¿½quina de estados
 		if(putMessage(op) != osOK){
 			DEBUG_TRACE_E(_EXPR_, _MODULE_, "ERR_PUT. al procesar el topic[%s]", topic);
 			if(op->msg){
