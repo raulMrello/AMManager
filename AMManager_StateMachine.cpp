@@ -48,11 +48,20 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// inicializa el driver con los datos de calibraci�n
             DEBUG_TRACE_D(_EXPR_, _MODULE_, "Iniciando drivers!");
             for(auto drv = _driver_list.begin(); drv != _driver_list.end(); ++drv){
-        		DriverObj* dobj = (*drv);
+				DriverObj* dobj = (*drv);
         		AMDriver* am_driver = dobj->drv;
         		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando Driver <%s>...", am_driver->getVersion());
-        		am_driver->initEnergyIC();
-				bool result = am_driver->ready();
+				// se habilitan 3 reintentos de inicialización separados 500ms uno de otro
+				int retries = 3;
+				bool result = false;
+        		do{
+					// si ya ha fallado alguna vez, espera esos 500ms para volver a intentarlo
+					if(retries < 3){
+						Thread::wait(500);
+					}
+					am_driver->initEnergyIC();
+					result = am_driver->ready();
+				}while(!result && --retries > 0);
 				if(result){
 					DEBUG_TRACE_I(_EXPR_, _MODULE_, "Driver <%s> OK!", am_driver->getVersion());
 				}
