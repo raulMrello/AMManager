@@ -94,6 +94,7 @@ struct metering_analyzer_stat_measure{
 	double freq;
 	double thdA;
 	double thdV;
+	double status;
 };
 
 

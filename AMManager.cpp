@@ -753,6 +753,7 @@ void AMManager::_measure(bool enable_notif) {
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reactive=%.02fWh", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.energyValues.reactive);
 						}
 						if(keys & AMDriver::ElecKey_Status){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.status = amr->params.status;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPoweredUp;
 						}
 					}
