@@ -574,6 +574,58 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid3x2");
 			}
 		}
+		else if (strcmp(drv->getVersion(), VERS_METERING_AM_PVINV_NAME) == 0) {
+			// Inversor solar
+			if (discard_ext_anlz) {
+				dobj->cycle_ms = 0;
+				continue;
+			}
+
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_PVINV_MEASCYCLE;
+			// crea los objetos de medida de cada analizador (medidas a realizar y lecturas)
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			AMDriver::AutoMeasureObj* amo_inv_pnl = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 0);
+			MBED_ASSERT(amo_inv_pnl);
+			AMDriver::AutoMeasureObj* amo_inv_batt = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_Status), 1);
+			MBED_ASSERT(amo_inv_batt);
+			AMDriver::AutoMeasureObj* amo_inv_out_r = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 2);
+			MBED_ASSERT(amo_inv_out_r);
+			AMDriver::AutoMeasureObj* amo_inv_out_s = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 3);
+			MBED_ASSERT(amo_inv_out_s);
+			AMDriver::AutoMeasureObj* amo_inv_out_t = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 4);
+			MBED_ASSERT(amo_inv_out_t);
+			dobj->measures->push_back(amo_inv_pnl);
+			dobj->measures->push_back(amo_inv_batt);
+			dobj->measures->push_back(amo_inv_out_r);
+			dobj->measures->push_back(amo_inv_out_s);
+			dobj->measures->push_back(amo_inv_out_t);
+
+			for (uint8_t i = 0; i < VERS_METERING_AM_PVINV_ANALYZERS; i++) {
+				// 0-paneles, 1-baterías, 2-Salida_fase_R, 3-Salida_fase_S, 4-Salida_fase_T
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer = i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas periódicas
+			if (dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures) != 0) {
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver PVInverter");
+			}
+		}
 	}
 
 	// arranca el timer de lectura
@@ -754,7 +806,7 @@ void AMManager::_measure(bool enable_notif) {
 						}
 						if(keys & AMDriver::ElecKey_Status){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.status = amr->params.status;
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPoweredUp;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerStatus;
 						}
 					}
 					any_update = (alarm_notif[(base_analyzer + amr->analyzer)])? true : any_update;
