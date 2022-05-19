@@ -57,8 +57,8 @@ enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerPoweredUp				= (1 << 7),	//!< Evento al recibir actualizaci�n en la medida de freq
 	MeteringAnalyzerEnergyActive			= (1 << 8),	//!< Evento al recibir actualizaci�n en la medida de energ�a activa
 	MeteringAnalyzerEnergyReactive			= (1 << 9),	//!< Evento al recibir actualizaci�n en la medida de energ�a reactiva
-	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive),
-
+	MeteringAnalyzerStatus                  = (1 << 10), //!< Evento al recibir actualización en el valor de estado
+	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive|MeteringAnalyzerStatus),
 
 	/* elemento inv�lido */
 	MeteringAnalyzerInvalidEvt				= (1 << 31)
@@ -73,7 +73,7 @@ static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** M�ximo n�mero de analizadores permitidos */
-static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 18;
+static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 23; //18;
 
 /** Tama�o m�ximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;
