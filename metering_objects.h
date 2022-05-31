@@ -116,9 +116,13 @@ struct ThreePhaseAnalyzerStat {
 	ThreePhaseAnalyzerStat(){
 		reset();
 	}
-	void reset(){
+	void reset(bool erase_energy = true){
 		for(int i=0;i<3;i++){
-			stat[i] = {0};
+			stat[i].flags = 0;
+			stat[i].measureValues = {0};
+			if(erase_energy){
+				stat[i].energyValues = {0};
+			}
 		}
 	}
 	void copyMeasures(const ThreePhaseAnalyzerStat& tphas, bool discard_energy = false){
