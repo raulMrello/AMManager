@@ -589,6 +589,13 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
+#if 1
+			// Solicitud por bloques
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock), AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures->push_back(amo_block);
+#else
+			// Solicitud registro a registro
 			AMDriver::AutoMeasureObj* amo_inv_pnl = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 0);
 			MBED_ASSERT(amo_inv_pnl);
 			AMDriver::AutoMeasureObj* amo_inv_batt = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_Status), 1);
@@ -604,6 +611,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->measures->push_back(amo_inv_out_r);
 			dobj->measures->push_back(amo_inv_out_s);
 			dobj->measures->push_back(amo_inv_out_t);
+#endif
 
 			for (uint8_t i = 0; i < VERS_METERING_AM_PVINV_ANALYZERS; i++) {
 				// 0-paneles, 1-baterías, 2-Salida_fase_R, 3-Salida_fase_S, 4-Salida_fase_T
@@ -807,6 +815,7 @@ void AMManager::_measure(bool enable_notif) {
 						if(keys & AMDriver::ElecKey_Status){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.status = amr->params.status;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerStatus;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Status=%.02f", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.status);
 						}
 					}
 					any_update = (alarm_notif[(base_analyzer + amr->analyzer)])? true : any_update;
