@@ -117,9 +117,13 @@ struct ThreePhaseAnalyzerStat {
 	ThreePhaseAnalyzerStat(){
 		reset();
 	}
-	void reset(){
+	void reset(bool erase_energy = true){
 		for(int i=0;i<3;i++){
-			stat[i] = {0};
+			stat[i].flags = 0;
+			stat[i].measureValues = {0};
+			if(erase_energy){
+				stat[i].energyValues = {0};
+			}
 		}
 	}
 	void copyMeasures(const ThreePhaseAnalyzerStat& tphas, bool discard_energy = false){
@@ -186,6 +190,11 @@ struct ThreePhaseAnalyzerStat {
 	void setActivePower(uint8_t i, double aPow){
 		stat[i].measureValues.aPow = aPow;
 	}
+	void setActivePowerAndUpdateCurrent(uint8_t i, double aPow){
+		stat[i].measureValues.aPow = aPow;
+		stat[i].measureValues.current = aPow/(stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+	}
+	
 	int32_t getActivePowerAsInt(uint8_t i=0xff){
 		if(i==0xff)
 			return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
