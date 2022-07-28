@@ -143,7 +143,7 @@ static inline const char* VERS_METERING_NAME(){
 // ANALIZADORES PVINVERTER
 #define VERS_METERING_AM_PVINV								9
 #define VERS_METERING_AM_PVINV_NAME							(const char*)"am-pvinv"
-#define VERS_METERING_AM_PVINV_ANALYZERS					5	// panels, batt, ac-r, ac-s, ac-t
+#define VERS_METERING_AM_PVINV_ANALYZERS					8	// panels, batt, ac-r, ac-s, ac-t, meter-r, meter-s, meter-t
 #define VERS_METERING_AM_PVINV_MEASCYCLE					3000
 #define VERS_METERING_AM_PVINV_ADDR_INGECON					0	// INGECON SUN STORAGE 1PLAY TLM
 
