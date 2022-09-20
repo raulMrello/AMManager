@@ -823,7 +823,7 @@ void AMManager::_measure(bool enable_notif) {
 						if(keys & AMDriver::Eleckey_Temperature){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.temp = amr->params.temp;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerTemperature;
-							DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador=[%d], Temp=%.2fHz", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.temp);
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Temp=%.2fºC", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.temp);
 						}
 					}
 					any_update = (alarm_notif[(base_analyzer + amr->analyzer)])? true : any_update;
