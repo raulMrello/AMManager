@@ -574,7 +574,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid3x2");
 			}
 		}
-#if PVINVERTER_ENABLED == 1	
 		else if (strcmp(drv->getVersion(), VERS_METERING_AM_PVINV_NAME) == 0) {
 			// Inversor solar
 			if (discard_ext_anlz) {
@@ -589,31 +588,10 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			MBED_ASSERT(dobj->measures);
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
-
-#if 1
 			// Solicitud por bloques
 			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock), AMDriver::AllAnalyzers);
 			MBED_ASSERT(amo_block);
 			dobj->measures->push_back(amo_block);
-#else
-			// Solicitud registro a registro
-			AMDriver::AutoMeasureObj* amo_inv_pnl = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 0);
-			MBED_ASSERT(amo_inv_pnl);
-			AMDriver::AutoMeasureObj* amo_inv_batt = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_Status), 1);
-			MBED_ASSERT(amo_inv_batt);
-			AMDriver::AutoMeasureObj* amo_inv_out_r = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 2);
-			MBED_ASSERT(amo_inv_out_r);
-			AMDriver::AutoMeasureObj* amo_inv_out_s = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 3);
-			MBED_ASSERT(amo_inv_out_s);
-			AMDriver::AutoMeasureObj* amo_inv_out_t = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Voltage|AMDriver::ElecKey_Current|AMDriver::ElecKey_ActivePow), 4);
-			MBED_ASSERT(amo_inv_out_t);
-			dobj->measures->push_back(amo_inv_pnl);
-			dobj->measures->push_back(amo_inv_batt);
-			dobj->measures->push_back(amo_inv_out_r);
-			dobj->measures->push_back(amo_inv_out_s);
-			dobj->measures->push_back(amo_inv_out_t);
-#endif
-
 			for (uint8_t i = 0; i < VERS_METERING_AM_PVINV_ANALYZERS; i++) {
 				// 0-paneles, 1-baterías, 2-Salida_Inversor_fase_R, 3-Salida_Inversor_fase_S, 4-Salida_Inversor_fase_T
 				// 5-Contador_externo_fase_R, 6-Contador_externo_fase_S, 7-Contador_externo_fase_T, 
@@ -635,8 +613,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver PVInverter");
 			}
-		}
-#endif		
+		}	
 	}
 
 	// arranca el timer de lectura
