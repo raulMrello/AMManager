@@ -613,8 +613,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver PVInverter");
 			}
-		}
-#endif		
+		}	
 	}
 
 	// arranca el timer de lectura
