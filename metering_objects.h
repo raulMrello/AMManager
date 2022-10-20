@@ -194,7 +194,13 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setActivePowerAndUpdateCurrent(uint8_t i, double aPow){
 		stat[i].measureValues.aPow = aPow;
-		stat[i].measureValues.current = aPow/(stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+		if(stat[i].measureValues.pfactor != 0 && stat[i].measureValues.voltage != 0){
+			stat[i].measureValues.current = aPow/(stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+		}
+		else{
+			stat[i].measureValues.current = 0;
+			stat[i].measureValues.aPow = 0;
+		}
 	}
 	
 	int32_t getActivePowerAsInt(uint8_t i=0xff){
