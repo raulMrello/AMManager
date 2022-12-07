@@ -51,11 +51,14 @@ class AMManager : public ActiveModule {
      */
     virtual ~AMManager(){}
 
+    void addDriver(AMDriver *driver);
+
 
     /** Arranca el worker de medida con una cadencia por defecto (ver DefaultMeasurePeriod)
      * 	@param discard_ext_analz Descarta todos los analizadores que no sean conectores locales
      */
     void startMeasureWork(bool discard_ext_anlz=false);
+    void startMeasureWorkDriverShelly(char* name);
 
 
     /** Detiene el worker de medida
