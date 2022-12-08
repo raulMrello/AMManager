@@ -64,11 +64,18 @@ static const uint8_t VERS_METERING_AM_MBUS03_SERIAL[][7] = {{0,0,0,0,0,0,0}, {3,
 static const uint8_t VERS_METERING_AM_MBUS0_SERIAL[][7] = 	{{0,0,0,0,0,0,0}};
 
 // ANALIZADORES SHELLY
+#define VERS_METERING_AM_SHELLY_COMMON_NAME					(const char*)"am-shelly"
+//Shelly EM
 #define VERS_METERING_AM_SHELLY0							7
-#define VERS_METERING_AM_SHELLY0_NAME						(const char*)"am-shelly01"
-#define VERS_METERING_AM_SHELLY0_ANALYZERS					1
+#define VERS_METERING_AM_SHELLY0_NAME						(const char*)"am-shelly-em"
+#define VERS_METERING_AM_SHELLY0_ANALYZERS					2
 #define VERS_METERING_AM_SHELLY0_MEASCYCLE					2000
-static const uint8_t VERS_METERING_AM_SHELLY0_SERIAL[][7] = 	{{0,0,0,0,0,0,0}};
+
+//Shelly 3EM
+#define VERS_METERING_AM_SHELLY1							8
+#define VERS_METERING_AM_SHELLY1_NAME						(const char*)"am-shelly-3em"
+#define VERS_METERING_AM_SHELLY1_ANALYZERS					3
+#define VERS_METERING_AM_SHELLY1_MEASCYCLE					2000
 
 #ifndef COMBI_PLUS
 /** Versi�n seleccionada */
@@ -116,7 +123,7 @@ static inline const char* VERS_METERING_NAME(){
 
 #define VERS_METERING_AM_MID_NAME							(const char*)"am-mid"
 // ANALIZADORES CONTADOR MID MONOFASICO
-#define VERS_METERING_AM_MID1								7
+#define VERS_METERING_AM_MID1								9
 #define VERS_METERING_AM_MID1_NAME							(const char*)"am-mid1x1"
 #define VERS_METERING_AM_MID1_ANALYZERS						1
 #define VERS_METERING_AM_MID1_MEASCYCLE						2000
@@ -124,7 +131,7 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_MID1_MODEL							2 //Driver_Ctx0643RegData::DriverRegModel::DDS353H3
 
 // ANALIZADORES 2 CONTADORES MID MONOFASICOS
-#define VERS_METERING_AM_MID1x2								7
+#define VERS_METERING_AM_MID1x2								9
 #define VERS_METERING_AM_MID1x2_NAME						(const char*)"am-mid1x2"
 #define VERS_METERING_AM_MID1x2_ANALYZERS					2
 #define VERS_METERING_AM_MID1x2_MEASCYCLE					2000
@@ -132,7 +139,7 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_MID1x2_MODEL						2 //Driver_Ctx0643RegData::DriverRegModel::DDS353H3
 
 // ANALIZADORES CONTADOR MID TRIFASICO
-#define VERS_METERING_AM_MID3								8
+#define VERS_METERING_AM_MID3								10
 #define VERS_METERING_AM_MID3_NAME							(const char*)"am-mid3x1"
 #define VERS_METERING_AM_MID3_ANALYZERS						1
 #define VERS_METERING_AM_MID3_MEASCYCLE						2000
@@ -140,7 +147,7 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_MID3_MODEL							2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2 y DTS353F3
 
 // ANALIZADORES 2 CONTADORES MID TRIFASICOS
-#define VERS_METERING_AM_MID3x2								8
+#define VERS_METERING_AM_MID3x2								10
 #define VERS_METERING_AM_MID3x2_NAME						(const char*)"am-mid3x2"
 #define VERS_METERING_AM_MID3x2_ANALYZERS					2
 #define VERS_METERING_AM_MID3x2_MEASCYCLE					2000
@@ -148,7 +155,7 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_MID3x2_MODEL						2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2 y DTS353F3
 
 // ANALIZADORES PVINVERTER
-#define VERS_METERING_AM_PVINV								9
+#define VERS_METERING_AM_PVINV								11
 #define VERS_METERING_AM_PVINV_NAME							(const char*)"am-pvinv"
 #define VERS_METERING_AM_PVINV_ANALYZERS					8	// panels, batt, ac-r, ac-s, ac-t, meter-r, meter-s, meter-t
 #define VERS_METERING_AM_PVINV_MEASCYCLE					3000
