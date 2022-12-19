@@ -70,7 +70,6 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 					DEBUG_TRACE_W(_EXPR_, _MODULE_, "Driver <%s> ERR_INIT", am_driver->getVersion());
 				}
             }
-			esp_log_level_set(_MODULE_, ESP_LOG_DEBUG);
 
         	// marca como componente iniciado
         	_ready = true;
