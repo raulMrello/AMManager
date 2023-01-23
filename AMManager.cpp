@@ -703,6 +703,9 @@ void AMManager::_measure(bool enable_notif) {
 			int32_t gar_res = dobj->drv->getAnalyzerReadings(*dobj->readings);
 			if(gar_res==0){
 				_acc_errors = 0;
+				// flag para detectar tensiones x10 en nuevo modelo Ctx_0643 que hay que adaptar: v=v/10, I=I*10, pow=pow*10
+				bool ctx_measure_hack = false;
+
 				// eval�a las nuevas medidas
 				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
 					AMDriver::AutoMeasureReading* amr = (*r);
@@ -713,6 +716,11 @@ void AMManager::_measure(bool enable_notif) {
 					// visualiza los par�metros le�dos
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
+							// bugfix de adaptación de medidas
+							if(amr->params.voltage > 0 && amr->params.voltage > (double)Blob::AMVoltageOutOfBounds){
+								ctx_measure_hack = true;
+								amr->params.voltage /= 10;
+							}
 #ifdef COMBI_PLUS
 							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
@@ -730,6 +738,10 @@ void AMManager::_measure(bool enable_notif) {
 							}
 						}
 						if(keys & AMDriver::ElecKey_Current){
+							// bugfix de adaptación de medidas
+							if(ctx_measure_hack){
+								amr->params.current *= 10;
+							}
 #ifdef COMBI_PLUS
 							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
@@ -747,16 +759,29 @@ void AMManager::_measure(bool enable_notif) {
 							}
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
+							// bugfix de adaptación de medidas
+							if(ctx_measure_hack){
+								amr->params.aPow *= 10;
+							}
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerActivePower;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow);
 						}
 						if(keys & AMDriver::ElecKey_ReactivePow){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = amr->params.rPow;
+							// bugfix de adaptación de medidas
+							if(ctx_measure_hack){
+								amr->params.rPow *= 10;
+							}
+							double reactive_pfactor = sqrt(1 - ((_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)*(_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)));
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * reactive_pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReactivePower;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], rPow=%.02fVA", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow);
 						}
 						if(keys & AMDriver::ElecKey_ApparentPow){
+							// bugfix de adaptación de medidas
+							if(ctx_measure_hack){
+								amr->params.mPow *= 10;
+							}
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.msPow = amr->params.mPow;
 						}
 						if(keys & AMDriver::ElecKey_PowFactor){

@@ -17,21 +17,22 @@
 
 namespace Blob {
 
-// límites para descartar fallos en la lectura de los analizadores con interferencias
+// lï¿½mites para descartar fallos en la lectura de los analizadores con interferenciasu
+static const uint32_t AMVoltageOutOfBounds = 800;
 static const uint32_t AMMaxAllowedVoltage = 300;
 static const uint32_t AMMaxAllowedCurrent = 40;
 
-/** Estructura de datos para actualizar los porcentajes de activación de las cargas relativos
+/** Estructura de datos para actualizar los porcentajes de activaciï¿½n de las cargas relativos
  *  a los diferentes analizadores
  * 	@var ids Lista de indicadores. Un id=-1 indica no utilizado
- * 	@var loads Nuevos valores de activación de los analizadores indexados con ids[]
+ * 	@var loads Nuevos valores de activaciï¿½n de los analizadores indexados con ids[]
  */
 struct __packed AMLoadData_t{
 	int8_t ids[MeteringManagerCfgMaxNumAnalyzers];
 	uint8_t loads[MeteringManagerCfgMaxNumAnalyzers];
 };
 
-/** Tipo definido para referenciar la trama de arranque con la información del objeto metering:manager */
+/** Tipo definido para referenciar la trama de arranque con la informaciï¿½n del objeto metering:manager */
 typedef metering_manager AMBootData_t;
 
 
@@ -57,7 +58,7 @@ cJSON* getJsonFromAMLoad(const Blob::AMLoadData_t& obj);
  * Decodifica el mensaje JSON en un objeto de arranque
  * @param obj Recibe el objeto decodificado
  * @param json Objeto JSON a decodificar
- * @return keys Parámetros decodificados o 0 en caso de error
+ * @return keys Parï¿½metros decodificados o 0 en caso de error
  */
 uint32_t getAMLoadFromJson(Blob::AMLoadData_t &obj, cJSON* json);
 
