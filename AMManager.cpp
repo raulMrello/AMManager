@@ -759,29 +759,18 @@ void AMManager::_measure(bool enable_notif) {
 							}
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
-							// bugfix de adaptación de medidas
-							if(ctx_measure_hack){
-								amr->params.aPow *= 10;
-							}
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerActivePower;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow);
 						}
 						if(keys & AMDriver::ElecKey_ReactivePow){
-							// bugfix de adaptación de medidas
-							if(ctx_measure_hack){
-								amr->params.rPow *= 10;
-							}
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = amr->params.rPow;
+							double reactive_pfactor = sqrt(1 - ((_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)*(_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)));
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * reactive_pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReactivePower;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], rPow=%.02fVA", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow);
 						}
 						if(keys & AMDriver::ElecKey_ApparentPow){
-							// bugfix de adaptación de medidas
-							if(ctx_measure_hack){
-								amr->params.mPow *= 10;
-							}
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.msPow = amr->params.mPow;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.msPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current;
 						}
 						if(keys & AMDriver::ElecKey_PowFactor){
 							double pfactor = abs(amr->params.pFactor);
