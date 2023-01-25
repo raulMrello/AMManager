@@ -287,6 +287,12 @@ struct ThreePhaseAnalyzerStat {
 			stat[i].measureValues.current = (divisor < 0.01)? 0 : stat[i].measureValues.aPow/divisor;
 		}
 	}
+	double getTemperature(uint8_t i=0xff){
+		if(i==0xff)
+			return cpp_utils::max3(stat[0].measureValues.temp, stat[1].measureValues.temp, stat[2].measureValues.temp);
+		else
+			return (stat[i].measureValues.temp);
+	}
 };
 
 
