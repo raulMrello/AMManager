@@ -14,7 +14,7 @@ static const char* _MODULE_ = "[AMM]...........";
 #define _EXPR_	(!IS_ISR())
 
 
- 
+
 //------------------------------------------------------------------------------------
 //-- PUBLIC METHODS IMPLEMENTATION ---------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -537,7 +537,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid1x2");
 			}
-		}		
+		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID3x2_NAME)==0){
 			if(discard_ext_anlz){
 				dobj->cycle_ms = 0;
@@ -594,7 +594,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->measures->push_back(amo_block);
 			for (uint8_t i = 0; i < VERS_METERING_AM_PVINV_ANALYZERS; i++) {
 				// 0-paneles, 1-baterías, 2-Salida_Inversor_fase_R, 3-Salida_Inversor_fase_S, 4-Salida_Inversor_fase_T
-				// 5-Contador_externo_fase_R, 6-Contador_externo_fase_S, 7-Contador_externo_fase_T, 
+				// 5-Contador_externo_fase_R, 6-Contador_externo_fase_S, 7-Contador_externo_fase_T, 8-HomePower_R, 9-HomePower_S, 10-HomePower_T
 				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(amr);
 				amr->analyzer = i;
@@ -613,7 +613,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver PVInverter");
 			}
-		}	
+		}
 	}
 
 	// arranca el timer de lectura
@@ -1007,6 +1007,3 @@ void AMManager::eventMeasureWorkCb(){
 		Heap::memFree(op);
 	}
  }
-
-
-
