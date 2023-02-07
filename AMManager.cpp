@@ -755,19 +755,22 @@ void AMManager::_measure(bool enable_notif) {
 							else{
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
-								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%.03fA", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current);
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%.03fA, ctx_measure_hack=%d", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current, ctx_measure_hack);
 							}
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
+							if((amr->params.aPow < 0 && _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current > 0) || (amr->params.aPow > 0 && _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current < 0)){
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = -_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current;
+							}
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerActivePower;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow);
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW amr->params.aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow, amr->params.aPow);
 						}
 						if(keys & AMDriver::ElecKey_ReactivePow){
 							double reactive_pfactor = sqrt(1 - ((_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)*(_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)));
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * reactive_pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReactivePower;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], rPow=%.02fVA", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow);
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], rPow=%.02fVA  amr->params.rPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow, amr->params.rPow);
 						}
 						if(keys & AMDriver::ElecKey_ApparentPow){
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.msPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current;
