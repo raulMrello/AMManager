@@ -6,7 +6,7 @@
  *
  *	Objetos JSON relativos al m�dulo metering
  */
- 
+
 #ifndef METERING_OBJECTS_
 #define METERING_OBJECTS_
 
@@ -74,7 +74,7 @@ static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** M�ximo n�mero de analizadores permitidos */
-static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 26; //18;
+static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 29; //26;
 
 /** Tama�o m�ximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;
@@ -202,7 +202,7 @@ struct ThreePhaseAnalyzerStat {
 			stat[i].measureValues.aPow = 0;
 		}
 	}
-	
+
 	int32_t getActivePowerAsInt(uint8_t i=0xff){
 		if(i==0xff)
 			return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
