@@ -6,7 +6,7 @@
  *
  *	Objetos JSON relativos al m�dulo metering
  */
- 
+
 #ifndef METERING_OBJECTS_
 #define METERING_OBJECTS_
 
@@ -57,8 +57,9 @@ enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerPoweredUp				= (1 << 7),	//!< Evento al recibir actualizaci�n en la medida de freq
 	MeteringAnalyzerEnergyActive			= (1 << 8),	//!< Evento al recibir actualizaci�n en la medida de energ�a activa
 	MeteringAnalyzerEnergyReactive			= (1 << 9),	//!< Evento al recibir actualizaci�n en la medida de energ�a reactiva
-	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive),
-
+	MeteringAnalyzerStatus                  = (1 << 10), //!< Evento al recibir actualización en el valor de estado
+	MeteringAnalyzerTemperature				= (1 << 11), //!< Evento al recibir actualización en la medida de temperatura
+	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive|MeteringAnalyzerStatus|MeteringAnalyzerTemperature),
 
 	/* elemento inv�lido */
 	MeteringAnalyzerInvalidEvt				= (1 << 31)
@@ -73,7 +74,7 @@ static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** M�ximo n�mero de analizadores permitidos */
-static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 18;
+static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 29; //26;
 
 /** Tama�o m�ximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;
@@ -94,6 +95,8 @@ struct metering_analyzer_stat_measure{
 	double freq;
 	double thdA;
 	double thdV;
+	double temp;
+	double status;
 };
 
 
@@ -116,9 +119,13 @@ struct ThreePhaseAnalyzerStat {
 	ThreePhaseAnalyzerStat(){
 		reset();
 	}
-	void reset(){
+	void reset(bool erase_energy = true){
 		for(int i=0;i<3;i++){
-			stat[i] = {0};
+			stat[i].flags = 0;
+			stat[i].measureValues = {0};
+			if(erase_energy){
+				stat[i].energyValues = {0};
+			}
 		}
 	}
 	void copyMeasures(const ThreePhaseAnalyzerStat& tphas, bool discard_energy = false){
@@ -185,6 +192,17 @@ struct ThreePhaseAnalyzerStat {
 	void setActivePower(uint8_t i, double aPow){
 		stat[i].measureValues.aPow = aPow;
 	}
+	void setActivePowerAndUpdateCurrent(uint8_t i, double aPow){
+		stat[i].measureValues.aPow = aPow;
+		if(stat[i].measureValues.pfactor != 0 && stat[i].measureValues.voltage != 0){
+			stat[i].measureValues.current = aPow/(stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
+		}
+		else{
+			stat[i].measureValues.current = 0;
+			stat[i].measureValues.aPow = 0;
+		}
+	}
+
 	int32_t getActivePowerAsInt(uint8_t i=0xff){
 		if(i==0xff)
 			return (int32_t)round(stat[0].measureValues.aPow+stat[1].measureValues.aPow+stat[2].measureValues.aPow);
@@ -268,6 +286,12 @@ struct ThreePhaseAnalyzerStat {
 			double divisor = (stat[i].measureValues.voltage * stat[i].measureValues.pfactor);
 			stat[i].measureValues.current = (divisor < 0.01)? 0 : stat[i].measureValues.aPow/divisor;
 		}
+	}
+	double getTemperature(uint8_t i=0xff){
+		if(i==0xff)
+			return cpp_utils::max3(stat[0].measureValues.temp, stat[1].measureValues.temp, stat[2].measureValues.temp);
+		else
+			return (stat[i].measureValues.temp);
 	}
 };
 

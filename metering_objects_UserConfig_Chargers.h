@@ -6,7 +6,7 @@
  *
  *	Selección de opciones para el módulo metering_objects en el proyecto Viaris UNI
  */
- 
+
 #ifndef METERING_OBJECTS_USER_CONFIG_Chargers
 #define METERING_OBJECTS_USER_CONFIG_Chargers
 
@@ -139,6 +139,13 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_MID3x2_MEASCYCLE					2000
 #define VERS_METERING_AM_MID3x2_ADDR						1
 #define VERS_METERING_AM_MID3x2_MODEL						2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2 y DTS353F3
+
+// ANALIZADORES PVINVERTER
+#define VERS_METERING_AM_PVINV								9
+#define VERS_METERING_AM_PVINV_NAME							(const char*)"am-pvinv"
+#define VERS_METERING_AM_PVINV_ANALYZERS					11	// panels, batt, ac-r, ac-s, ac-t, meter-r, meter-s, meter-t, homePower-r, homePower-s, homePower-t
+#define VERS_METERING_AM_PVINV_MEASCYCLE					3000
+#define VERS_METERING_AM_PVINV_ADDR_INGECON					0	// INGECON SUN STORAGE 1PLAY TLM
 
 
 #define METERING_TOPIC_TIME		"astcal"

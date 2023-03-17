@@ -14,7 +14,7 @@ static const char* _MODULE_ = "[AMM]...........";
 #define _EXPR_	(!IS_ISR())
 
 
- 
+
 //------------------------------------------------------------------------------------
 //-- PUBLIC METHODS IMPLEMENTATION ---------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -574,6 +574,46 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Mid3x2");
 			}
 		}
+		else if (strcmp(drv->getVersion(), VERS_METERING_AM_PVINV_NAME) == 0) {
+			// Inversor solar
+			if (discard_ext_anlz) {
+				dobj->cycle_ms = 0;
+				continue;
+			}
+
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_PVINV_MEASCYCLE;
+			// crea los objetos de medida de cada analizador (medidas a realizar y lecturas)
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+			// Solicitud por bloques
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock), AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures->push_back(amo_block);
+			for (uint8_t i = 0; i < VERS_METERING_AM_PVINV_ANALYZERS; i++) {
+				// 0-paneles, 1-baterías, 2-Salida_Inversor_fase_R, 3-Salida_Inversor_fase_S, 4-Salida_Inversor_fase_T
+				// 5-Contador_externo_fase_R, 6-Contador_externo_fase_S, 7-Contador_externo_fase_T, 8-HomePower_R, 9-HomePower_S, 10-HomePower_T
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer = i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas periódicas
+			if (dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures) != 0) {
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver PVInverter");
+			}
+		}
 	}
 
 	// arranca el timer de lectura
@@ -663,6 +703,9 @@ void AMManager::_measure(bool enable_notif) {
 			int32_t gar_res = dobj->drv->getAnalyzerReadings(*dobj->readings);
 			if(gar_res==0){
 				_acc_errors = 0;
+				// flag para detectar tensiones x10 en nuevo modelo Ctx_0643 que hay que adaptar: v=v/10, I=I*10, pow=pow*10
+				bool ctx_measure_hack = false;
+
 				// eval�a las nuevas medidas
 				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
 					AMDriver::AutoMeasureReading* amr = (*r);
@@ -673,6 +716,11 @@ void AMManager::_measure(bool enable_notif) {
 					// visualiza los par�metros le�dos
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
+							// bugfix de adaptación de medidas
+							if(amr->params.voltage > 0 && amr->params.voltage > (double)Blob::AMVoltageOutOfBounds){
+								ctx_measure_hack = true;
+								amr->params.voltage /= 10;
+							}
 #ifdef COMBI_PLUS
 							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
@@ -690,6 +738,10 @@ void AMManager::_measure(bool enable_notif) {
 							}
 						}
 						if(keys & AMDriver::ElecKey_Current){
+							// bugfix de adaptación de medidas
+							if(ctx_measure_hack){
+								amr->params.current *= 10;
+							}
 #ifdef COMBI_PLUS
 							if(amr->params.current > (double)Blob::AMMaxAllowedCurrent && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
 #else
@@ -703,21 +755,25 @@ void AMManager::_measure(bool enable_notif) {
 							else{
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = amr->params.current;
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerCurrent;
-								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%.03fA", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current);
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Current=%.03fA, ctx_measure_hack=%d", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current, ctx_measure_hack);
 							}
 						}
 						if(keys & AMDriver::ElecKey_ActivePow){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
+							if((amr->params.aPow < 0 && _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current > 0) || (amr->params.aPow > 0 && _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current < 0)){
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = -_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current;
+							}
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerActivePower;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow);
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW amr->params.aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow, amr->params.aPow);
 						}
 						if(keys & AMDriver::ElecKey_ReactivePow){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = amr->params.rPow;
+							double reactive_pfactor = sqrt(1 - ((_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)*(_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor)));
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * reactive_pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReactivePower;
-							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], rPow=%.02fVA", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow);
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], rPow=%.02fVA  amr->params.rPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow, amr->params.rPow);
 						}
 						if(keys & AMDriver::ElecKey_ApparentPow){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.msPow = amr->params.mPow;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.msPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current;
 						}
 						if(keys & AMDriver::ElecKey_PowFactor){
 							double pfactor = abs(amr->params.pFactor);
@@ -753,7 +809,14 @@ void AMManager::_measure(bool enable_notif) {
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reactive=%.02fWh", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.energyValues.reactive);
 						}
 						if(keys & AMDriver::ElecKey_Status){
-							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPoweredUp;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.status = amr->params.status;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerStatus;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Status=%.02f", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.status);
+						}
+						if(keys & AMDriver::Eleckey_Temperature){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.temp = amr->params.temp;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerTemperature;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Temp=%.2fºC", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.temp);
 						}
 					}
 					any_update = (alarm_notif[(base_analyzer + amr->analyzer)])? true : any_update;
@@ -960,6 +1023,3 @@ void AMManager::eventMeasureWorkCb(){
 		Heap::memFree(op);
 	}
  }
-
-
-
