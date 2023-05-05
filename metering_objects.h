@@ -293,6 +293,13 @@ struct ThreePhaseAnalyzerStat {
 		else
 			return (stat[i].measureValues.temp);
 	}
+	double getStatus(uint8_t i=0xff){
+		if(i==0xff)
+			return cpp_utils::max3(stat[0].measureValues.status, stat[1].measureValues.status, stat[2].measureValues.status);
+		else
+			return (stat[i].measureValues.status);
+	}
+
 };
 
 
