@@ -778,6 +778,9 @@ void AMManager::_measure(bool enable_notif) {
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = -_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current;
 							}
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor;
+							if(dobj->drv->getModel() == VERS_METERING_AM_CTX3_MODEL_P1){
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
+							}
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerActivePower;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW amr->params.aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow, amr->params.aPow);
 						}
@@ -787,10 +790,12 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReactivePower;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], rPow=%.02fVA  amr->params.rPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow, amr->params.rPow);
 							// el driver P1 da el vertido en rPow.
-							if(dobj->drv->getModel() == VERS_METERING_AM_CTX3_MODEL_P1 && (_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags & MeteringAnalyzerActivePower)){
-								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow -= _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow;
+							if(dobj->drv->getModel() == VERS_METERING_AM_CTX3_MODEL_P1 && amr->params.aPow == 0 && amr->params.rPow > 0){
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = -amr->params.rPow;
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current = -_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current;
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.rPow = 0;
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = 1.0;
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPowerFactor;
 								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW amr->params.aPow=%.02fW (tras aplicar vertido)", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow, amr->params.aPow);
 							}
 						}
