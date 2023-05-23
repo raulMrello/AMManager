@@ -56,6 +56,7 @@ class AMManager : public ActiveModule {
      * 	@param discard_ext_analz Descarta todos los analizadores que no sean conectores locales
      */
     void startMeasureWork(bool discard_ext_anlz=false);
+    void startMeasureWorkDriverShelly(char* name);
 
 
     /** Detiene el worker de medida
