@@ -84,7 +84,7 @@ static const uint8_t VERS_METERING_AM_MBUS0_SERIAL[][7] = 	{{0,0,0,0,0,0,0}};
 #define VERS_METERING_AM_SHELLY_P1							9
 #define VERS_METERING_AM_SHELLY_P1_NAME						(const char*)"am-shelly-p1"
 #define VERS_METERING_AM_SHELLY_P1_ANALYZERS				3
-#define VERS_METERING_AM_SHELLY_p1_MEASCYCLE				2000
+#define VERS_METERING_AM_SHELLY_P1_MEASCYCLE				2000
 
 #ifndef COMBI_PLUS
 /** Versi�n seleccionada */
