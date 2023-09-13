@@ -67,8 +67,8 @@ static const uint8_t VERS_METERING_AM_MBUS0_SERIAL[][7] = 	{{0,0,0,0,0,0,0}};
 
 
 // ANALIZADORES SHELLY
-#define VERS_METERING_AM_SHELLY_COMMON_NAME_MAIN			(const char*)"am-shelly-main-"
-#define VERS_METERING_AM_SHELLY_COMMON_NAME_AUX 			(const char*)"am-shelly-aux-"
+#define VERS_METERING_AM_SHELLY_COMMON_NAME_MAIN			(const char*)"am-shelly-main"
+#define VERS_METERING_AM_SHELLY_COMMON_NAME_AUX 			(const char*)"am-shelly-aux"
 //Shelly EM
 #define VERS_METERING_AM_SHELLY0							7
 #define VERS_METERING_AM_SHELLY0_NAME_MAIN					(const char*)"am-shelly-main-em"
