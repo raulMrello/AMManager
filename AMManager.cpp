@@ -923,9 +923,18 @@ void AMManager::_measure(bool enable_notif) {
 							double pfactor = abs(amr->params.pFactor);
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPowerFactor;
-							if(pfactor < METERING_PFACTOR_MIN_ALLOWED){
-								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%.02f corregido a %.02f", (base_analyzer + amr->analyzer),pfactor, METERING_PFACTOR_MIN_ALLOWED);
-								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = METERING_PFACTOR_MIN_ALLOWED;
+							if(strcmp(am_driver->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0 || 
+							   strcmp(am_driver->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0 ||
+							   strcmp(am_driver->getVersion(), VERS_METERING_AM_MBUS0_NAME)==0 ||
+							   strcmp(am_driver->getVersion(), VERS_METERING_AM_MBUS03_NAME)==0 ||
+							   strcmp(am_driver->getVersion(), VERS_METERING_AM_MBUS012_NAME)==0){
+								if(pfactor < METERING_PFACTOR_MIN_ALLOWED){
+									DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%.02f corregido a %.02f", (base_analyzer + amr->analyzer),pfactor, METERING_PFACTOR_MIN_ALLOWED);
+									_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = METERING_PFACTOR_MIN_ALLOWED;
+								}
+								else{
+									DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%.02f", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor);
+								}
 							}
 							else{
 								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%.02f", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor);
