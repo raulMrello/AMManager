@@ -88,53 +88,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
     _publicationCb = callback(this, &AMManager::publicationCb);
 }
 
-void AMManager::startMeasureWorkDriverShelly(char* name){
-	for(auto i= _driver_list.begin(); i!=_driver_list.end(); ++i){
-		DriverObj* dobj = (*i);
-		AMDriver* drv = (dobj->drv);
-		if(strcmp(drv->getVersion(), name))
-		{
-			if(strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY0)==0){
-				// establece el ciclo de lectura
-				dobj->cycle_ms = VERS_METERING_AM_SHELLY0_NAME;
-				// crea los objetos de medida de cada analizador
-				// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
-				// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
-				// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
-				AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock),AMDriver::AllAnalyzers);
-				MBED_ASSERT(amo_block);
-				dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
-				MBED_ASSERT(dobj->measures);
 
-				// forma la lista de medida con los objetos anteriores
-				dobj->measures->push_back(amo_block);
-				// idem con los objetos de lectura
-				AMDriver::AutoMeasureReading* sh_m = new AMDriver::AutoMeasureReading();
-				MBED_ASSERT(sh_m);
-				sh_m->analyzer=0;
-				AMDriver::AutoMeasureReading* sh_r = new AMDriver::AutoMeasureReading();
-				MBED_ASSERT(sh_r);
-				sh_r->analyzer=1;
-				dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
-				MBED_ASSERT(dobj->readings);
-				dobj->readings->push_back(sh_m);
-				dobj->readings->push_back(sh_r);
-
-				// solicita el inicio de medidas peri�dicas
-				if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
-					// si falla, destruye los objetos creados
-					cpp_utils::list_delete_items(*dobj->readings);
-					delete(dobj->readings);
-					dobj->readings = NULL;
-					cpp_utils::list_delete_items(*dobj->measures);
-					delete(dobj->measures);
-					dobj->measures = NULL;
-					dobj->cycle_ms = 0;
-				}
-			}	
-		}
-	}
-}
 
 //------------------------------------------------------------------------------------
 void AMManager::startMeasureWork(bool discard_ext_anlz) {
@@ -677,7 +631,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver PVInverter");
 			}
 		}
-		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY0_NAME)==0){
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY0_NAME_MAIN)==0 || strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY0_NAME_AUX)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_SHELLY0_MEASCYCLE;
 			// crea los objetos de medida de cada analizador
@@ -712,7 +666,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 			}
 		}
-		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY1_NAME)==0){
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY1_NAME_MAIN)==0 || strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY1_NAME_AUX)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_SHELLY1_MEASCYCLE;
 			// crea los objetos de medida de cada analizador
@@ -729,6 +683,41 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 			for(uint8_t i = 0; i < VERS_METERING_AM_SHELLY1_ANALYZERS; i++){
+				// idem con los objetos de lectura
+				AMDriver::AutoMeasureReading* sh = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(sh);
+				sh->analyzer=i;
+				dobj->readings->push_back(sh);
+			}
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+			}
+		}	
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY_P1_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_SHELLY_P1_MEASCYCLE;
+			// crea los objetos de medida de cada analizador
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock),AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			// forma la lista de medida con los objetos anteriores
+			dobj->measures->push_back(amo_block);
+
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+			for(uint8_t i = 0; i < VERS_METERING_AM_SHELLY_P1_ANALYZERS; i++){
 				// idem con los objetos de lectura
 				AMDriver::AutoMeasureReading* sh = new AMDriver::AutoMeasureReading();
 				MBED_ASSERT(sh);
@@ -898,6 +887,16 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.voltage * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.current * _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor;
 							if(dobj->drv->getModel() == VERS_METERING_AM_CTX3_MODEL_P1){
 								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow = amr->params.aPow;
+								double vi = amr->params.voltage * amr->params.current;
+								if(vi > 0){
+									_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = amr->params.aPow/vi;
+								}
+								else{
+									_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = 1.0;
+								}
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = (_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor > 1.0) ? 1.0 : _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor;
+								_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPowerFactor;
+								DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], pfactor=%.02f", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor);
 							}
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerActivePower;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], aPow=%.02fW amr->params.aPow=%.02fW", (base_analyzer + amr->analyzer),_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.aPow, amr->params.aPow);
