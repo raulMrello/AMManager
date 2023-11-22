@@ -150,6 +150,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setVoltage(uint8_t i, double voltage){
 		stat[i].measureValues.voltage = voltage;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerVoltage;
 	}
 	double getCurrent(uint8_t i=0xff){
 		if(i==0xff)
@@ -165,6 +166,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setCurrent(uint8_t i, double curr){
 		stat[i].measureValues.current = curr;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerCurrent;
 	}
 	int32_t getMilliamps(uint8_t i=0xff){
 		if(i==0xff)
@@ -182,6 +184,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setMilliamps(uint8_t i, int32_t curr){
 		stat[i].measureValues.current = (double)curr/1000.0;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerCurrent;
 	}
 	double getActivePower(uint8_t i=0xff){
 		if(i==0xff)
@@ -191,6 +194,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setActivePower(uint8_t i, double aPow){
 		stat[i].measureValues.aPow = aPow;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerActivePower;
 	}
 	void setActivePowerAndUpdateCurrent(uint8_t i, double aPow){
 		stat[i].measureValues.aPow = aPow;
@@ -201,6 +205,8 @@ struct ThreePhaseAnalyzerStat {
 			stat[i].measureValues.current = 0;
 			stat[i].measureValues.aPow = 0;
 		}
+		stat[i].flags |= (uint32_t)MeteringAnalyzerActivePower;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerCurrent;
 	}
 
 	int32_t getActivePowerAsInt(uint8_t i=0xff){
@@ -218,6 +224,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setReactivePower(uint8_t i, double rPow){
 		stat[i].measureValues.rPow = rPow;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerReactivePower;
 	}
 	int32_t getReactivePowerAsInt(uint8_t i=0xff){
 		if(i==0xff)
@@ -234,9 +241,11 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setActiveEnergy(uint8_t i, double active){
 		stat[i].energyValues.active = active;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerEnergyActive;
 	}
 	void addActiveEnergy(uint8_t i, double active){
 		stat[i].energyValues.active += active;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerEnergyActive;
 	}
 	double getReactiveEnergy(uint8_t i=0xff){
 		if(i==0xff)
@@ -246,6 +255,7 @@ struct ThreePhaseAnalyzerStat {
 	}
 	void setReactiveEnergy(uint8_t i, double reactive){
 		stat[i].energyValues.reactive = reactive;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerEnergyReactive;
 	}
 	int32_t getActiveEnergyAsInt(uint8_t i=0xff){
 		if(i==0xff)
@@ -262,18 +272,22 @@ struct ThreePhaseAnalyzerStat {
 	void updatePower(uint8_t i){
 		stat[i].measureValues.aPow = stat[i].measureValues.current * stat[i].measureValues.voltage * stat[i].measureValues.pfactor;
 		stat[i].measureValues.rPow = stat[i].measureValues.current * stat[i].measureValues.voltage * (1 - stat[i].measureValues.pfactor);
+		stat[i].flags |= (uint32_t)MeteringAnalyzerActivePower;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerReactivePower;
 	}
 	double getPFactor(uint8_t i){
 		return stat[i].measureValues.pfactor;
 	}
 	void setPFactor(uint8_t i, double pfactor){
 		stat[i].measureValues.pfactor = pfactor;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerPowerFactor;
 	}
 	double getFreq(uint8_t i){
 		return (stat[i].measureValues.freq);
 	}
 	void setFreq(uint8_t i, double freq){
 		stat[i].measureValues.freq = freq;
+		stat[i].flags |= (uint32_t)MeteringAnalyzerFrequency;
 	}
 	void fixCurrent(uint8_t i=0xff){
 		if(i==0xff){
