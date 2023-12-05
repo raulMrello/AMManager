@@ -735,7 +735,42 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->measures = NULL;
 				dobj->cycle_ms = 0;
 			}
-		}	
+		}
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_TMC100W0_NAME)==0){
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_TMC100W0_MEASCYCLE;
+			// crea los objetos de medida de cada analizador
+			// NOTA: los ElecKeys no son necesarios ya que la medida en bloque lee todo, de todas formas lo especifico
+			// para que se entienda qu� es lo que quiero leer. Lo que s� es importante es especificar que se quieren
+			// leer todos los analyzadores AMDriver::AllAnalyzers (esto es lo que desencadena la medida en bloque)
+			AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock),AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			// forma la lista de medida con los objetos anteriores
+			dobj->measures->push_back(amo_block);
+			
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+			for(uint8_t i = 0; i < VERS_METERING_AM_TMC100W0_ANALYZERS; i++){
+				// idem con los objetos de lectura
+				AMDriver::AutoMeasureReading* sh = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(sh);
+				sh->analyzer=i;
+				dobj->readings->push_back(sh);
+			}
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+			}
+		}		
 	}
 
 	// arranca el timer de lectura
