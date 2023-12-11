@@ -73,9 +73,6 @@ typedef metering_analyzer_cfg_evtFlags metering_analyzer_stat_flags;
 static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
-/** M�ximo n�mero de analizadores permitidos */
-//static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 1;//29; //26;
-
 /** Tama�o m�ximo del texto asociado a la variable ppl:energy:analyzer/serial */
 static const uint8_t MeteringAnalyzerSerialLength = 16;
 
