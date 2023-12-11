@@ -10,6 +10,9 @@
 #ifndef METERING_OBJECTS_USER_CONFIG_Chargers
 #define METERING_OBJECTS_USER_CONFIG_Chargers
 
+/** M�ximo n�mero de analizadores permitidos */
+#define MeteringManagerCfgMaxNumAnalyzers		1
+
 // ANALIZADOR VIRTUAL (SIMULADOR)
 #define VERS_METERING_VIRTUALAM								0
 #define VERS_METERING_VIRTUALAM_NAME						(const char*)"Simulator"
@@ -172,6 +175,12 @@ static inline const char* VERS_METERING_NAME(){
 #define VERS_METERING_AM_PVINV_ANALYZERS					11	// panels, batt, ac-r, ac-s, ac-t, meter-r, meter-s, meter-t, homePower-r, homePower-s, homePower-t
 #define VERS_METERING_AM_PVINV_MEASCYCLE					3000
 #define VERS_METERING_AM_PVINV_ADDR_INGECON					0	// INGECON SUN STORAGE 1PLAY TLM
+
+#define VERS_METERING_AM_IVYD1C9002							10
+#define VERS_METERING_AM_IVYD1C9002_NAME					(const char*)"am-IVYD1C9002"
+#define VERS_METERING_AM_IVYD1C9002_ANALYZERS				1
+#define VERS_METERING_AM_IVYD1C9002_MEASCYCLE				3000
+#define VERS_METERING_AM_IVYD1C9002_ADDR					1
 
 
 #define METERING_TOPIC_TIME		"astcal"

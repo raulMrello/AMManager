@@ -17,7 +17,7 @@
 #include "AMDriver.h"
 #include "JsonParserBlob.h"
 #include "metering_objects.h"
-#include "cpp_utils.h"
+#include "AppConfig.h"
 #include <list>
 
 /** Flag para habilitar el soporte de objetos JSON en las suscripciones a MQLib
