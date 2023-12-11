@@ -13,6 +13,168 @@
 /** M�ximo n�mero de analizadores permitidos */
 #define MeteringManagerCfgMaxNumAnalyzers		1
 
+// ANALIZADOR VIRTUAL (SIMULADOR)
+#define VERS_METERING_VIRTUALAM								0
+#define VERS_METERING_VIRTUALAM_NAME						(const char*)"Simulator"
+#define VERS_METERING_VIRTUALAM_ANALYZERS					1
+
+// ANALIZADORES DE LOS CONECTORES MENNEKES+SCHUKO
+#define VERS_METERING_AM_UNI_CONNECTORS						1
+#define VERS_METERING_AM_UNI_CONNECTORS_NAME				(const char*)"am-conn"
+#define VERS_METERING_AM_UNI_CONNECTORS_ANALYZERS			4
+#define VERS_METERING_AM_UNI_CONNECTORS_MEASCYCLE			2000
+#define VERS_METERING_AM_UNI_CONNECTORS_1PHASE_ID			"1PH"
+#define VERS_METERING_AM_UNI_CONNECTORS_3PHASE_ID			"3PH"
+
+// ANALIZADORES CONTAX
+#define VERS_METERING_AM_CTX_COMMON_NAME					(const char*)"am-ctx"
+
+#define VERS_METERING_AM_CTX1								2
+#define VERS_METERING_AM_CTX1_NAME							(const char*)"am-ctx1"
+#define VERS_METERING_AM_CTX1_ANALYZERS						1
+#define VERS_METERING_AM_CTX1_MEASCYCLE						2000
+#define VERS_METERING_AM_CTX1_ADDR							1
+#define VERS_METERING_AM_CTX1_MODEL_DDS353					2 //Driver_Ctx0643RegData::DriverRegModel::DDS353H2 y DDS353H3
+
+#define VERS_METERING_AM_CTX3								3
+#define VERS_METERING_AM_CTX3_NAME							(const char*)"am-ctx3"
+#define VERS_METERING_AM_CTX3_ANALYZERS						3
+#define VERS_METERING_AM_CTX3_MEASCYCLE						2000
+#define VERS_METERING_AM_CTX3_ADDR_0643						151
+#define VERS_METERING_AM_CTX3_ADDR_DTS353					1
+#define VERS_METERING_AM_CTX3_ADDR_P1						16
+#define VERS_METERING_AM_CTX3_MODEL_0643					0 //Driver_Ctx0643RegData::DriverRegModel::CTX_0643
+#define VERS_METERING_AM_CTX3_MODEL_DTS353					2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2 y DTS353F3
+#define VERS_METERING_AM_CTX3_MODEL_P1						3 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2 y DTS353F3
+
+// ANALIZADORES MBUS TMC100
+#define VERS_METERING_AM_MBUS_COMMON_NAME					(const char*)"am-mbus"
+
+#define VERS_METERING_AM_MBUS012							4
+#define VERS_METERING_AM_MBUS012_NAME						(const char*)"am-mbus012"
+#define VERS_METERING_AM_MBUS012_ANALYZERS					3
+#define VERS_METERING_AM_MBUS012_MEASCYCLE					2000
+static const uint8_t VERS_METERING_AM_MBUS012_SERIAL[][7] = {{0,0,0,0,0,0,0}, {1,0,0,0,0,0,0}, {2,0,0,0,0,0,0}};
+
+#define VERS_METERING_AM_MBUS03								5
+#define VERS_METERING_AM_MBUS03_NAME						(const char*)"am-mbus03"
+#define VERS_METERING_AM_MBUS03_ANALYZERS					2
+#define VERS_METERING_AM_MBUS03_MEASCYCLE					2000
+static const uint8_t VERS_METERING_AM_MBUS03_SERIAL[][7] = {{0,0,0,0,0,0,0}, {3,0,0,0,0,0,0}};
+
+#define VERS_METERING_AM_MBUS0								6
+#define VERS_METERING_AM_MBUS0_NAME							(const char*)"am-mbus0"
+#define VERS_METERING_AM_MBUS0_ANALYZERS					1
+#define VERS_METERING_AM_MBUS0_MEASCYCLE					2000
+static const uint8_t VERS_METERING_AM_MBUS0_SERIAL[][7] = 	{{0,0,0,0,0,0,0}};
+
+
+// ANALIZADORES SHELLY
+#define VERS_METERING_AM_SHELLY_COMMON_NAME_MAIN			(const char*)"am-shelly-main"
+#define VERS_METERING_AM_SHELLY_COMMON_NAME_AUX 			(const char*)"am-shelly-aux"
+//Shelly EM
+#define VERS_METERING_AM_SHELLY0							7
+#define VERS_METERING_AM_SHELLY0_NAME_MAIN					(const char*)"am-shelly-main-em"
+#define VERS_METERING_AM_SHELLY0_NAME_AUX					(const char*)"am-shelly-aux-em"
+#define VERS_METERING_AM_SHELLY0_ANALYZERS					2
+#define VERS_METERING_AM_SHELLY0_MEASCYCLE					2000
+
+//Shelly 3EM
+#define VERS_METERING_AM_SHELLY1							8
+#define VERS_METERING_AM_SHELLY1_NAME_MAIN					(const char*)"am-shelly-main-3em"
+#define VERS_METERING_AM_SHELLY1_NAME_AUX 					(const char*)"am-shelly-aux-3em"
+#define VERS_METERING_AM_SHELLY1_ANALYZERS					3
+#define VERS_METERING_AM_SHELLY1_MEASCYCLE					2000
+
+//Shelly P1
+#define VERS_METERING_AM_SHELLY_P1							9
+#define VERS_METERING_AM_SHELLY_P1_NAME						(const char*)"am-p1-shelly"
+#define VERS_METERING_AM_SHELLY_P1_ANALYZERS				3
+#define VERS_METERING_AM_SHELLY_P1_MEASCYCLE				2000
+
+#ifndef COMBI_PLUS
+/** Versi�n seleccionada */
+#define VERS_METERING_SELECTED			VERS_METERING_AM_UNI_CONNECTORS
+
+/** Macro de generaci�n de nombre de versi�n */
+static inline const char* VERS_METERING_NAME(){
+	switch(VERS_METERING_SELECTED){
+		case VERS_METERING_VIRTUALAM:			return VERS_METERING_VIRTUALAM_NAME;
+		case VERS_METERING_AM_UNI_CONNECTORS:	return VERS_METERING_AM_UNI_CONNECTORS_NAME;
+		default: 								return "";
+	}
+}
+#endif
+
+
+/** Versiones soportadas en el proyecto Viaris COMBIPLUS*/
+// ANALIZADOR VIRTUAL (SIMULADOR)
+#define VERS_METERING_VIRTUALAM								0
+#define VERS_METERING_VIRTUALAM_NAME						(const char*)"Simulator"
+#define VERS_METERING_VIRTUALAM_ANALYZERS					1
+
+// ANALIZADORES DE LOS CONECTORES MENNEKES+SCHUKO
+#define VERS_METERING_AM_COMBIPLUS_CONNECTORS				1
+#define VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME			(const char*)"am-o"
+#define VERS_METERING_AM_COMBIPLUS_CONNECTORS_ANALYZERS		6
+#define VERS_METERING_AM_COMBIPLUS_CONNECTORS_MEASCYCLE		2000
+#define VERS_METERING_AM_COMBIPLUS_CONNECTORS_1PHASE_ID		"1PH"
+#define VERS_METERING_AM_COMBIPLUS_CONNECTORS_3PHASE_ID		"3PH"
+
+#ifdef COMBI_PLUS
+/** Versi�n seleccionada */
+#define VERS_METERING_SELECTED			VERS_METERING_AM_COMBIPLUS_CONNECTORS
+
+/** Macro de generaci�n de nombre de versi�n */
+static inline const char* VERS_METERING_NAME(){
+	switch(VERS_METERING_SELECTED){
+		case VERS_METERING_VIRTUALAM:				return VERS_METERING_VIRTUALAM_NAME;
+		case VERS_METERING_AM_COMBIPLUS_CONNECTORS:	return VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME;
+		default: 									return "";
+	}
+}
+#endif
+
+
+#define VERS_METERING_AM_MID_NAME							(const char*)"am-mid"
+// ANALIZADORES CONTADOR MID MONOFASICO
+#define VERS_METERING_AM_MID1								7
+#define VERS_METERING_AM_MID1_NAME							(const char*)"am-mid1x1"
+#define VERS_METERING_AM_MID1_ANALYZERS						1
+#define VERS_METERING_AM_MID1_MEASCYCLE						2000
+#define VERS_METERING_AM_MID1_ADDR							1
+#define VERS_METERING_AM_MID1_MODEL							2 //Driver_Ctx0643RegData::DriverRegModel::DDS353H3
+
+// ANALIZADORES 2 CONTADORES MID MONOFASICOS
+#define VERS_METERING_AM_MID1x2								7
+#define VERS_METERING_AM_MID1x2_NAME						(const char*)"am-mid1x2"
+#define VERS_METERING_AM_MID1x2_ANALYZERS					2
+#define VERS_METERING_AM_MID1x2_MEASCYCLE					2000
+#define VERS_METERING_AM_MID1x2_ADDR						1
+#define VERS_METERING_AM_MID1x2_MODEL						2 //Driver_Ctx0643RegData::DriverRegModel::DDS353H3
+
+// ANALIZADORES CONTADOR MID TRIFASICO
+#define VERS_METERING_AM_MID3								8
+#define VERS_METERING_AM_MID3_NAME							(const char*)"am-mid3x1"
+#define VERS_METERING_AM_MID3_ANALYZERS						1
+#define VERS_METERING_AM_MID3_MEASCYCLE						2000
+#define VERS_METERING_AM_MID3_ADDR							1
+#define VERS_METERING_AM_MID3_MODEL							2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2 y DTS353F3
+
+// ANALIZADORES 2 CONTADORES MID TRIFASICOS
+#define VERS_METERING_AM_MID3x2								8
+#define VERS_METERING_AM_MID3x2_NAME						(const char*)"am-mid3x2"
+#define VERS_METERING_AM_MID3x2_ANALYZERS					2
+#define VERS_METERING_AM_MID3x2_MEASCYCLE					2000
+#define VERS_METERING_AM_MID3x2_ADDR						1
+#define VERS_METERING_AM_MID3x2_MODEL						2 //Driver_Ctx0643RegData::DriverRegModel::DTS353F2 y DTS353F3
+
+// ANALIZADORES PVINVERTER
+#define VERS_METERING_AM_PVINV								9
+#define VERS_METERING_AM_PVINV_NAME							(const char*)"am-pvinv"
+#define VERS_METERING_AM_PVINV_ANALYZERS					11	// panels, batt, ac-r, ac-s, ac-t, meter-r, meter-s, meter-t, homePower-r, homePower-s, homePower-t
+#define VERS_METERING_AM_PVINV_MEASCYCLE					3000
+#define VERS_METERING_AM_PVINV_ADDR_INGECON					0	// INGECON SUN STORAGE 1PLAY TLM
 
 #define VERS_METERING_AM_IVYD1C9002							10
 #define VERS_METERING_AM_IVYD1C9002_NAME					(const char*)"am-IVYD1C9002"
@@ -34,6 +196,5 @@
 #define METERING_MILLIS_TO_POW_V(millis,volt)	(int32_t)round(((double)millis)*((volt > METERING_DEFAULT_PLANT_MINVOLTAGE)? volt : METERING_DEFAULT_PLANT_VOLTAGE)/1000)
 
 #define METERING_PFACTOR_MIN_ALLOWED		(double)0.5
-
 
 #endif

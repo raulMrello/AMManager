@@ -11,7 +11,7 @@
 #define METERING_OBJECTS_USER_CONFIG_Chargers
 
 /** M�ximo n�mero de analizadores permitidos */
-#define MeteringManagerCfgMaxNumAnalyzers		1
+#define MeteringManagerCfgMaxNumAnalyzers		29
 
 // ANALIZADOR VIRTUAL (SIMULADOR)
 #define VERS_METERING_VIRTUALAM								0
