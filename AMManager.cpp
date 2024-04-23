@@ -736,6 +736,86 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 			}
 		}	
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CHAIN2GATE_P1P2_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_CHAIN2GATE_P1P2_MEASCYCLE;
+
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActivePow), 0);
+			MBED_ASSERT(amo);
+			dobj->measures->push_back(amo);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_CHAIN2GATE_P1P2_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Chain2Gate_P1P2");
+			}
+		}
+		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CHAIN2GATE_P4_NAME)==0){
+			if(discard_ext_anlz){
+				dobj->cycle_ms = 0;
+				continue;
+			}
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_CHAIN2GATE_P4_MEASCYCLE;
+
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_ActivePow), 0);
+			MBED_ASSERT(amo);
+			dobj->measures->push_back(amo);
+
+			// forma la lista de medida con los objetos anteriores
+			for(uint8_t i=0; i<VERS_METERING_AM_CHAIN2GATE_P4_ANALYZERS; i++){
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas peri�dicas
+			if(dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures)!=0){
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Driver_Chain2Gate_P4");
+			}
+		}
+
+		
 	}
 
 	// arranca el timer de lectura
