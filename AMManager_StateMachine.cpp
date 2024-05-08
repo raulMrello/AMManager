@@ -73,6 +73,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// marca como componente iniciado
         	_ready = true;
+			esp_log_level_set(_MODULE_, ESP_LOG_DEBUG);
             return State::HANDLED;
         }
 

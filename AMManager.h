@@ -107,7 +107,7 @@ class AMManager : public ActiveModule {
     static const uint32_t MaxQueueMessages = 16;
 
     /** Cadencia del polling de medidas por defecto (en milisegundos) */
-    static const uint32_t DefaultMeasurePeriod = 2000;
+    static const uint32_t DefaultMeasurePeriod = 60000*5;
 
     /** Lapso de tiempo (segundos) para forzar una notificaci�n de medidas tras un cambio en la carga */
     static const uint32_t SecondsToForcedNotifOnLoadChange = 3;

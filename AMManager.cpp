@@ -864,9 +864,13 @@ void AMManager::_measure(bool enable_notif) {
 
 	// notifica un �nico mensaje que engloba a todos los analizadores
 	if(any_update && enable_notif && !reading_hw_error){
+		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Medidas notificadas");
+		
 		// env�a mensaje con los flags que se han activado y que est�n operativos
 		_notifyState();
 	}
+	DEBUG_TRACE_E(_EXPR_, _MODULE_, "Fin de medida");
+	
 }
 
 
