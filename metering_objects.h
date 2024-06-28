@@ -77,7 +77,7 @@ static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 static const uint8_t MeteringManagerCfgMaxNumAnalyzers = 29; //26;
 
 /** Tama�o m�ximo del texto asociado a la variable ppl:energy:analyzer/serial */
-static const uint8_t MeteringAnalyzerSerialLength = 16;
+static const uint8_t MeteringAnalyzerSerialLength = 22;
 
 /** N�mero de registros de calibraci�n del driver M90E26 en la variable ppl:energy:analyzer:cfg:calib/meterRegs */
 static const uint8_t MeteringAnalyzerCfgCalibRegCount = 16;
