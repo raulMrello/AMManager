@@ -644,7 +644,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			MBED_ASSERT(dobj->measures);
 			// forma la lista de medida con los objetos anteriores
 			dobj->measures->push_back(amo_block);
-			
+
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 			for(uint8_t i = 0; i < VERS_METERING_AM_SHELLY0_ANALYZERS; i++){
@@ -700,7 +700,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->measures = NULL;
 				dobj->cycle_ms = 0;
 			}
-		}	
+		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_SHELLY_P1_NAME)==0){
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_SHELLY_P1_MEASCYCLE;
@@ -735,7 +735,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->measures = NULL;
 				dobj->cycle_ms = 0;
 			}
-		}	
+		}
 	}
 
 	// arranca el timer de lectura
@@ -840,8 +840,10 @@ void AMManager::_measure(bool enable_notif) {
 						if(keys & AMDriver::ElecKey_Voltage){
 							// bugfix de adaptación de medidas
 							if(amr->params.voltage > 0 && amr->params.voltage > (double)Blob::AMVoltageOutOfBounds){
-								ctx_measure_hack = true;
-								amr->params.voltage /= 10;
+                                if (strcmp(am_driver->getVersion(), VERS_METERING_AM_PVINV_NAME)!=0) {
+                                    ctx_measure_hack = true;
+                                    amr->params.voltage /= 10;
+                                }
 							}
 #ifdef COMBI_PLUS
 							if(amr->params.voltage > (double)Blob::AMMaxAllowedVoltage && strcmp(dobj->drv->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0)
@@ -862,6 +864,7 @@ void AMManager::_measure(bool enable_notif) {
 						if(keys & AMDriver::ElecKey_Current){
 							// bugfix de adaptación de medidas
 							if(ctx_measure_hack){
+                                DEBUG_TRACE_D(_EXPR_, _MODULE_, "Multiplicamos corriente por 10!");
 								amr->params.current *= 10;
 							}
 #ifdef COMBI_PLUS
@@ -923,7 +926,7 @@ void AMManager::_measure(bool enable_notif) {
 							double pfactor = abs(amr->params.pFactor);
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.pfactor = pfactor;
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerPowerFactor;
-							if(strcmp(am_driver->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0 || 
+							if(strcmp(am_driver->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0 ||
 							   strcmp(am_driver->getVersion(), VERS_METERING_AM_COMBIPLUS_CONNECTORS_NAME)==0 ||
 							   strcmp(am_driver->getVersion(), VERS_METERING_AM_MBUS0_NAME)==0 ||
 							   strcmp(am_driver->getVersion(), VERS_METERING_AM_MBUS03_NAME)==0 ||
