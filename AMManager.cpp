@@ -971,6 +971,36 @@ void AMManager::_measure(bool enable_notif) {
 							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerTemperature;
 							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Temp=%.2fºC", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.temp);
 						}
+						if(keys & AMDriver::Eleckey_NeutralPE){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.neutralPE = amr->params.neutralPE;
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerNeutralPE;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], NeutralPE=%.2fV", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.neutralPE);
+						}
+						if(keys & AMDriver::Eleckey_Reserved1){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[0] = amr->params.reserved[0];
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReserved1;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reserved1=%.2f", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[0]);
+						}
+						if(keys & AMDriver::Eleckey_Reserved2){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[1] = amr->params.reserved[1];
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReserved2;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reserved2=%.2f", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[1]);
+						}
+						if(keys & AMDriver::Eleckey_Reserved3){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[2] = amr->params.reserved[2];
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReserved3;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reserved3=%.2f", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[2]);
+						}
+						if(keys & AMDriver::Eleckey_Reserved4){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[3] = amr->params.reserved[3];
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReserved4;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reserved4=%.2f", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[3]);
+						}
+						if(keys & AMDriver::Eleckey_Reserved5){
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[4] = amr->params.reserved[4];
+							_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags |= MeteringAnalyzerReserved5;
+							DEBUG_TRACE_D(_EXPR_, _MODULE_, "Analizador=[%d], Reserved5=%.2f", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.measureValues.reserved[4]);
+						}
 					}
 					any_update = (alarm_notif[(base_analyzer + amr->analyzer)])? true : any_update;
 					DEBUG_TRACE_D(_EXPR_, _MODULE_, "stat.flags[%d] = %x", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags);
