@@ -19,6 +19,10 @@ static const char* _MODULE_ = "[metering:].....";
 
 namespace JSON{
 
+namespace Keys {
+	const char* p_neutralPE				= "neutralPE";
+	const char* p_reserved				= "reserved";
+}
 
 //------------------------------------------------------------------------------------
 cJSON* getJsonFromMeteringManager(const metering_manager& obj, ObjDataSelection type){
@@ -379,6 +383,16 @@ cJSON* getJsonFromMeteringAnalyzerStatMeasure(const metering_analyzer_stat_measu
 	cJSON_AddNumberToObject(json, JsonParser::p_msPow, obj.msPow);
 	// freq
 	cJSON_AddNumberToObject(json, JsonParser::p_freq, obj.freq);
+	// neutralPE
+	cJSON_AddNumberToObject(json, Keys::p_neutralPE, obj.neutralPE);
+	// reserved
+	char* name = (char*)Heap::memAlloc(strlen(Keys::p_reserved)+2);
+	MBED_ASSERT(name);
+	for(uint8_t i=0; i<SizeOfArray(obj.reserved); i++){
+		sprintf(name, "%s%d", Keys::p_reserved, i+1);
+		cJSON_AddNumberToObject(json, name, obj.reserved[i]);
+	}
+	Heap::memFree(name);
 
 	// thdA, thdV s�lo para versi�n EMi10 YTL
 	#if VERS_METERING_SELECTED == VERS_METERING_EMi10_YTL
