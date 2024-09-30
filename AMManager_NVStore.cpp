@@ -102,7 +102,7 @@ void AMManager::setDefaultConfig(){
 			amd->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
 			_amdata.analyzers[i].cfg.updFlags 			= MeteringManagerCfgUpdNotif;
 			_amdata.analyzers[i].cfg.evtFlags 			= MeteringAnalyzerInstantMeasureEvt;
-			_amdata.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
+			/*_amdata.analyzers[i].cfg.minmaxData.voltage = {210.0, 	245.0, 	5.0};
 			_amdata.analyzers[i].cfg.minmaxData.current = {0.015, 	15.0, 	0.005};
 			_amdata.analyzers[i].cfg.minmaxData.phase 	= {-185.0, 	185.0, 	5.0};
 			_amdata.analyzers[i].cfg.minmaxData.pfactor = {0.8, 	1.2, 	0.1};
@@ -125,7 +125,7 @@ void AMManager::setDefaultConfig(){
 			}
 			for(int j=sizeof(_meas_cal_values)/sizeof(_meas_cal_values[0]);j<MeteringAnalyzerCfgCalibRegCount;j++){
 				_amdata.analyzers[i].cfg.calibData.measRegs[j] = 0;
-			}
+			}*/
 			// incremento contador de analizador
 			i++;
 		}
@@ -271,7 +271,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 				_amdata.analyzers[i].cfg.evtFlags = data.analyzers[i].cfg.evtFlags;
 			}
 			// eval�o metering:manager:analyzer[]:minmax:cfg
-			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 1))){
+			/*if((data.analyzers[i].cfg.minmaxData._keys & (1 << 1))){
 				_amdata.analyzers[i].cfg.minmaxData.voltage = data.analyzers[i].cfg.minmaxData.voltage;
 			}
 			if((data.analyzers[i].cfg.minmaxData._keys & (1 << 2))){
@@ -324,7 +324,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 						_amdata.analyzers[i].cfg.calibData.measRegs[j] = data.analyzers[i].cfg.calibData.measRegs[j];
 				}
 			}
-			#endif
+			#endif*/
 			// incremento el identificador del analizador analizado
 			i++;
 		}

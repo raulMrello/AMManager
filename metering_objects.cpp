@@ -163,7 +163,7 @@ cJSON* getJsonFromMeteringAnalyzerCfg(const metering_analyzer_cfg& obj){
 	// evtFlags
 	cJSON_AddNumberToObject(json, JsonParser::p_evtFlags, obj.evtFlags);
 	// minmaxData
-	cJSON* item = NULL;
+	/*cJSON* item = NULL;
 	if((item = getJsonFromMeteringAnalyzerCfgMinMax(obj.minmaxData)) == NULL){
 		cJSON_Delete(json);
 		return NULL;
@@ -174,7 +174,7 @@ cJSON* getJsonFromMeteringAnalyzerCfg(const metering_analyzer_cfg& obj){
 		cJSON_Delete(json);
 		return NULL;
 	}
-	cJSON_AddItemToObject(json, JsonParser::p_calibData, item);
+	cJSON_AddItemToObject(json, JsonParser::p_calibData, item);*/
 	return json;
 }
 
@@ -549,7 +549,7 @@ uint32_t getMeteringAnalyzerCfgFromJson(metering_analyzer_cfg &obj, cJSON* json)
 		keys |= (1 << 2);
 	}
 	// minmaxData
-	if((value = cJSON_GetObjectItem(json,JsonParser::p_minmaxData)) != NULL){
+	/*if((value = cJSON_GetObjectItem(json,JsonParser::p_minmaxData)) != NULL){
 		subkey = getMeteringAnalyzerCfgMinMaxFromJson(obj.minmaxData, value)? (1 << 3) : 0;
 		keys |= subkey;
 	}
@@ -557,7 +557,7 @@ uint32_t getMeteringAnalyzerCfgFromJson(metering_analyzer_cfg &obj, cJSON* json)
 	if((value = cJSON_GetObjectItem(json,JsonParser::p_calibData)) != NULL){
 		subkey = getMeteringAnalyzerCfgCalibFromJson(obj.calibData, value)? (1 << 4) : 0;
 		keys |= subkey;
-	}
+	}*/
 	obj._keys = keys;
 	return keys;
 }

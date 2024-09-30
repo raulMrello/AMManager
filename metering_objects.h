@@ -74,10 +74,10 @@ static const uint32_t MeteringManagerCfgMeasPeriodMin 	= 1;
 static const uint32_t MeteringManagerCfgMeasPeriodDefault = 1;
 
 /** Tama�o m�ximo del texto asociado a la variable ppl:energy:analyzer/serial */
-static const uint8_t MeteringAnalyzerSerialLength = 16;
+static const uint8_t MeteringAnalyzerSerialLength = 1;
 
 /** N�mero de registros de calibraci�n del driver M90E26 en la variable ppl:energy:analyzer:cfg:calib/meterRegs */
-static const uint8_t MeteringAnalyzerCfgCalibRegCount = 16;
+static const uint8_t MeteringAnalyzerCfgCalibRegCount = 1;
 
 
 /**Objeto ppl:energy:analyzer:stat:measure */
@@ -345,8 +345,8 @@ struct metering_analyzer_cfg_minmax{
 struct metering_analyzer_cfg{
 	uint32_t updFlags;
 	uint32_t evtFlags;
-	metering_analyzer_cfg_minmax minmaxData;
-	metering_analyzer_cfg_calib calibData;
+	//metering_analyzer_cfg_minmax minmaxData;
+	//metering_analyzer_cfg_calib calibData;
 	uint8_t _keys;
 };
 
