@@ -11,6 +11,10 @@
 #ifndef __AMManager__H
 #define __AMManager__H
 
+#define APP_AMMANAGER_NVS_ID				4
+#define APP_AMMANAGER_NVS_KEYS              (uint32_t)(0xffffffff)  // (0xffffffff) Resetea todas las keys
+#define APP_AMMANAGER_LOG_LEVEL					ESP_LOG_INFO
+
 #include "mbed.h"
 #include "ActiveModule.h"
 #include "AMManagerBlob.h"
