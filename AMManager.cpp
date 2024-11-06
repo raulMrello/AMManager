@@ -21,7 +21,7 @@ static const char* _MODULE_ = "[AMM]...........";
 
 
 //------------------------------------------------------------------------------------
-AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* name) : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg), _name(name) {
+AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* name) : ActiveModule(name, osPriorityNormal, 3096, fs, defdbg), _name(name) {
 
 	// Establece el soporte de JSON
 	_json_supported = false;
