@@ -344,9 +344,17 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), 0);
-			MBED_ASSERT(amo);
-			dobj->measures->push_back(amo);
+			
+			if(dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P1P2 || dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P4){
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)AMDriver::ElecKey_ActivePow, 0);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+			}
+			else{
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current|AMDriver::ElecKey_Voltage|AMDriver::ElecKey_ActivePow|AMDriver::ElecKey_ReactivePow|AMDriver::ElecKey_ActiveEnergy|AMDriver::ElecKey_ReactiveEnergy|AMDriver::ElecKey_PowFactor), 0);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+			}
 
 			// forma la lista de medida con los objetos anteriores
 			for(uint8_t i=0; i<VERS_METERING_AM_CTX1_ANALYZERS; i++){
