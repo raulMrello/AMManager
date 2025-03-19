@@ -59,8 +59,14 @@ enum metering_analyzer_cfg_evtFlags{
 	MeteringAnalyzerEnergyReactive			= (1 << 9),	//!< Evento al recibir actualizaci�n en la medida de energ�a reactiva
 	MeteringAnalyzerStatus                  = (1 << 10), //!< Evento al recibir actualización en el valor de estado
 	MeteringAnalyzerTemperature				= (1 << 11), //!< Evento al recibir actualización en la medida de temperatura
-	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive|MeteringAnalyzerStatus|MeteringAnalyzerTemperature),
-
+	MeteringAnalyzerNeutralPE				= (1 << 12), //!< Evento al recibir actualización en la medida de neutro PE
+	MeteringAnalyzerReserved1				= (1 << 13), //!< Reservado
+	MeteringAnalyzerReserved2				= (1 << 14), //!< Reservado
+	MeteringAnalyzerReserved3				= (1 << 15), //!< Reservado
+	MeteringAnalyzerReserved4				= (1 << 16), //!< Reservado
+	MeteringAnalyzerReserved5				= (1 << 17), //!< Reservado
+	MeteringAnalyzerElectricParam 			= (MeteringAnalyzerVoltage|MeteringAnalyzerCurrent|MeteringAnalyzerActivePower|MeteringAnalyzerReactivePower|MeteringAnalyzerPowerFactor|MeteringAnalyzerFrequency|MeteringAnalyzerPoweredUp|MeteringAnalyzerEnergyActive|MeteringAnalyzerEnergyReactive|MeteringAnalyzerStatus|MeteringAnalyzerTemperature|
+											   MeteringAnalyzerNeutralPE|MeteringAnalyzerReserved1|MeteringAnalyzerReserved2|MeteringAnalyzerReserved3|MeteringAnalyzerReserved4|MeteringAnalyzerReserved5),
 	/* elemento inv�lido */
 	MeteringAnalyzerInvalidEvt				= (1 << 31)
 };
@@ -97,6 +103,8 @@ struct metering_analyzer_stat_measure{
 	double thdV;
 	double temp;
 	double status;
+	double neutralPE;
+	double reserved[5];
 };
 
 
