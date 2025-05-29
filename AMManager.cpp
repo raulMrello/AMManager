@@ -344,7 +344,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			
 			if(dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P1P2 || dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P4){
 				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)AMDriver::ElecKey_ActivePow, 0);
 				MBED_ASSERT(amo);
@@ -744,6 +743,44 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 			}
 		}
+        else if (strcmp(drv->getVersion(), VERS_METERING_AM_LINKY_NAME) == 0) {
+			// Analizador LINKY
+            DEBUG_TRACE_I(_EXPR_, _MODULE_, "Estableciendo ciclo de lectura para el Linky");
+
+			// establece el ciclo de lectura
+			dobj->cycle_ms = VERS_METERING_AM_LINKY_MEASCYCLE;
+			// crea los objetos de medida de cada analizador (medidas a realizar y lecturas)
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+            // Sólo lee la corriente (común a todos los modos de LINKY)
+            for (uint8_t i=0; i<VERS_METERING_AM_LINKY_ANALYZERS; i++) {
+				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_Current), i);
+				MBED_ASSERT(amo);
+				dobj->measures->push_back(amo);
+
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer=i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas periódicas
+			if (dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures) != 0) {
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver Linky");
+			}
+            DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ciclo de lectura para el Linky a %dms", dobj->cycle_ms);
+        }
 	}
 
 	// arranca el timer de lectura
