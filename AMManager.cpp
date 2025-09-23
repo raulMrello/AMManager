@@ -344,8 +344,8 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			
-			if(dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P1P2 || dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P4){
+
+			if(dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P1P2P4 || dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P3P5P7){
 				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)AMDriver::ElecKey_ActivePow, 0);
 				MBED_ASSERT(amo);
 				dobj->measures->push_back(amo);
