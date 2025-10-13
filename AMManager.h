@@ -12,7 +12,11 @@
 #define __AMManager__H
 
 #include "mbed.h"
+#ifdef CONFIG_AMMANAGER_INACTIVE
+#include "InactiveModule.h"
+#else
 #include "ActiveModule.h"
+#endif
 #include "AMManagerBlob.h"
 #include "AMDriver.h"
 #include "JsonParserBlob.h"
@@ -25,9 +29,21 @@
  */
 #define AMMANAGER_ENABLE_JSON_SUPPORT		0
 
+#ifdef CONFIG_AMMANAGER_INACTIVE
+const State::Event_type ammanager_eventType = State::Event_type::EV_INACTIVE_MODULE_UI64;
+#else
+const State::Event_type ammanager_eventType = State::Event_type::EV_RESERVED_USER_UI64;
+#endif
+
 
    
-class AMManager : public ActiveModule {
+class AMManager : public 
+#ifdef CONFIG_AMMANAGER_INACTIVE
+	InactiveModule
+#else
+	ActiveModule
+#endif
+{
   public:
 
     static const uint32_t MaxNumMessages = 16;		//!< M�ximo n�mero de mensajes procesables en el Mailbox del componente

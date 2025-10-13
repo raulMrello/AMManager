@@ -1,0 +1,10 @@
+menu "AMManager"
+
+config AMMANAGER_INACTIVE
+    bool "Make AMManager inherit from InactiveModule"
+    default n
+    help
+        When enabled, AMManager will be built without its own ActiveModule
+        thread and instead use the InactiveModule base.
+
+endmenu

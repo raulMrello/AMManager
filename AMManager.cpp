@@ -21,7 +21,13 @@ static const char* _MODULE_ = "[AMM]...........";
 
 
 //------------------------------------------------------------------------------------
-AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* name) : ActiveModule(name, osPriorityNormal, 3096, fs, defdbg), _name(name) {
+AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* name)
+#ifdef CONFIG_AMMANAGER_INACTIVE
+ : InactiveModule(name, fs, defdbg)
+#else
+ : ActiveModule(name, osPriorityNormal, 3096, fs, defdbg)
+#endif
+ , _name(name) {
 
 	// Establece el soporte de JSON
 	_json_supported = false;
@@ -54,7 +60,13 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
 
 
 //------------------------------------------------------------------------------------
-AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdbg, const char* name) : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg), _name(name) {
+AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdbg, const char* name)
+#ifdef CONFIG_AMMANAGER_INACTIVE
+ : InactiveModule(name, fs, defdbg)
+#else
+ : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg)
+#endif
+ , _name(name) {
 
 	// Establece el soporte de JSON
 	_json_supported = false;
@@ -1201,7 +1213,7 @@ void AMManager::_notifyState(){
 //------------------------------------------------------------------------------------
 void AMManager::eventMeasureWorkCb(){
     // crea el mensaje para publicar en la m�quina de estados
-     State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+     State::Msg* op = (State::Msg*) new State::Msg();
      MBED_ASSERT(op);
 
     op->sig = TimedMeasureEvt;
