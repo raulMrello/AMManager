@@ -344,7 +344,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
 			MBED_ASSERT(dobj->readings);
 
-			
+
 			if(dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P1P2 || dobj->drv->getModel() == VERS_METERING_AM_CTX1_MODEL_CHAIN2GATE_P4){
 				AMDriver::AutoMeasureObj* amo = new AMDriver::AutoMeasureObj((uint32_t)AMDriver::ElecKey_ActivePow, 0);
 				MBED_ASSERT(amo);
@@ -744,6 +744,46 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 				dobj->cycle_ms = 0;
 			}
 		}
+        else if (strcmp(drv->getVersion(), VERS_METERING_AM_CTXWIFI_NAME) == 0) {
+            // caso CONTAX_WiFi
+            if (discard_ext_anlz) {
+				dobj->cycle_ms = 0;
+				continue;
+			}
+            // establece el ciclo de lectura
+            dobj->cycle_ms = VERS_METERING_AM_CTXWIFI_MEASCYCLE;
+            // crea los objetos de medida de cada analizador
+            // crea los objetos de medida de cada analizador (medidas a realizar y lecturas)
+			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
+			MBED_ASSERT(dobj->measures);
+			dobj->readings = new std::list<AMDriver::AutoMeasureReading*>();
+			MBED_ASSERT(dobj->readings);
+
+            AMDriver::AutoMeasureObj* amo_block = new AMDriver::AutoMeasureObj((uint32_t)(AMDriver::ElecKey_MeasureBlock), AMDriver::AllAnalyzers);
+			MBED_ASSERT(amo_block);
+			dobj->measures->push_back(amo_block);
+			for (uint8_t i = 0; i < VERS_METERING_AM_CTXWIFI_ANALYZERS; i++) {
+				// 0-SinglePhase_data
+				AMDriver::AutoMeasureReading* amr = new AMDriver::AutoMeasureReading();
+				MBED_ASSERT(amr);
+				amr->analyzer = i;
+				dobj->readings->push_back(amr);
+			}
+
+			// solicita el inicio de medidas periódicas
+			if (dobj->drv->startPeriodicMeasurement(dobj->cycle_ms, *dobj->measures) != 0) {
+				// si falla, destruye los objetos creados
+				cpp_utils::list_delete_items(*dobj->readings);
+				delete(dobj->readings);
+				dobj->readings = NULL;
+				cpp_utils::list_delete_items(*dobj->measures);
+				delete(dobj->measures);
+				dobj->measures = NULL;
+				dobj->cycle_ms = 0;
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error iniciando medidas automaticas en driver CONTAX_WiFi");
+			}
+
+        }
 	}
 
 	// arranca el timer de lectura
