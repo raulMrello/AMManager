@@ -1,13 +1,14 @@
 /*
  * AMManager_JSONParser.cpp
  *
- * Implementación de los codecs JSON-OBJ
+ * Implementaciï¿½n de los codecs JSON-OBJ
  *
  *  Created on: Feb 2019
  *      Author: raulMrello
  */
 
 #include "JsonParserBlob.h"
+#include "AMManagerBlob.h"
 
 //------------------------------------------------------------------------------------
 //-- PRIVATE TYPEDEFS ----------------------------------------------------------------

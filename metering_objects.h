@@ -20,7 +20,9 @@
 
 /** Selecci�n de la versi�n utilizada 	*/
 /** DEFINIR SEG�N APLICACI�N 			*/
-#include "metering_objects_UserConfig.h"
+#ifdef CONFIG_AMMANAGER_CHARGER
+#include "metering_objects_UserConfig_Chargers.h"
+#endif
 
 #ifndef VERS_METERING_SELECTED
 #error En metering_objects_UserConfig.h se require definir VERS_METERING_SELECTED

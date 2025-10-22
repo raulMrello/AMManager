@@ -1,0 +1,58 @@
+menu "AMManagergy Configuration"
+
+    config AMMANAGER_ENABLED
+        bool "AMManager Enabled"
+        default y
+    
+    config AMMANAGER_CHARGER
+        bool "AMManager Charger Enabled"
+        default y
+
+    config ENERGY_TOPIC
+        depends on AMMANAGER_ENABLED
+        string "ENERGY TOPIC"
+        default "energy"
+        help
+            Topic for AM Manager
+
+    choice AMMANAGER_LOG_LEVEL
+        depends on AMMANAGER_ENABLED
+        prompt "Log level for AM Manager"
+        default AMMANAGER_LOG_LEVEL_INFO
+
+        config AMMANAGER_LOG_LEVEL_NONE
+            bool "NONE"
+        
+        config AMMANAGER_LOG_LEVEL_ERROR
+            bool "ERROR"
+
+        config AMMANAGER_LOG_LEVEL_WARN
+            bool "WARN"
+
+        config AMMANAGER_LOG_LEVEL_INFO
+            bool "INFO"
+
+        config AMMANAGER_LOG_LEVEL_DEBUG
+            bool "DEBUG"
+
+        config AMMANAGER_LOG_LEVEL_VERBOSE
+            bool "VERBOSE"
+
+    endchoice   
+
+    config AMMANAGER_NVS_ID
+        depends on AMMANAGER_ENABLED
+        int "NVS ID for AM Manager"
+        default 4
+        help
+            NVS ID for AM Manager
+
+    config AMMANAGER_NVS_KEYS
+        depends on AMMANAGER_ENABLED
+        hex
+        prompt "NVS Keys for AM Manager"
+        default 0xffffffff
+        help
+            NVS Keys for AM Manager. (0xffffffff) Resetea todas las keys
+
+endmenu
