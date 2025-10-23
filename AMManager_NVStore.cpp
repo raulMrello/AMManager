@@ -52,7 +52,7 @@ const uint16_t AMManager::_meas_cal_values[]  = {
 
 //------------------------------------------------------------------------------------
 bool AMManager::checkIntegrity(){
-	if(_amdata.cfg.nvs_id != APP_AMMANAGER_NVS_ID){
+	if(_amdata.cfg.nvs_id != CONFIG_AMMANAGER_NVS_ID){
 		return false;
 	}
 	if(_amdata.cfg.measPeriod < MeteringManagerCfgMeasPeriodMin)
@@ -86,7 +86,7 @@ void AMManager::setDefaultConfig(){
 	}
 	_amdata.cfg.updFlags 	= MeteringManagerCfgUpdNotif;
 	_amdata.cfg.measPeriod 	= MeteringManagerCfgMeasPeriodDefault;
-	_amdata.cfg.verbosity 	= APP_AMMANAGER_LOG_LEVEL;
+	_amdata.cfg.verbosity 	= AMMANAGER_LOG_LEVEL;
 	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
 	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
 	int i=0;
@@ -133,7 +133,7 @@ void AMManager::setDefaultConfig(){
 __exit_sdefcfg_loop:
 
 	// guarda la configuraci�n
-	_amdata.cfg.nvs_id = APP_AMMANAGER_NVS_ID;
+	_amdata.cfg.nvs_id = CONFIG_AMMANAGER_NVS_ID;
 	saveConfig();
 }
 
