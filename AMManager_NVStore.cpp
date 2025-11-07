@@ -6,6 +6,7 @@
  */
 
 #include "AMManager.h"
+#include <inttypes.h>
 
 //------------------------------------------------------------------------------------
 //-- PRIVATE TYPEDEFS ----------------------------------------------------------------
@@ -88,7 +89,7 @@ void AMManager::setDefaultConfig(){
 	_amdata.cfg.measPeriod 	= MeteringManagerCfgMeasPeriodDefault;
 	_amdata.cfg.verbosity 	= AMMANAGER_LOG_LEVEL;
 	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %"PRIu8"", _amdata._numAnalyzers);
 	int i=0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
 		DriverObj* dobj = (*d);
@@ -96,7 +97,7 @@ void AMManager::setDefaultConfig(){
 		for(int a=0; a<amd->getNumAnalyzers(); a++){
 			// en caso de tener m�s analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
-				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%"PRIu8"", _amdata._numAnalyzers);
 				goto __exit_sdefcfg_loop;
 			}
 			amd->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
@@ -158,7 +159,7 @@ void AMManager::restoreConfig(){
 	}
 
 	_amdata.stat._numAnalyzers = _amdata._numAnalyzers;
-	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %d", _amdata._numAnalyzers);
+	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Numero total de analizadores = %"PRIu8"", _amdata._numAnalyzers);
 	int i=0;
 	for(auto d=_driver_list.begin(); d!=_driver_list.end();++d){
 		DriverObj* dobj = (*d);
@@ -166,7 +167,7 @@ void AMManager::restoreConfig(){
 		for(int a=0; a<amd->getNumAnalyzers(); a++){
 			// en caso de tener mas analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
-				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%"PRIu8"", _amdata._numAnalyzers);
 				goto __exit_rstcfg_loop;
 			}
 			amd->getAnalyzerSerial(_amdata.analyzers[i].serial, MeteringAnalyzerSerialLength, i);
@@ -204,7 +205,7 @@ __exit_rstcfg_loop:
     	else{
     		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Check de integridad OK!");
     		esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
-    		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %d", _amdata.cfg.verbosity);
+			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %"PRIu8"", _amdata.cfg.verbosity);
     		return;
     	}
 	}
@@ -234,7 +235,7 @@ void AMManager::saveConfig(){
 
 	// aplica el nivel de verbosidad configurado
 	esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
-	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %d", _amdata.cfg.verbosity);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %"PRIu8"", _amdata.cfg.verbosity);
 }
 
 
@@ -249,7 +250,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 	}
 	if((data.cfg._keys & (1 << 3))){
 		_amdata.cfg.verbosity = data.cfg.verbosity;
-		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Nivel de depuracion de %d -> %d", data.cfg.verbosity, _amdata.cfg.verbosity);
+		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Nivel de depuracion de %"PRIu8" -> %"PRIu8"", data.cfg.verbosity, _amdata.cfg.verbosity);
 	}
 	// eval�o analizadores
 	int i = 0;
@@ -260,7 +261,7 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 		for(int a = 0; a < analyz; a++){
 			// en caso de tener mas analizadores que los registrados, marca error y sale de los bucles
 			if(i >= _amdata._numAnalyzers){
-				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%d", _amdata._numAnalyzers);
+				DEBUG_TRACE_E(_EXPR_, _MODULE_, "Error en numero de analizadores medidos. max=%"PRIu8"", _amdata._numAnalyzers);
 				goto __exit_updcfg;
 			}
 			// eval�o metering:manager:analyzer[]:cfg

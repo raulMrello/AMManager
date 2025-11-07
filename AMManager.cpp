@@ -6,6 +6,7 @@
  */
 
 #include "AMManager.h"
+#include <inttypes.h>
 //------------------------------------------------------------------------------------
 //-- PRIVATE TYPEDEFS ----------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -802,7 +803,7 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 	_instant_meas_counter = _amdata.cfg.measPeriod;
 	// crea el timer para el worker de medida
 	_meas_tmr.attach_us(callback(this, &AMManager::eventMeasureWorkCb), 1000*DefaultMeasurePeriod);
-	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando medidas automaticas cada %d ms", DefaultMeasurePeriod);
+	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando medidas automaticas cada %"PRIu32" ms", (uint32_t)DefaultMeasurePeriod);
 	_meas_started = true;
 }
 
@@ -1066,7 +1067,7 @@ void AMManager::_measure(bool enable_notif) {
 						}
 					}
 					any_update = (alarm_notif[(base_analyzer + amr->analyzer)])? true : any_update;
-					DEBUG_TRACE_D(_EXPR_, _MODULE_, "stat.flags[%d] = %x", (base_analyzer + amr->analyzer), _amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags);
+					DEBUG_TRACE_D(_EXPR_, _MODULE_, "stat.flags[%d] = %08"PRIx32"", (base_analyzer + amr->analyzer), (uint32_t)_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags);
 				}
 			}
 		}

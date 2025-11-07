@@ -6,6 +6,7 @@
  */
 
 #include "AMManager.h"
+#include <inttypes.h>
 
 
 static const char* _MODULE_ = "[AMM]...........";
@@ -151,7 +152,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         		if(ld.ids[i] >= 0){
         			if(_amdata.stat.loadPercent[ld.ids[i]] != ld.loads[i]){
         				_amdata.stat.loadPercent[ld.ids[i]] = ld.loads[i];
-        				DEBUG_TRACE_I(_EXPR_, _MODULE_, "Carga del Analiz=%d actualizada al %d", ld.ids[i], ld.loads[i]);
+						DEBUG_TRACE_I(_EXPR_, _MODULE_, "Carga del Analiz=%"PRIu8" actualizada al %"PRIu8"", ld.ids[i], ld.loads[i]);
         				// planifica una nueva notificaci�n de medida en 3 segundos
         				_instant_meas_counter = SecondsToForcedNotifOnLoadChange;
         			}
