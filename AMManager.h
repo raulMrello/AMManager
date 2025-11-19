@@ -234,7 +234,11 @@ class AMManager : public
 	 * 	@return True: �xito, False: no se pudo recuperar
 	 */
 	virtual bool saveParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
+		#ifdef CONFIG_AMMANAGER_INACTIVE
+		return InactiveModule::saveParameter(param_id, data, size, type);
+		#else
 		return ActiveModule::saveParameter(param_id, data, size, type);
+		#endif
 	}
 
 
@@ -246,7 +250,11 @@ class AMManager : public
 	 * 	@return True: �xito, False: no se pudo recuperar
 	 */
 	virtual bool restoreParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
+		#ifdef CONFIG_AMMANAGER_INACTIVE
+		return InactiveModule::restoreParameter(param_id, data, size, type);
+		#else
 		return ActiveModule::restoreParameter(param_id, data, size, type);
+		#endif
 	}
 
 
