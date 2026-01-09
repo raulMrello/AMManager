@@ -12,7 +12,11 @@
 #define __AMManager__H
 
 #include "mbed.h"
+#ifdef CONFIG_AMMANAGER_INACTIVE
+#include "InactiveModule.h"
+#else
 #include "ActiveModule.h"
+#endif
 #include "AMManagerBlob.h"
 #include "AMDriver.h"
 #include "JsonParserBlob.h"
@@ -25,9 +29,17 @@
  */
 #define AMMANAGER_ENABLE_JSON_SUPPORT		0
 
+const State::Event_type ammanager_eventType = State::Event_type::EV_RESERVED_USER_UI64;
+
 
    
-class AMManager : public ActiveModule {
+class AMManager : public 
+#ifdef CONFIG_AMMANAGER_INACTIVE
+	InactiveModule
+#else
+	ActiveModule
+#endif
+{
   public:
 
     static const uint32_t MaxNumMessages = 16;		//!< M�ximo n�mero de mensajes procesables en el Mailbox del componente
@@ -113,17 +125,17 @@ class AMManager : public ActiveModule {
     static const uint32_t SecondsToForcedNotifOnLoadChange = 3;
 
     /** Flags de operaciones a realizar por la tarea */
-    enum MsgEventFlags{
-    	RecvCfgSet 	  		= (State::EV_RESERVED_USER << 0),  /// Flag activado al recibir mensaje en "set/cfg"
-    	RecvCfgGet	  		= (State::EV_RESERVED_USER << 1),  /// Flag activado al recibir mensaje en "get/cfg"
-    	RecvStatGet	  		= (State::EV_RESERVED_USER << 2),  /// Flag activado al recibir mensaje en "get/stat"
-    	RecvBootGet	  		= (State::EV_RESERVED_USER << 3),  /// Flag activado al recibir mensaje en "get/boot"
-    	RecvLoadSet	  		= (State::EV_RESERVED_USER << 4),  /// Flag activado al recibir mensaje en "set/load"
-    	RecvStopSet	  		= (State::EV_RESERVED_USER << 5),  /// Flag activado al recibir mensaje en "set/stop"
-    	RecvRestartSet	 	= (State::EV_RESERVED_USER << 6),  /// Flag activado al recibir mensaje en "set/restart"
-    	RecvForcedMeasure	= (State::EV_RESERVED_USER << 7),  /// Flag activado al recibir mensaje en "set/forced-meas"
-    	TimedMeasureEvt		= (State::EV_RESERVED_USER << 8),  /// Evento para realizar una medida
-    	RecvAnalyzersGet	= (State::EV_RESERVED_USER << 9),  /// Evento para realizar una medida
+    enum MsgEventFlags : uint64_t{
+    	RecvCfgSet 	  		= ((uint64_t)ammanager_eventType << 0),  /// Flag activado al recibir mensaje en "set/cfg"
+    	RecvCfgGet	  		= ((uint64_t)ammanager_eventType << 1),  /// Flag activado al recibir mensaje en "get/cfg"
+    	RecvStatGet	  		= ((uint64_t)ammanager_eventType << 2),  /// Flag activado al recibir mensaje en "get/stat"
+    	RecvBootGet	  		= ((uint64_t)ammanager_eventType << 3),  /// Flag activado al recibir mensaje en "get/boot"
+    	RecvLoadSet	  		= ((uint64_t)ammanager_eventType << 4),  /// Flag activado al recibir mensaje en "set/load"
+    	RecvStopSet	  		= ((uint64_t)ammanager_eventType << 5),  /// Flag activado al recibir mensaje en "set/stop"
+    	RecvRestartSet	 	= ((uint64_t)ammanager_eventType << 6),  /// Flag activado al recibir mensaje en "set/restart"
+    	RecvForcedMeasure	= ((uint64_t)ammanager_eventType << 7),  /// Flag activado al recibir mensaje en "set/forced-meas"
+    	TimedMeasureEvt		= ((uint64_t)ammanager_eventType << 8),  /// Evento para realizar una medida
+    	RecvAnalyzersGet	= ((uint64_t)ammanager_eventType << 9),  /// Evento para realizar una medida
     };
 
 
@@ -222,7 +234,11 @@ class AMManager : public ActiveModule {
 	 * 	@return True: �xito, False: no se pudo recuperar
 	 */
 	virtual bool saveParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
+		#ifdef CONFIG_AMMANAGER_INACTIVE
+		return InactiveModule::saveParameter(param_id, data, size, type);
+		#else
 		return ActiveModule::saveParameter(param_id, data, size, type);
+		#endif
 	}
 
 
@@ -234,7 +250,11 @@ class AMManager : public ActiveModule {
 	 * 	@return True: �xito, False: no se pudo recuperar
 	 */
 	virtual bool restoreParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
+		#ifdef CONFIG_AMMANAGER_INACTIVE
+		return InactiveModule::restoreParameter(param_id, data, size, type);
+		#else
 		return ActiveModule::restoreParameter(param_id, data, size, type);
+		#endif
 	}
 
 

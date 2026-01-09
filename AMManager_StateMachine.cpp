@@ -15,8 +15,8 @@ static const char* _MODULE_ = "[AMM]...........";
 //------------------------------------------------------------------------------------
 State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 	State::Msg* st_msg = (State::Msg*)se->oe->value.p;
-    switch((int)se->evt){
-        case State::EV_ENTRY:{
+    switch((uint64_t)se->evt){
+        case (uint64_t)State::EV_ENTRY:{
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Iniciando recuperaci�n de datos...");
 
         	// recupera los datos de memoria NV
@@ -76,12 +76,12 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
             return State::HANDLED;
         }
 
-        case State::EV_TIMED:{
+        case (uint64_t)State::EV_TIMED:{
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicaci�n en cmd/$BASE/cfg/set
-        case RecvCfgSet:{
+        case (uint64_t)RecvCfgSet:{
          	Blob::SetRequest_t<metering_manager>* req = (Blob::SetRequest_t<metering_manager>*)st_msg->msg;
         	MBED_ASSERT(req);
 
@@ -108,21 +108,21 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         }
 
         // Procesa datos recibidos de la publicaci�n en cmd/$BASE/cfg/get
-        case RecvCfgGet:{
+        case (uint64_t)RecvCfgGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
         	_responseWithConfig(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicaci�n en cmd/$BASE/value/get
-        case RecvStatGet:{
+        case (uint64_t)RecvStatGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
         	_responseWithState(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicaci�n en get/boot
-        case RecvBootGet:{
+        case (uint64_t)RecvBootGet:{
         	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 			MBED_ASSERT(pub_topic);
 			sprintf(pub_topic, "stat/boot/%s", _pub_topic_base);
@@ -144,7 +144,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         }
 
         // Procesa datos recibidos de la publicaci�n en set/load/$
-        case RecvLoadSet:{
+        case (uint64_t)RecvLoadSet:{
         	// actualiza el control de carga actual
         	Blob::AMLoadData_t ld = *(Blob::AMLoadData_t*)st_msg->msg;
         	for(int i=0; i<MeteringManagerCfgMaxNumAnalyzers; i++){
@@ -161,21 +161,21 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         }
 
         // Procesa datos recibidos de la publicaci�n en get/boot
-        case RecvStopSet:{
+        case (uint64_t)RecvStopSet:{
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Deteniendo medidas electricas");
 			stopMeasureWork();
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicaci�n en get/boot
-        case RecvRestartSet:{
+        case (uint64_t)RecvRestartSet:{
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Reanudando medidas electricas");
 			startMeasureWork(_discard_ext_anlz);
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicaci�n en set/load/$
-        case RecvForcedMeasure:{
+        case (uint64_t)RecvForcedMeasure:{
         	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Realiza medida solicitada y notifica");
         	_measure(false);
         	_notifyState();
@@ -183,25 +183,25 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         }
 
         // Procesa datos recibidos de la publicaci�n en set/load/$
-        case TimedMeasureEvt:{
+        case (uint64_t)TimedMeasureEvt:{
         	_measure(true);
             return State::HANDLED;
         }
 		// Procesa datos recibidos de la publicacion en get/analyzers/$
-        case RecvAnalyzersGet:{
+        case (uint64_t)RecvAnalyzersGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
         	_responseWithAnalyzers(req->idTrans, req->_error);
             return State::HANDLED;
         }
 
         
-        case State::EV_EXIT:{
+        case (uint64_t)State::EV_EXIT:{
             nextState();
             return State::HANDLED;
         }
 
         default:{
-        	return State::IGNORED;
+            return State::IGNORED;
         }
 
      }

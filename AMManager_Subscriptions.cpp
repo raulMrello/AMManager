@@ -39,7 +39,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         }
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         if(!json_decoded){
@@ -84,7 +84,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         }
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         // el mensaje es un blob tipo Blob::GetRequest_t
@@ -113,7 +113,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         op->sig = RecvBootGet;
@@ -152,7 +152,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         }
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         // el mensaje es un blob tipo Blob::GetRequest_t
@@ -197,7 +197,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         }
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         // el mensaje es un blob tipo Blob::LightCfgData_t
@@ -227,7 +227,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         op->sig = RecvStopSet;
@@ -250,7 +250,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         op->sig = RecvRestartSet;
@@ -282,7 +282,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         DEBUG_TRACE_D(_EXPR_, _MODULE_, "Recibido topic %s", topic);
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 		op->sig = RecvForcedMeasure;
 		// apunta a los datos
@@ -319,7 +319,7 @@ void AMManager::subscriptionCb(const char* topic, void* msg, uint16_t msg_len){
         }
 
         // crea el mensaje para publicar en la m�quina de estados
-        State::Msg* op = (State::Msg*)Heap::memAlloc(sizeof(State::Msg));
+        State::Msg* op = (State::Msg*) new State::Msg();
         MBED_ASSERT(op);
 
         // el mensaje es un blob tipo Blob::GetRequest_t
