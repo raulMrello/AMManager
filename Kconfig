@@ -7,4 +7,16 @@ config AMMANAGER_INACTIVE
         When enabled, AMManager will be built without its own ActiveModule
         thread and instead use the InactiveModule base.
 
+config AMMANAGER_STACK_IN_EXTERNAL_MEMORY
+    bool "Use external memory (PSRAM) for AMManager thread stack"
+    depends on !AMMANAGER_INACTIVE
+    depends on SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY
+    default y
+    help
+        When enabled, AMManager will request its ActiveModule thread stack to be
+        allocated in external memory (PSRAM).
+
+        This option is only available when the ESP-IDF option
+        SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY is enabled.
+
 endmenu

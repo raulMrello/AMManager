@@ -10,6 +10,12 @@
 //-- PRIVATE TYPEDEFS ----------------------------------------------------------------
 //------------------------------------------------------------------------------------
 
+#ifdef CONFIG_AMMANAGER_STACK_IN_EXTERNAL_MEMORY
+static constexpr bool kAMManagerUseExternalStack = true;
+#else
+static constexpr bool kAMManagerUseExternalStack = false;
+#endif
+
 static const char* _MODULE_ = "[AMM]...........";
 #define _EXPR_	(!IS_ISR())
 
@@ -25,7 +31,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
 #ifdef CONFIG_AMMANAGER_INACTIVE
  : InactiveModule(name, fs, defdbg)
 #else
- : ActiveModule(name, osPriorityNormal, 3096, fs, defdbg, false, "ActiveMod", true)
+ : ActiveModule(name, osPriorityNormal, 3096, fs, defdbg, false, "ActiveMod", kAMManagerUseExternalStack)
 #endif
  , _name(name) {
 
@@ -64,7 +70,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 #ifdef CONFIG_AMMANAGER_INACTIVE
  : InactiveModule(name, fs, defdbg)
 #else
- : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg, false, "ActiveMod", true)
+ : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg, false, "ActiveMod", kAMManagerUseExternalStack)
 #endif
  , _name(name) {
 
