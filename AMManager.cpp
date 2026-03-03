@@ -25,7 +25,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
 #ifdef CONFIG_AMMANAGER_INACTIVE
  : InactiveModule(name, fs, defdbg)
 #else
- : ActiveModule(name, osPriorityNormal, 3096, fs, defdbg)
+ : ActiveModule(name, osPriorityNormal, 3096, fs, defdbg, false, "ActiveMod", true)
 #endif
  , _name(name) {
 
@@ -64,7 +64,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
 #ifdef CONFIG_AMMANAGER_INACTIVE
  : InactiveModule(name, fs, defdbg)
 #else
- : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg)
+ : ActiveModule(name, osPriorityNormal, 4096, fs, defdbg, false, "ActiveMod", true)
 #endif
  , _name(name) {
 
