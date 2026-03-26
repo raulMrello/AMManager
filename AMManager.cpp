@@ -1113,14 +1113,14 @@ void AMManager::alarmChecking(	bool& alarm_notif,
 
 
 //------------------------------------------------------------------------------------
-void AMManager::_responseWithState(uint32_t idTrans, Blob::ErrorData_t& err){
+void AMManager::_responseWithState(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface){
 	// prepara el topic al que responder
 	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 	MBED_ASSERT(pub_topic);
 	sprintf(pub_topic, "stat/value/%s", _pub_topic_base);
 
 	// responde con los datos solicitados y con los errores (si hubiera) de la decodificaci�n de la solicitud
-	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
+	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata, routing_iface);
 	MBED_ASSERT(resp);
 	if(_json_supported){
 		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectState);
@@ -1138,14 +1138,14 @@ void AMManager::_responseWithState(uint32_t idTrans, Blob::ErrorData_t& err){
 
 
 //------------------------------------------------------------------------------------
-void AMManager::_responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err){
+void AMManager::_responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface){
 	// prepara el topic al que responder
 	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 	MBED_ASSERT(pub_topic);
 	sprintf(pub_topic, "stat/analyzers/%s", _pub_topic_base);
 
 	// responde con los datos solicitados y con los errores (si hubiera) de la decodificaci�n de la solicitud
-	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
+	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata, routing_iface);
 	MBED_ASSERT(resp);
 	if(_json_supported){
 		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectStateSub);
@@ -1163,14 +1163,14 @@ void AMManager::_responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err)
 
 
 //------------------------------------------------------------------------------------
-void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err){
+void AMManager::_responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface){
    	// prepara el topic al que responder
 	char* pub_topic = (char*)Heap::memAlloc(MQ::MQClient::getMaxTopicLen());
 	MBED_ASSERT(pub_topic);
 	sprintf(pub_topic, "stat/cfg/%s", _pub_topic_base);
 
 	// responde con los datos solicitados y con los errores (si hubiera) de la decodificaci�n de la solicitud
-	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata);
+	Blob::Response_t<metering_manager>* resp = new Blob::Response_t<metering_manager>(idTrans, err, _amdata, routing_iface);
 	MBED_ASSERT(resp);
 	if(_json_supported){
 		cJSON* jresp = JsonParser::getJsonFromResponse(*resp, ObjSelectCfg);
