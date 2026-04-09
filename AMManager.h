@@ -302,19 +302,19 @@ class AMManager : public
 	/***
 	 * Responde con el estado actual
 	 */
-	void _responseWithState(uint32_t idTrans, Blob::ErrorData_t& err);
+	void _responseWithState(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface);
 
 
 	/***
 	 * Responde con el estado actual de los analizadores
 	 */
-	void _responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err);
+	void _responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface);
 
 
 	/***
 	 * Responde con la configuraci�n actual
 	 */
-	void _responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err);
+	void _responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface);
 
 
 	/***
