@@ -214,6 +214,7 @@ class AMManager : public
    	/** Establece la configuraci�n por defecto grab�ndola en memoria NV
 	 */
 	virtual void setDefaultConfig();
+	void setDefaultConfig(uint32_t keys);
 
 
    	/** Recupera la configuraci�n de memoria NV
