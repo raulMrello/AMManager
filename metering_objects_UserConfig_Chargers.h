@@ -110,6 +110,22 @@ static inline const char* VERS_METERING_NAME(){
 #endif
 
 
+static constexpr uint32_t APP_AMMANAGER_NVS_ID[] = {
+	1,
+	3,
+	CONFIG_AMMANAGER_NVS_ID
+};
+
+static constexpr uint8_t APP_AMMANAGER_NVS_ID_SIZE =
+	(uint8_t)(sizeof(APP_AMMANAGER_NVS_ID) / sizeof(APP_AMMANAGER_NVS_ID[0]));
+
+static constexpr uint32_t APP_AMMANAGER_NVS_KEYS[] = {
+	0xffffffff,
+	0xffffffff,
+	CONFIG_AMMANAGER_NVS_KEYS
+};
+
+
 /** Versiones soportadas en el proyecto Viaris COMBIPLUS*/
 // ANALIZADOR VIRTUAL (SIMULADOR)
 #define VERS_METERING_VIRTUALAM								0

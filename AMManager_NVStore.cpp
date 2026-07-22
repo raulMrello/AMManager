@@ -84,7 +84,7 @@ void AMManager::setDefaultConfig(uint32_t keys){
 			_amdata.cfg.measPeriod = MeteringManagerCfgMeasPeriodDefault;
 		}
 		if(keys & (1 << 3)){
-			_amdata.cfg.verbosity = APP_AMMANAGER_LOG_LEVEL;
+			_amdata.cfg.verbosity = AMMANAGER_LOG_LEVEL;
 		}
 		_amdata.cfg.nvs_id = APP_AMMANAGER_NVS_ID[APP_AMMANAGER_NVS_ID_SIZE-1];
 		return;
