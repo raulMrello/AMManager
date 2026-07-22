@@ -67,7 +67,28 @@ bool AMManager::checkIntegrity(){
 
 //------------------------------------------------------------------------------------
 void AMManager::setDefaultConfig(){
+	setDefaultConfig(0xffffffff);
+	saveConfig();
+}
+
+
+//------------------------------------------------------------------------------------
+void AMManager::setDefaultConfig(uint32_t keys){
 	DEBUG_TRACE_W(_EXPR_, _MODULE_, "~~~~ TODO ~~~~ AMManager::setDefaultConfig");
+
+	if(keys != 0xffffffff){
+		if(keys & (1 << 1)){
+			_amdata.cfg.updFlags = MeteringManagerCfgUpdNotif;
+		}
+		if(keys & (1 << 2)){
+			_amdata.cfg.measPeriod = MeteringManagerCfgMeasPeriodDefault;
+		}
+		if(keys & (1 << 3)){
+			_amdata.cfg.verbosity = APP_AMMANAGER_LOG_LEVEL;
+		}
+		_amdata.cfg.nvs_id = APP_AMMANAGER_NVS_ID[APP_AMMANAGER_NVS_ID_SIZE-1];
+		return;
+	}
 
 	// borro la configuraci�n y el estado
 	_amdata = {0};
@@ -135,7 +156,6 @@ __exit_sdefcfg_loop:
 
 	// guarda la configuraci�n
 	_amdata.cfg.nvs_id = CONFIG_AMMANAGER_NVS_ID;
-	saveConfig();
 }
 
 
@@ -199,10 +219,33 @@ __exit_rstcfg_loop:
 	if(success){
 		DEBUG_TRACE_I(_EXPR_, _MODULE_, "Datos recuperados. Chequeando integridad...");
 
+		bool saveCfg = false;
+		if(_amdata.cfg.nvs_id < APP_AMMANAGER_NVS_ID[APP_AMMANAGER_NVS_ID_SIZE-1]){
+			int it = -1;
+			for(uint8_t i = 0; i < APP_AMMANAGER_NVS_ID_SIZE; i++){
+				if(_amdata.cfg.nvs_id == APP_AMMANAGER_NVS_ID[i]){
+					it = i+1;
+					break;
+				}
+			}
+			if(it == -1){
+				it = 0;
+				DEBUG_TRACE_W(_EXPR_, _MODULE_, "No hemos encontrado nuestro AmNvsId[%d], cogemos :%d", _amdata.cfg.nvs_id, it);
+			}
+
+			for(uint8_t in = it; in < APP_AMMANAGER_NVS_ID_SIZE; in++){
+				setDefaultConfig(APP_AMMANAGER_NVS_KEYS[in]);
+			}
+			saveCfg = true;
+		}
+
     	if(!checkIntegrity()){
     		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_CFG. Ha fallado el check de integridad.");
     	}
     	else{
+			if(saveCfg){
+				saveConfig();
+			}
     		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Check de integridad OK!");
     		esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
 			DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %"PRIu8"", _amdata.cfg.verbosity);

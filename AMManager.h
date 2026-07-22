@@ -227,6 +227,7 @@ class AMManager : public
    	/** Establece la configuraci�n por defecto grab�ndola en memoria NV
 	 */
 	virtual void setDefaultConfig();
+	void setDefaultConfig(uint32_t keys);
 
 
    	/** Recupera la configuraci�n de memoria NV
@@ -247,7 +248,11 @@ class AMManager : public
 	 * 	@return True: �xito, False: no se pudo recuperar
 	 */
 	virtual bool saveParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
+		#ifdef CONFIG_AMMANAGER_INACTIVE
+		return InactiveModule::saveParameter(param_id, data, size, type);
+		#else
 		return ActiveModule::saveParameter(param_id, data, size, type);
+		#endif
 	}
 
 
@@ -259,7 +264,11 @@ class AMManager : public
 	 * 	@return True: �xito, False: no se pudo recuperar
 	 */
 	virtual bool restoreParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
+		#ifdef CONFIG_AMMANAGER_INACTIVE
+		return InactiveModule::restoreParameter(param_id, data, size, type);
+		#else
 		return ActiveModule::restoreParameter(param_id, data, size, type);
+		#endif
 	}
 
 
@@ -307,19 +316,19 @@ class AMManager : public
 	/***
 	 * Responde con el estado actual
 	 */
-	void _responseWithState(uint32_t idTrans, Blob::ErrorData_t& err);
+	void _responseWithState(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface);
 
 
 	/***
 	 * Responde con el estado actual de los analizadores
 	 */
-	void _responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err);
+	void _responseWithAnalyzers(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface);
 
 
 	/***
 	 * Responde con la configuraci�n actual
 	 */
-	void _responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err);
+	void _responseWithConfig(uint32_t idTrans, Blob::ErrorData_t& err, uint32_t routing_iface);
 
 
 	/***

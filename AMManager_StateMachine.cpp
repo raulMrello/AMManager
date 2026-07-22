@@ -94,7 +94,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// si hay errores en el mensaje o en la actualizaci�n, devuelve resultado sin hacer nada
         	if(req->_error.code != Blob::ErrOK){
         		DEBUG_TRACE_W(_EXPR_, _MODULE_, "Notificando error %s", req->_error.descr);
-        		_responseWithConfig(req->idTrans, req->_error);
+	        	_responseWithConfig(req->idTrans, req->_error, req->routing.iface);
 				return State::HANDLED;
         	}
 
@@ -104,21 +104,21 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 
         	// si est� habilitada la notificaci�n de actualizaci�n, lo notifica
         	DEBUG_TRACE_D(_EXPR_, _MODULE_, "Notificando actualizaci�n");
-        	_responseWithConfig(req->idTrans, req->_error);
+	        _responseWithConfig(req->idTrans, req->_error, req->routing.iface);
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicaci�n en cmd/$BASE/cfg/get
         case (uint64_t)RecvCfgGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
-        	_responseWithConfig(req->idTrans, req->_error);
+	        	_responseWithConfig(req->idTrans, req->_error, req->routing.iface);
             return State::HANDLED;
         }
 
         // Procesa datos recibidos de la publicaci�n en cmd/$BASE/value/get
         case (uint64_t)RecvStatGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
-        	_responseWithState(req->idTrans, req->_error);
+	        	_responseWithState(req->idTrans, req->_error, req->routing.iface);
             return State::HANDLED;
         }
 
@@ -191,7 +191,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 		// Procesa datos recibidos de la publicacion en get/analyzers/$
         case (uint64_t)RecvAnalyzersGet:{
         	Blob::GetRequest_t* req = (Blob::GetRequest_t*)st_msg->msg;
-        	_responseWithAnalyzers(req->idTrans, req->_error);
+	        	_responseWithAnalyzers(req->idTrans, req->_error, req->routing.iface);
             return State::HANDLED;
         }
 
