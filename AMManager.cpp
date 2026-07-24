@@ -49,6 +49,7 @@ AMManager::AMManager(AMDriver* driver, FSManager* fs, bool defdbg, const char* n
     dobj->cycle_ms = 0;
     dobj->measures = NULL;
     dobj->readings = NULL;
+    dobj->init_ok = true;
     _driver_list.push_back(dobj);
     _acc_errors = 0;
     _meas_started = false;
@@ -90,6 +91,7 @@ AMManager::AMManager(std::list<AMDriver*> driver_list, FSManager* fs, bool defdb
         dobj->cycle_ms = 0;
         dobj->measures = NULL;
         dobj->readings = NULL;
+        dobj->init_ok = true;
         _driver_list.push_back(dobj);
     }
     _acc_errors = 0;
@@ -115,6 +117,11 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 	for(auto i= _driver_list.begin(); i!=_driver_list.end(); ++i){
 		DriverObj* dobj = (*i);
 		AMDriver* drv = (dobj->drv);
+		if(!dobj->init_ok){
+			DEBUG_TRACE_W(_EXPR_, _MODULE_, "Driver <%s> ERR_INIT, no se inician medidas automaticas", drv->getVersion());
+			dobj->cycle_ms = 0;
+			continue;
+		}
 		// si es un driver AMUniConnectors planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		if(strcmp(drv->getVersion(), VERS_METERING_AM_UNI_CONNECTORS_NAME)==0){
@@ -344,10 +351,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 		// si es un driver Driver_Ctx0643 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CTX1_NAME)==0){
-			if(discard_ext_anlz){
-				dobj->cycle_ms = 0;
-				continue;
-			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_CTX1_MEASCYCLE;
 
@@ -391,10 +394,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			}
 		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_CTX3_NAME)==0){
-			if(discard_ext_anlz){
-				dobj->cycle_ms = 0;
-				continue;
-			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_CTX3_MEASCYCLE;
 
@@ -464,10 +463,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 		// si es un driver Driver_Ctx0643 planifica una medida peri�dica cada segundo de los par�metros
 		// en bloque
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID1_NAME)==0){
-			if(discard_ext_anlz){
-				dobj->cycle_ms = 0;
-				continue;
-			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_MID1_MEASCYCLE;
 
@@ -502,10 +497,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			}
 		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID3_NAME)==0){
-			if(discard_ext_anlz){
-				dobj->cycle_ms = 0;
-				continue;
-			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_MID3_MEASCYCLE;
 
@@ -538,10 +529,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			}
 		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID1x2_NAME)==0){
-			if(discard_ext_anlz){
-				dobj->cycle_ms = 0;
-				continue;
-			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_MID1x2_MEASCYCLE;
 			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
@@ -576,10 +563,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 			}
 		}
 		else if(strcmp(drv->getVersion(), VERS_METERING_AM_MID3x2_NAME)==0){
-			if(discard_ext_anlz){
-				dobj->cycle_ms = 0;
-				continue;
-			}
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_MID3x2_MEASCYCLE;
 			dobj->measures = new std::list<AMDriver::AutoMeasureObj*>();
@@ -613,10 +596,6 @@ void AMManager::startMeasureWork(bool discard_ext_anlz) {
 		}
 		else if (strcmp(drv->getVersion(), VERS_METERING_AM_PVINV_NAME) == 0) {
 			// Inversor solar
-			if (discard_ext_anlz) {
-				dobj->cycle_ms = 0;
-				continue;
-			}
 
 			// establece el ciclo de lectura
 			dobj->cycle_ms = VERS_METERING_AM_PVINV_MEASCYCLE;
