@@ -62,6 +62,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
 					am_driver->initEnergyIC();
 					result = am_driver->ready();
 				}while(!result && --retries > 0);
+				dobj->init_ok = result;
 				if(result){
 					DEBUG_TRACE_I(_EXPR_, _MODULE_, "Driver <%s> OK!", am_driver->getVersion());
 				}
