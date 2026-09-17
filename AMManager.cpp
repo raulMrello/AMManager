@@ -872,7 +872,7 @@ void AMManager::_measure(bool enable_notif) {
 	Heap::printHeap();
 	double value;
 	uint32_t multiplier = 1000;
-	bool alarm_notif[MeteringManagerCfgMaxNumAnalyzers];
+	bool alarm_notif[MeteringManagerCfgMaxNumAnalyzers] = {};
 	bool reading_hw_error = false;
 
 	// lee todos los par�metros el�ctricos de cada analizador
@@ -882,6 +882,10 @@ void AMManager::_measure(bool enable_notif) {
 	int base_analyzer = 0;
 	for(auto d = _driver_list.begin(); d != _driver_list.end(); ++d){
 		DriverObj* dobj = (*d);
+		if(dobj == NULL || dobj->drv == NULL){
+			DEBUG_TRACE_E(_EXPR_, _MODULE_, "Driver de medida nulo");
+			continue;
+		}
 		AMDriver* am_driver = dobj->drv;
 
 		base_analyzer += acc_analyzers;
@@ -898,10 +902,25 @@ void AMManager::_measure(bool enable_notif) {
 				// eval�a las nuevas medidas
 				for(auto r = dobj->readings->begin(); r != dobj->readings->end(); ++r){
 					AMDriver::AutoMeasureReading* amr = (*r);
+					uintptr_t amr_address = reinterpret_cast<uintptr_t>(amr);
+					if(amr == NULL || (amr_address % sizeof(void*)) != 0){
+						DEBUG_TRACE_E(_EXPR_, _MODULE_, "Puntero de lectura invalido=%" PRIxPTR, amr_address);
+						continue;
+					}
+					if(amr->analyzer >= acc_analyzers){
+						DEBUG_TRACE_E(_EXPR_, _MODULE_, "Analizador fuera del driver: base=%d, count=%d, analyzer=%d",
+								base_analyzer, acc_analyzers, amr->analyzer);
+						continue;
+					}
+					int analyzer_index = base_analyzer + amr->analyzer;
+					if(analyzer_index < 0 || analyzer_index >= MeteringManagerCfgMaxNumAnalyzers){
+						DEBUG_TRACE_E(_EXPR_, _MODULE_, "Indice de analizador fuera de rango=%d", analyzer_index);
+						continue;
+					}
 					DEBUG_TRACE_D(_EXPR_, _MODULE_, "base_analyzer=%d, acc_analyzers=%d, amr->analyzer=%d", base_analyzer, acc_analyzers, amr->analyzer);
 					uint32_t keys = amr->params.measureId;
-					alarm_notif[(base_analyzer + amr->analyzer)] = false;
-					_amdata.analyzers[(base_analyzer + amr->analyzer)].stat.flags = 0;
+					alarm_notif[analyzer_index] = false;
+					_amdata.analyzers[analyzer_index].stat.flags = 0;
 					// visualiza los par�metros le�dos
 					if(keys != 0){
 						if(keys & AMDriver::ElecKey_Voltage){
@@ -1273,6 +1292,6 @@ void AMManager::eventMeasureWorkCb(){
 		if(op->msg){
 			Heap::memFree(op->msg);
 		}
-		Heap::memFree(op);
+		delete op;
 	}
  }
