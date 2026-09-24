@@ -375,7 +375,8 @@ void AMManager::_updateConfig(const metering_manager& data, Blob::ErrorData_t& e
 	}
 __exit_updcfg:
 
-	strcpy(err.descr, Blob::errList[err.code]);
+	strncpy(err.descr, Blob::errList[err.code], Blob::DefaultErrDescrLen - 1);
+	err.descr[Blob::DefaultErrDescrLen - 1] = 0;
 }
 
 

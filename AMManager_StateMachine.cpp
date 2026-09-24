@@ -149,7 +149,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	// actualiza el control de carga actual
         	Blob::AMLoadData_t ld = *(Blob::AMLoadData_t*)st_msg->msg;
         	for(int i=0; i<MeteringManagerCfgMaxNumAnalyzers; i++){
-        		if(ld.ids[i] >= 0){
+        		if(ld.ids[i] >= 0 && ld.ids[i] < MeteringManagerCfgMaxNumAnalyzers){
         			if(_amdata.stat.loadPercent[ld.ids[i]] != ld.loads[i]){
         				_amdata.stat.loadPercent[ld.ids[i]] = ld.loads[i];
 						DEBUG_TRACE_I(_EXPR_, _MODULE_, "Carga del Analiz=%"PRIu8" actualizada al %"PRIu8"", ld.ids[i], ld.loads[i]);
