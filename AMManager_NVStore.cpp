@@ -257,7 +257,7 @@ __exit_rstcfg_loop:
 
 
 //------------------------------------------------------------------------------------
-void AMManager::saveConfig(){
+void AMManager::saveConfig(bool enableResetCount){
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Guardando datos en memoria NV...");
 	char nvs_key[16];
 
@@ -278,6 +278,11 @@ void AMManager::saveConfig(){
 	// aplica el nivel de verbosidad configurado
 	esp_log_level_set(_MODULE_, _amdata.cfg.verbosity);
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Ajustando Nivel de depuracion a %d", _amdata.cfg.verbosity);
+
+	if(enableResetCount){
+		uint8_t en = 1;
+		saveParameter("AppRstEn", &en, sizeof(en), NVSInterface::TypeUint8, true);
+	}
 }
 
 
