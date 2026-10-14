@@ -225,7 +225,7 @@ class AMManager : public
 
    	/** Graba la configuraci�n en memoria NV
 	 */
-	virtual void saveConfig(bool enableResetCount = false);
+	virtual void saveConfig();
 
 
 	/** Graba un par�metro en la memoria NV
@@ -235,11 +235,11 @@ class AMManager : public
 	 * 	@param type Tipo de los datos
 	 * 	@return True: �xito, False: no se pudo recuperar
 	 */
-	virtual bool saveParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type, bool enableResetCount = false){
+	virtual bool saveParameter(const char* param_id, void* data, size_t size, NVSInterface::KeyValueType type){
 		#ifdef CONFIG_AMMANAGER_INACTIVE
-		return InactiveModule::saveParameter(param_id, data, size, type, enableResetCount);
+		return InactiveModule::saveParameter(param_id, data, size, type);
 		#else
-		return ActiveModule::saveParameter(param_id, data, size, type, enableResetCount);
+		return ActiveModule::saveParameter(param_id, data, size, type);
 		#endif
 	}
 
