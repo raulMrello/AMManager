@@ -99,7 +99,7 @@ State::StateResult AMManager::Init_EventHandler(State::StateEvent* se){
         	}
 
         	// si todo ha ido bien, almacena en el sistema de ficheros
-        	saveConfig();
+        	saveConfig(true);
         	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Config actualizada");
 
         	// si est� habilitada la notificaci�n de actualizaci�n, lo notifica
