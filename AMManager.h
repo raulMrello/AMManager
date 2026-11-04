@@ -225,7 +225,7 @@ class AMManager : public
 
    	/** Graba la configuraci�n en memoria NV
 	 */
-	virtual void saveConfig(bool enableResetCount = false);
+	virtual bool saveConfig(bool enableResetCount = false);
 
 
 	/** Graba un par�metro en la memoria NV
