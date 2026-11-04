@@ -257,13 +257,15 @@ __exit_rstcfg_loop:
 
 
 //------------------------------------------------------------------------------------
-void AMManager::saveConfig(bool enableResetCount){
+bool AMManager::saveConfig(bool enableResetCount){
+	bool ok = true;
 	DEBUG_TRACE_I(_EXPR_, _MODULE_, "Guardando datos en memoria NV...");
 	char nvs_key[16];
 
 	// graba el objeto metering:manager:cfg
 	snprintf(nvs_key, 16, "%s_cfg", _name);
 	if(!saveParameter(nvs_key, &_amdata.cfg, sizeof(metering_manager_cfg), NVSInterface::TypeBlob)){
+		ok = false;
 		DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS grabando %s", _name);
 	}
 
@@ -271,6 +273,7 @@ void AMManager::saveConfig(bool enableResetCount){
 	for(int i=0;i<MeteringManagerCfgMaxNumAnalyzers;i++){
 		snprintf(nvs_key, 16, "%s_an%dcfg", _name, i);
 		if(!saveParameter(nvs_key, &_amdata.analyzers[i].cfg, sizeof(metering_analyzer_cfg), NVSInterface::TypeBlob)){
+			ok = false;
 			DEBUG_TRACE_W(_EXPR_, _MODULE_, "ERR_NVS leyendo %s", _name);
 		}
 	}
@@ -281,8 +284,11 @@ void AMManager::saveConfig(bool enableResetCount){
 
 	if(enableResetCount){
 		uint8_t en = 1;
-		saveParameter("AppRstEn", &en, sizeof(en), NVSInterface::TypeUint8, true);
+		if(!saveParameter("AppRstEn", &en, sizeof(en), NVSInterface::TypeUint8, true)){
+			ok = false;
+		}
 	}
+	return ok;
 }
 
 
